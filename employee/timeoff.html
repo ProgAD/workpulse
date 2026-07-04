@@ -24,13 +24,13 @@
     .cal-grid { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px; }
     .mini { font-size: 10.5px; }
     .mini .m-name { font-weight: 700; font-size: 11.5px; margin-bottom: 6px; }
-    .mini table { border-collapse: collapse; width: 100%; }
-    .mini th { color: var(--text-light); font-weight: 600; padding: 2px; text-align: center; font-size: 9.5px; }
-    .mini td { text-align: center; padding: 2.5px 2px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+    .mini table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    .mini th { color: var(--text-light); font-weight: 600; padding: 2px 0; text-align: center; font-size: 9.5px; width: 14.28%; }
+    .mini td { text-align: center; padding: 0; height: 22px; line-height: 22px; border-radius: 4px; font-variant-numeric: tabular-nums; }
     .mini td.sun { color: var(--text-light); }
     .mini td[data-date] { cursor: pointer; }
     .mini td[data-date]:hover { background: var(--primary-light); }
-    .mini td.today { outline: 1.5px solid var(--primary); outline-offset: -1.5px; font-weight: 700; }
+    .mini td.today { box-shadow: inset 0 0 0 1.5px var(--primary); font-weight: 700; }
     .mini td.approved { background: #bbf7d0; color: #14532d; font-weight: 600; }
     .mini td.pending { background: #fef08a; color: #713f12; font-weight: 600; }
     .mini td.rejected { background: #fecaca; color: #7f1d1d; text-decoration: line-through; }
