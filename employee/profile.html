@@ -83,14 +83,28 @@
     .kv .k { color: var(--text-muted); flex-shrink: 0; }
     .kv .v { font-weight: 600; text-align: right; word-break: break-word; }
     .kv input, .kv select {
-      font: inherit; font-weight: 600;
+      font: inherit; font-weight: 600; font-size: 13px;
       text-align: right;
-      border: none; border-bottom: 1px dashed var(--border-color);
-      outline: none; background: transparent;
-      padding: 2px 0; max-width: 200px; width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      background: var(--bg-body);
+      padding: 7px 10px; max-width: 210px; width: 100%;
       color: var(--text-main);
+      transition: border-color .15s, background .15s;
     }
-    .kv input:focus, .kv select:focus { border-bottom: 1px solid var(--primary); }
+    .kv input:hover, .kv select:hover { border-color: var(--text-light); }
+    .kv input:focus, .kv select:focus { border-color: var(--primary); background: var(--bg-card); }
+    .kv input::placeholder { color: var(--text-light); font-weight: 500; }
+    /* editable row ke label ke saath chhota edit icon */
+    .kv.editable .k::after {
+      content: 'edit';
+      font-family: 'Material Symbols Outlined';
+      font-size: 13px;
+      color: var(--primary);
+      margin-left: 6px;
+      vertical-align: -2px;
+    }
     .edit-hint { font-size: 11px; color: var(--text-light); margin-top: 10px; }
     .save-row { display: flex; justify-content: flex-end; margin-top: 14px; }
 
@@ -284,16 +298,16 @@
         <div>
           <section class="card panel">
             <h4>Personal Details</h4>
-            <div class="kv"><span class="k">Phone</span><input id="f_phone" inputmode="numeric" maxlength="10" placeholder="—"></div>
-            <div class="kv"><span class="k">Marital Status</span>
+            <div class="kv editable"><span class="k">Phone</span><input id="f_phone" inputmode="numeric" maxlength="10" placeholder="Add Phone"></div>
+            <div class="kv editable"><span class="k">Marital Status</span>
               <select id="f_marital">
-                <option value="">—</option>
+                <option value="">Select</option>
                 <option value="single">Single</option>
                 <option value="married">Married</option>
               </select>
             </div>
-            <div class="kv"><span class="k">Current Address</span><input id="f_address" placeholder="—"></div>
-            <div class="kv"><span class="k">Permanent Address</span><input id="f_perm" placeholder="—"></div>
+            <div class="kv editable"><span class="k">Current Address</span><input id="f_address" placeholder="Add Address"></div>
+            <div class="kv editable"><span class="k">Permanent Address</span><input id="f_perm" placeholder="Add Address"></div>
             <div class="kv"><span class="k">Date Of Birth</span><span class="v" id="v_dob">—</span></div>
             <div class="kv"><span class="k">Gender</span><span class="v" id="v_gender">—</span></div>
             <div class="kv"><span class="k">Blood Group</span><span class="v" id="v_blood">—</span></div>
