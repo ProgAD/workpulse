@@ -22,6 +22,8 @@ const API = {
     'employee_create':  'employees/index.php?action=create',
     'employee_update':  'employees/index.php?action=update',
     'employee_remove':  'employees/index.php?action=remove',
+    'me_profile':       'employees/index.php?action=me_profile',
+    'update_self':      'employees/index.php?action=update_self',
 
     // niche wale abhi banne hai (php file ready hote hi kaam karenge)
 

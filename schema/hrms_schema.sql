@@ -151,12 +151,15 @@ CREATE TABLE employee_profiles (
     first_name        VARCHAR(100) NOT NULL,
     last_name         VARCHAR(100),
     phone             VARCHAR(20),
+    personal_email    VARCHAR(255),
+    nationality       VARCHAR(50),
     emergency_contact VARCHAR(150),
     emergency_phone   VARCHAR(20),
     current_address   TEXT,
     permanent_address TEXT,
     dob               DATE,
     gender            ENUM('male','female','other'),
+    marital_status    ENUM('single','married'),
     blood_group       VARCHAR(5),
     photo_url         VARCHAR(500),
 
@@ -176,6 +179,7 @@ CREATE TABLE employee_profiles (
     bank_account      VARBINARY(255),
     bank_ifsc         VARCHAR(11),
     bank_name         VARCHAR(150),
+    uan               VARCHAR(20),
 
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

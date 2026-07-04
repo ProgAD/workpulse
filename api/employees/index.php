@@ -105,6 +105,74 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
     ], 'Employee created. Share the login id and password with them.');
 }
 
+// apna pura profile - koi bhi logged in user (profile page ke liye)
+if ($ACTION === 'me_profile' && $METHOD === 'GET') {
+    $me = require_auth();
+    $stmt = db()->prepare(
+        "SELECT u.id, u.emp_code, u.email, u.status, r.name AS role,
+                p.first_name, p.last_name, p.phone, p.personal_email, p.nationality,
+                p.dob, p.gender, p.marital_status, p.blood_group,
+                p.current_address, p.permanent_address,
+                p.emergency_contact, p.emergency_phone,
+                p.doj, p.emp_type, p.work_mode,
+                p.bank_name, p.bank_ifsc, p.bank_account, p.pan, p.uan,
+                d.name AS department, g.title AS designation, c.name AS company
+         FROM users u
+         JOIN roles r ON r.id = u.role_id
+         JOIN companies c ON c.id = u.company_id
+         LEFT JOIN employee_profiles p ON p.user_id = u.id
+         LEFT JOIN departments d ON d.id = p.department_id
+         LEFT JOIN designations g ON g.id = p.designation_id
+         WHERE u.id = ?"
+    );
+    $stmt->execute([$me['id']]);
+    ok($stmt->fetch());
+}
+
+// employee apni personal details khud update karta hai
+// job wali cheeze (dept, designation, doj...) sirf admin update se badalti hai
+if ($ACTION === 'update_self' && $METHOD === 'POST') {
+    $me = require_auth('employee.edit_self');
+    $in = body();
+
+    if (!empty($in['phone']) && !preg_match('/^\d{10}$/', $in['phone'])) {
+        fail('Enter a valid 10 digit phone', 422);
+    }
+    if (!empty($in['personal_email']) && !filter_var($in['personal_email'], FILTER_VALIDATE_EMAIL)) {
+        fail('Invalid personal email', 422);
+    }
+
+    // naam alag se, kyunki wo do columns me todna padta hai
+    if (!empty($in['name'])) {
+        $nameParts = preg_split('/\s+/', trim($in['name']), 2);
+        db()->prepare("UPDATE employee_profiles SET first_name = ?, last_name = ? WHERE user_id = ?")
+            ->execute([$nameParts[0], $nameParts[1] ?? null, $me['id']]);
+    }
+
+    $allowed = [
+        'phone', 'personal_email', 'nationality', 'dob', 'gender', 'marital_status',
+        'blood_group', 'current_address', 'permanent_address',
+        'emergency_contact', 'emergency_phone',
+        'bank_name', 'bank_ifsc', 'bank_account', 'pan', 'uan',
+    ];
+    $sets = [];
+    $vals = [];
+    foreach ($allowed as $f) {
+        if (array_key_exists($f, $in)) {
+            $sets[] = "$f = ?";
+            $vals[] = $in[$f] === '' ? null : $in[$f];
+        }
+    }
+    if ($sets) {
+        $vals[] = $me['id'];
+        db()->prepare("UPDATE employee_profiles SET " . implode(', ', $sets) . " WHERE user_id = ?")
+            ->execute($vals);
+    }
+
+    audit('update', 'employee_profile', (int)$me['id']);
+    ok(null, 'Profile updated');
+}
+
 if ($ACTION === 'update' && $METHOD === 'POST') {
     $me = require_auth('employee.edit_all');
     $id = (int)($_GET['id'] ?? 0);

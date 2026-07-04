@@ -724,24 +724,34 @@
             document.getElementById('hdr_login').innerText = u.emp_code;
             document.getElementById('hdr_email').value = u.email;
             document.getElementById('pi_emp_code').value = u.emp_code;
-            document.getElementById('ddOrRole')?.remove; // noop safeguard
+            setAvatars(u.email.split('@')[0]);
 
-            const nameGuess = u.email.split('@')[0];
-            setAvatars(nameGuess);
-            document.getElementById('hdr_name').value = nameGuess;
-
-            // detail employees api se milti hai (admin ke paas hi view_all hai,
-            // employee ke liye self endpoint api wale banayenge)
             try {
-                const res = await API.get('employees/' + u.id);
+                const res = await API.get('me_profile');
                 const p = res.data;
-                const fullName = (p.first_name + ' ' + (p.last_name || '')).trim();
+                const fullName = ((p.first_name || '') + ' ' + (p.last_name || '')).trim();
                 document.getElementById('hdr_name').value = fullName;
                 document.getElementById('hdr_mobile').value = p.phone || '';
-                if (p.doj) document.getElementById('pi_doj').value = p.doj;
+                if (p.company) document.getElementById('hdr_company').innerText = p.company;
                 if (p.department) document.getElementById('hdr_dept').innerText = p.department;
-                setAvatars(fullName);
-            } catch (e) { /* employee role - self endpoint abhi nahi hai */ }
+                if (p.designation) document.getElementById('role-indicator').innerText = p.designation;
+                setAvatars(fullName || u.email.split('@')[0]);
+
+                // private info tab
+                const setV = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+                setV('pi_dob', p.dob);
+                setV('pi_address', p.current_address);
+                setV('pi_nationality', p.nationality);
+                setV('pi_personal_email', p.personal_email);
+                setV('pi_gender', p.gender);
+                setV('pi_marital', p.marital_status);
+                setV('pi_doj', p.doj);
+                setV('pi_account', p.bank_account);
+                setV('pi_bank', p.bank_name);
+                setV('pi_ifsc', p.bank_ifsc);
+                setV('pi_pan', p.pan);
+                setV('pi_uan', p.uan);
+            } catch (e) { console.error(e); }
         }
 
         function setAvatars(name) {
@@ -823,9 +833,33 @@
             if (pctFixed) pctFixed.innerText = wage ? (fixed / wage * 100).toFixed(2) + ' %' : '— %';
         }
 
-        // private info save - update api aane pe wire hoga
-        document.getElementById('piSaveBtn').addEventListener('click', () => {
-            showToast('Save API abhi ban raha hai — fields ready hai');
+        // private info + header wali details save
+        document.getElementById('piSaveBtn').addEventListener('click', async () => {
+            const v = id => document.getElementById(id).value.trim();
+
+            const phone = v('hdr_mobile');
+            if (phone && !/^\d{10}$/.test(phone)) return showToast('Phone 10 digit ka hona chahiye');
+
+            try {
+                await API.post('update_self', {
+                    name: v('hdr_name'),
+                    phone,
+                    dob: v('pi_dob'),
+                    current_address: v('pi_address'),
+                    nationality: v('pi_nationality'),
+                    personal_email: v('pi_personal_email'),
+                    gender: v('pi_gender'),
+                    marital_status: v('pi_marital'),
+                    bank_account: v('pi_account'),
+                    bank_name: v('pi_bank'),
+                    bank_ifsc: v('pi_ifsc').toUpperCase(),
+                    pan: v('pi_pan').toUpperCase(),
+                    uan: v('pi_uan'),
+                });
+                showToast('Profile saved ✔');
+            } catch (err) {
+                showToast(err.message || 'Save nahi hua');
+            }
         });
 
         // password change - ye wala live hai
