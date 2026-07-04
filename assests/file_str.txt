@@ -27,9 +27,12 @@ workpulse/
 |   |-- bootstrap.php       -> config + db + helpers, har api file me sabse pehle include
 |   |-- health.php          -> server/db check                              [DONE]
 |   |-- auth.php            -> ?action=login / signup / logout / me / change_password  [DONE]
-|   |-- employees/
-|   |   |-- index.php       -> list, ?action=create/update/remove           [DONE]
+|   |-- employees.php       -> list, ?action=create/update/remove           [DONE]
 |   |                          create pe login id + temp password system banata hai
+|   |-- attendance.php      -> punch_in/out, today, mine, regularize        [DONE]
+|   |-- leaves.php          -> types, balances, apply, mine, cancel, review [DONE]
+|   |-- payroll.php         -> my_payslips, runs, create_run                [DONE]
+|   |-- notifications.php   -> list, mark_read                              [DONE]
 |   |-- attendance.php      -> ?action=punch_in / punch_out / today / mine  [TODO]
 |   |-- leaves.php          -> ?action=types / balances / apply / review    [TODO]
 |   |-- payroll.php         -> ?action=my_payslips / runs / create_run      [TODO]

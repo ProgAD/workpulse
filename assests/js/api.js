@@ -18,10 +18,10 @@ const API = {
     'change_password': 'auth.php?action=change_password',
     'me':              'auth.php?action=me',
 
-    'employees':        'employees/index.php',
-    'employee_create':  'employees/index.php?action=create',
-    'employee_update':  'employees/index.php?action=update',
-    'employee_remove':  'employees/index.php?action=remove',
+    'employees':        'employees.php',
+    'employee_create':  'employees.php?action=create',
+    'employee_update':  'employees.php?action=update',
+    'employee_remove':  'employees.php?action=remove',
 
     // niche wale abhi banne hai (php file ready hote hi kaam karenge)
 
