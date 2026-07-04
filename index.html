@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WorkPulse — Login</title>
+  <link rel="icon" type="image/svg+xml" href="assests/images/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -30,9 +31,10 @@
       justify-content: center;
       margin-bottom: 6px;
     }
-    .logo-row .material-icons {
-      color: var(--md-primary);
-      font-size: 34px;
+    .logo-row .logo-img {
+      width: 40px;
+      height: 40px;
+      filter: drop-shadow(0 2px 4px rgba(26,35,126,.3));
     }
     .logo-row h1 { font-size: 24px; font-weight: 700; }
     .tagline {
@@ -51,7 +53,7 @@
   <div class="login-wrap">
     <div class="md-card login-card">
       <div class="logo-row">
-        <span class="material-icons">monitor_heart</span>
+        <img src="assests/images/logo.svg" alt="WorkPulse" class="logo-img">
         <h1>WorkPulse</h1>
       </div>
       <p class="tagline">Sign in to your HRMS account</p>
@@ -59,7 +61,7 @@
       <form id="loginForm" novalidate>
         <div class="md-field" id="emailField">
           <input type="email" id="email" placeholder=" " autocomplete="email" required>
-          <label for="email">Email</label>
+          <label for="email">LoginID/Email</label>
           <div class="field-msg" id="emailMsg"></div>
         </div>
 
