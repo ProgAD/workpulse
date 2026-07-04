@@ -148,7 +148,7 @@
         }
         // role ke hisab se dashboard pe bhejo
         window.location.href = res.data.role === 'admin'
-          ? 'admin/dashboard.html'
+          ? 'admin/employees.html'
           : 'employee/dashboard.html';
       } catch (err) {
         toast(err.message || 'Login failed');
@@ -164,7 +164,7 @@
         return;
       }
       window.location.href = res.data.role === 'admin'
-        ? 'admin/dashboard.html'
+        ? 'admin/employees.html'
         : 'employee/dashboard.html';
     }).catch(() => { /* logged in nahi hai, login form hi dikhao */ });
   </script>

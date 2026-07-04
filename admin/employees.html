@@ -84,15 +84,8 @@
             <button onclick="openAddModal()" class="btn btn-primary"><span class="material-symbols-outlined">add</span> Add Employee</button>
           </div>
         </div>
-        <div class="table-wrap">
-          <table class="data min">
-            <thead>
-              <tr><th>Employee</th><th>Login ID</th><th>Email</th><th>Phone</th><th>Status</th><th class="t-right">Actions</th></tr>
-            </thead>
-            <tbody id="employeeTableBody"></tbody>
-          </table>
-        </div>
-        <div id="loadingState" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading employees...</p></div>
+        <div id="employeeGrid" class="emp-grid"></div>
+          <div id="loadingState" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading employees...</p></div>
         <div id="emptyState" class="state-box hidden"><span class="material-symbols-outlined">group_off</span><h3>No employees found</h3><p>Try adjusting your search/filter or add a new employee.</p></div>
         <div class="pager">
           <span id="pageInfo" class="info">—</span>
@@ -359,7 +352,7 @@
 
     async function loadEmployees() {
         const loader = document.getElementById('loadingState');
-        document.getElementById('employeeTableBody').innerHTML = '';
+        document.getElementById('employeeGrid').innerHTML = '';
         document.getElementById('emptyState').classList.add('hidden');
         loader.classList.remove('hidden');
         try {
@@ -390,29 +383,35 @@
         currentPage = 1; renderTable();
     }
     function renderTable() {
-        const body = document.getElementById('employeeTableBody');
+        const grid = document.getElementById('employeeGrid');
         const empty = document.getElementById('emptyState');
-        body.innerHTML = '';
+        grid.innerHTML = '';
         if (filteredData.length === 0) { empty.classList.remove('hidden'); updatePager(); return; }
         empty.classList.add('hidden');
         const start = (currentPage - 1) * PAGE_SIZE;
         filteredData.slice(start, start + PAGE_SIZE).forEach(emp => {
             const name = `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.emp_code;
             const desig = emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee');
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><div class="emp-cell"><div class="emp-avatar">${initials(emp)}</div><div class="emp-meta"><div class="emp-name">${name}</div><div class="emp-sub">${desig}</div></div></div></td>
-                <td>${emp.emp_code}</td>
-                <td class="cell-ellipsis">${emp.email || '—'}</td>
-                <td>${emp.phone || '—'}</td>
-                <td>${statusBadge(emp.status)}</td>
-                <td>
-                    <div class="row-actions">
-                        <button class="act-btn" title="View" onclick="openViewModal(${emp.id})"><span class="material-symbols-outlined">visibility</span></button>
-                        <button class="act-btn" title="Edit" onclick="openEditModal(${emp.id})"><span class="material-symbols-outlined">edit</span></button>
-                    </div>
-                </td>`;
-            body.appendChild(tr);
+            // status dot - green present, plane on leave, yellow absent
+            const dot = emp.today_status === 'present'
+                ? '<span class="ecard-dot present" title="Present"></span>'
+                : emp.today_status === 'on_leave'
+                ? '<span class="ecard-plane" title="On Leave"><span class="material-symbols-outlined">flight</span></span>'
+                : '<span class="ecard-dot absent" title="Absent"></span>';
+            const pic = emp.photo_url
+                ? `<img class="ecard-pic" src="${emp.photo_url}" alt="">`
+                : `<div class="ecard-pic ecard-initials">${initials(emp)}</div>`;
+            const card = document.createElement('div');
+            card.className = 'ecard';
+            card.onclick = () => openViewModal(emp.id);
+            card.innerHTML = `
+                ${dot}
+                <button class="ecard-edit act-btn" title="Edit" onclick="event.stopPropagation(); openEditModal(${emp.id})"><span class="material-symbols-outlined">edit</span></button>
+                ${pic}
+                <div class="ecard-name">${name}</div>
+                <div class="ecard-sub">${desig}</div>
+                <div class="ecard-foot"><span>${emp.department || '—'}</span><span class="mono-sm">${emp.emp_code}</span></div>`;
+            grid.appendChild(card);
         });
         updatePager();
     }
