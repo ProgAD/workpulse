@@ -122,6 +122,14 @@ if ($ACTION === 'save' && $METHOD === 'POST') {
     }
 
     audit('create', 'salary_structure', $structureId, null, ['user_id' => $uid, 'month_wage' => $wage]);
+
+    // employee ko batao, apni salary khud set kare to nahi
+    if ($uid !== (int)$me['id']) {
+        notify($uid, 'salary', 'Salary structure updated',
+            'Your monthly wage is now ₹' . number_format($wage) . '. Check Salary Info in your profile.',
+            'salary_structure', $structureId);
+    }
+
     ok(['structure_id' => $structureId, 'month_wage' => $wage, 'components' => $comps], 'Salary structure saved');
 }
 
