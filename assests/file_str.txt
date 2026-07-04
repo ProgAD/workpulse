@@ -12,19 +12,23 @@ workpulse/
 |   |-- css/
 |   |-- js/
 |   |   |-- api.js          -> saari api calls yahi se, direct fetch mat likhna pages me
+|   |   |                      usage: API.post('login', {...}), API.get('att_mine', {...})
 |   |   |-- helpers/        -> common js utils
 |   |-- uploads/            -> profile pics, docs, payslip pdf (git me nahi jata)
 |   |-- file_str.txt        -> ye file
 |
-|-- api/                    -> php backend, url: localhost/workpulse/api/...
-|   |-- .htaccess           -> sab requests index.php pe bhejta hai
-|   |-- index.php           -> router, yahi se sab routes dispatch hote hai
+|-- api/                    -> php backend, har module ki alag file
+|   |-- bootstrap.php       -> config + db + helpers, har api file me sabse pehle include
+|   |-- health.php          -> server/db check                              [DONE]
+|   |-- auth.php            -> ?action=login / logout / me                  [DONE]
+|   |-- employees.php       -> employee crud                                [TODO]
+|   |-- attendance.php      -> ?action=punch_in / punch_out / today / mine  [TODO]
+|   |-- leaves.php          -> ?action=types / balances / apply / review    [TODO]
+|   |-- payroll.php         -> ?action=my_payslips / runs / create_run      [TODO]
+|   |-- notifications.php   -> list + mark_read                             [TODO]
 |   |-- helpers/
 |   |   |-- Auth.php        -> session + permission check (require_auth)
 |   |   |-- Response.php    -> ok() / fail() json helpers
-|   |-- routes/
-|   |   |-- auth.php        -> login / logout / me  [DONE]
-|   |   |-- (aage yahan aayenge: employees.php, attendance.php, leaves.php, payroll.php)
 |   |-- admin/
 |   |-- employees/
 |
@@ -37,6 +41,11 @@ workpulse/
 |-- schema/
     |-- hrms_schema.sql     -> pura db schema, 27 tables + roles/permissions seed
     |-- seed_dev.sql        -> testing ke liye demo company + admin user
+
+api pattern:
+- har endpoint ka naam api.js ke _endpointMap me hai, wahi use karo
+- backend me naya action banao to map me entry karna zaroori hai
+- auth session cookie se chalta hai (wp_session), token nahi hai
 
 quick setup:
 1. schema import: mysql -u root < schema/hrms_schema.sql

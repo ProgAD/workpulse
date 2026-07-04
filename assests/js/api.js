@@ -1,107 +1,182 @@
-// endpoint mapping + use session
-// sab api calls isi file se jaayengi. usage:
-//   const res = await API.auth.login({ email, password });
-//   if (res.success) ...
-// session cookie (wp_session) har request ke saath khud jaati hai.
+/* =====================================================
+   WorkPulse — API Layer
 
-const API_BASE = '/workpulse/api';
-
-// core request helper. path: '/auth/login', options: { method, body }
-async function apiRequest(path, { method = 'GET', body = null } = {}) {
-  const opts = {
-    method,
-    credentials: 'same-origin', // send session cookie
-    headers: {},
-  };
-  if (body !== null) {
-    if (body instanceof FormData) {
-      opts.body = body; // browser sets multipart boundary itself
-    } else {
-      opts.headers['Content-Type'] = 'application/json';
-      opts.body = JSON.stringify(body);
-    }
-  }
-
-  let res;
-  try {
-    res = await fetch(API_BASE + path, opts);
-  } catch (e) {
-    return { success: false, message: 'Network error. Server down?', status: 0 };
-  }
-
-  // 401 anywhere = session expired -> back to login page
-  if (res.status === 401 && !path.startsWith('/auth/login')) {
-    window.location.href = '/workpulse/index.html';
-    return { success: false, message: 'Session expired', status: 401 };
-  }
-
-  let data;
-  try {
-    data = await res.json();
-  } catch (e) {
-    data = { success: false, message: 'Invalid server response' };
-  }
-  data.status = res.status;
-  return data; // { success, message, data, status }
-}
-
-const get  = (path)       => apiRequest(path);
-const post = (path, body) => apiRequest(path, { method: 'POST', body });
-const put  = (path, body) => apiRequest(path, { method: 'PUT', body });
-const del  = (path)       => apiRequest(path, { method: 'DELETE' });
-
-// ---------------------------------------------------------------
-// endpoint map. backend route add karo to yahan bhi entry karo
-// ---------------------------------------------------------------
+   Frontend JS -> api.js -> PHP Backend -> MySQL
+   ===================================================== */
 
 const API = {
-  health: () => get('/health'),
 
-  auth: {
-    login:  (creds) => post('/auth/login', creds),   // { email, password }
-    logout: ()      => post('/auth/logout'),
-    me:     ()      => get('/auth/me'),
+  // ═══════════════════════════════════════════════════
+  // CONFIGURATION
+  // ═══════════════════════════════════════════════════
+
+  BASE_URL: '/workpulse/api',
+
+  LOGIN_PAGE: '/workpulse/index.html',   // 401 aane pe yahan bhejte hai
+
+  // ─── Endpoint -> PHP file mapping ──────────────────
+  // naya backend file banao to yahan entry karna mat bhulna
+  _endpointMap: {
+    'health':          'health.php',
+
+    'login':           'auth.php?action=login',
+    'logout':          'auth.php?action=logout',
+    'me':              'auth.php?action=me',
+
+    // niche wale abhi banne hai (php file ready hote hi kaam karenge)
+    'employees':       'employees.php',
+    'employee_docs':   'employees.php?action=documents',
+
+    'punch_in':        'attendance.php?action=punch_in',
+    'punch_out':       'attendance.php?action=punch_out',
+    'att_today':       'attendance.php?action=today',
+    'att_mine':        'attendance.php?action=mine',
+    'attendance':      'attendance.php',                          // admin list
+    'regularize':      'attendance.php?action=regularize',
+    'regularizations': 'attendance.php?action=regularizations',   // admin
+    'regularize_review': 'attendance.php?action=review',          // admin
+
+    'leave_types':     'leaves.php?action=types',
+    'leave_balances':  'leaves.php?action=balances',
+    'leave_apply':     'leaves.php?action=apply',
+    'leaves_mine':     'leaves.php?action=mine',
+    'leaves':          'leaves.php',                              // admin list
+    'leave_cancel':    'leaves.php?action=cancel',
+    'leave_review':    'leaves.php?action=review',                // approve / reject
+
+    'my_payslips':     'payroll.php?action=my_payslips',
+    'payroll_runs':    'payroll.php?action=runs',                 // admin
+    'payroll_create':  'payroll.php?action=create_run',           // admin
+    'run_payslips':    'payroll.php?action=run_payslips',         // admin
+
+    'notifications':   'notifications.php',
+    'notif_read':      'notifications.php?action=mark_read',
   },
 
-  employees: {
-    list:    (q = '')      => get('/employees' + (q ? '?' + q : '')),
-    getById: (id)          => get(`/employees/${id}`),
-    create:  (data)        => post('/employees', data),
-    update:  (id, data)    => put(`/employees/${id}`, data),
-    remove:  (id)          => del(`/employees/${id}`),
+
+  // ═══════════════════════════════════════════════════
+  // CORE REQUEST METHOD
+  // ═══════════════════════════════════════════════════
+  // session cookie (wp_session) har request ke saath
+  // apne aap jati hai, token ka jhanjhat nahi
+
+  async request(endpoint, method = 'GET', data = null) {
+    // offline hai to server tak jane ka matlab hi nahi
+    if (!navigator.onLine) {
+      return Promise.reject(new Error('No internet connection'));
+    }
+
+    const url = this._buildURL(endpoint, method, data);
+
+    const opts = {
+      method,
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' },
+    };
+
+    // body sirf POST/PUT me jati hai
+    if (data && (method === 'POST' || method === 'PUT')) {
+      if (data instanceof FormData) {
+        opts.body = data;   // file upload - browser khud boundary set karega
+      } else {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(data);
+      }
+    }
+
+    try {
+      const res = await fetch(url, opts);
+
+      let json;
+      try {
+        json = await res.json();
+      } catch (parseErr) {
+        // php ne html error ya warning print kar di hogi
+        throw new Error('Server returned invalid JSON — check PHP errors');
+      }
+
+      if (!res.ok) {
+        // session khatam -> wapas login pe
+        if (res.status === 401 && endpoint !== 'login') {
+          if (!this._redirecting401) {
+            this._redirecting401 = true;
+            window.location.href = this.LOGIN_PAGE;
+          }
+          const authErr = new Error('Session expired — please login again');
+          authErr.isAuthError = true;
+          throw authErr;
+        }
+        const apiErr = new Error(json.message || `Server error (${res.status})`);
+        apiErr.responseData = json;
+        apiErr.responseStatus = res.status;
+        throw apiErr;
+      }
+
+      return json;   // { success, message, data }
+
+    } catch (err) {
+      if (!err.isAuthError) {
+        console.error(`API [${method}] ${endpoint}:`, err.message);
+      }
+      throw err;
+    }
   },
 
-  attendance: {
-    punchIn:  ()           => post('/attendance/punch-in'),
-    punchOut: ()           => post('/attendance/punch-out'),
-    today:    ()           => get('/attendance/today'),
-    mine:     (month, year)=> get(`/attendance/mine?month=${month}&year=${year}`),
-    all:      (q = '')     => get('/attendance' + (q ? '?' + q : '')),      // admin
-    regularize: (data)     => post('/attendance/regularize', data),
-    regularizations: ()    => get('/attendance/regularizations'),           // admin
-    reviewRegularization: (id, data) => post(`/attendance/regularizations/${id}/review`, data),
+  // ─── URL Builder ────────────────────────────────────
+  // 'employees/5' jaisa endpoint do to id=5 query me lag jayegi
+  _buildURL(endpoint, method, data) {
+    const parts = endpoint.split('/');
+    const resource = parts[0];
+    const id = parts[1] || null;
+
+    const phpFile = this._endpointMap[resource];
+    if (!phpFile) {
+      console.warn(`No PHP mapping for endpoint: "${resource}"`);
+      return `${this.BASE_URL}/${resource}.php`;
+    }
+
+    let url = `${this.BASE_URL}/${phpFile}`;
+
+    if (id) {
+      const sep = url.includes('?') ? '&' : '?';
+      url += `${sep}id=${encodeURIComponent(id)}`;
+    }
+
+    // GET me data query params ban jata hai
+    if (method === 'GET' && data && typeof data === 'object') {
+      const params = new URLSearchParams(data).toString();
+      if (params) {
+        const sep = url.includes('?') ? '&' : '?';
+        url += `${sep}${params}`;
+      }
+    }
+
+    return url;
   },
 
-  leaves: {
-    types:    ()           => get('/leaves/types'),
-    balances: ()           => get('/leaves/balances'),
-    apply:    (data)       => post('/leaves', data),
-    mine:     ()           => get('/leaves/mine'),
-    all:      (q = '')     => get('/leaves' + (q ? '?' + q : '')),          // admin
-    cancel:   (id)         => post(`/leaves/${id}/cancel`),
-    review:   (id, data)   => post(`/leaves/${id}/review`, data),           // approve/reject
+
+  // ═══════════════════════════════════════════════════
+  // SHORTCUT METHODS
+  // ═══════════════════════════════════════════════════
+  // usage:
+  //   await API.post('login', { email, password })
+  //   await API.get('att_mine', { month: 7, year: 2026 })
+  //   await API.get('employees/5')
+
+  get(endpoint, params = null) {
+    return this.request(endpoint, 'GET', params);
   },
 
-  payroll: {
-    myPayslips: ()         => get('/payroll/payslips/mine'),
-    runs:       ()         => get('/payroll/runs'),                         // admin
-    createRun:  (data)     => post('/payroll/runs', data),
-    payslips:   (runId)    => get(`/payroll/runs/${runId}/payslips`),
+  post(endpoint, data = null) {
+    return this.request(endpoint, 'POST', data);
   },
 
-  notifications: {
-    list:    ()            => get('/notifications'),
-    markRead:(id)          => post(`/notifications/${id}/read`),
+  put(endpoint, data = null) {
+    return this.request(endpoint, 'PUT', data);
+  },
+
+  delete(endpoint) {
+    return this.request(endpoint, 'DELETE');
   },
 };
 

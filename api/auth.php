@@ -1,7 +1,11 @@
 <?php
-// POST /auth/login, POST /auth/logout, GET /auth/me
+// auth.php?action=login   (POST) -> email/password se login
+// auth.php?action=logout  (POST)
+// auth.php?action=me      (GET)  -> current logged in user + permissions
 
-route('POST', '/auth/login', function () {
+require_once __DIR__ . '/bootstrap.php';
+
+if ($ACTION === 'login' && $METHOD === 'POST') {
     $in = body();
     require_fields($in, ['email', 'password']);
 
@@ -22,6 +26,7 @@ route('POST', '/auth/login', function () {
     }
 
     if (!password_verify($in['password'], $user['password'])) {
+        // galat password -> counter badhao, 5 pe lock
         $failed = $user['failed_logins'] + 1;
         $lock = $failed >= MAX_FAILED_LOGINS
             ? date('Y-m-d H:i:s', time() + LOCKOUT_MINS * 60)
@@ -42,15 +47,17 @@ route('POST', '/auth/login', function () {
 
     audit('login', 'user', (int)$user['id']);
     ok(current_user(), 'Logged in');
-});
+}
 
-route('POST', '/auth/logout', function () {
+if ($ACTION === 'logout' && $METHOD === 'POST') {
     require_auth();
     start_session();
     session_destroy();
     ok(null, 'Logged out');
-});
+}
 
-route('GET', '/auth/me', function () {
+if ($ACTION === 'me' && $METHOD === 'GET') {
     ok(require_auth());
-});
+}
+
+fail('Unknown action: ' . $ACTION, 404);
