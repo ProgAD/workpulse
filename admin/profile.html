@@ -760,23 +760,29 @@
             document.getElementById('hdr_avatar').src = url.replace('0D8ABC&color=fff', 'f1f5f9&color=334155&size=128');
         }
 
-        // salary tab sirf admin ko dikhta hai
+        // salary tab sabko dikhta hai - admin edit kar sakta hai, employee sirf apni dekh sakta hai
         function initPermissions() {
-            const salaryTabBtn = document.getElementById('tab-salary');
-            if (currentUser && currentUser.role === 'admin') {
-                salaryTabBtn.classList.remove('hidden');
-            } else {
-                salaryTabBtn.classList.add('hidden');
+            document.getElementById('tab-salary').classList.remove('hidden');
+            if (currentUser.role !== 'admin') {
+                const wageInp = document.getElementById('sal_wage');
+                if (wageInp) wageInp.setAttribute('readonly', true);
             }
+            loadMySalary();
+        }
+
+        // apna saved structure db se - employee ke liye yehi source of truth hai
+        async function loadMySalary() {
+            try {
+                const res = await API.get('salary_structure');
+                if (res.data && res.data.month_wage) {
+                    document.getElementById('sal_wage').value = Math.round(res.data.month_wage);
+                    recalcSalary();
+                }
+            } catch (e) { /* structure abhi set nahi hua, calculator default dikhega */ }
         }
 
         function switchTab(tabName) {
             const tabs = ['resume', 'private', 'salary', 'security'];
-
-            if (tabName === 'salary' && (!currentUser || currentUser.role !== 'admin')) {
-                console.warn('Unauthorized access to Salary Info blocked.');
-                return;
-            }
 
             tabs.forEach(tab => {
                 const btn = document.getElementById(`tab-${tab}`);
