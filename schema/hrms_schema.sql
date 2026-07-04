@@ -134,7 +134,6 @@ CREATE TABLE user_tokens (
     user_id     BIGINT UNSIGNED NOT NULL,
     token_hash  CHAR(64) NOT NULL UNIQUE,
     purpose     ENUM('password_reset') NOT NULL DEFAULT 'password_reset',
-    -- datetime isliye, timestamp me mariadb khud on-update current_timestamp laga deta hai
     expires_at  DATETIME NOT NULL,
     consumed_at TIMESTAMP NULL DEFAULT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -165,7 +164,6 @@ CREATE TABLE employee_profiles (
     department_id     BIGINT UNSIGNED,
     designation_id    BIGINT UNSIGNED,
     shift_id          BIGINT UNSIGNED,
-    manager_id        BIGINT UNSIGNED,          -- reporting manager
     doj               DATE,
     probation_ends    DATE,
     emp_type          ENUM('full_time','part_time','contract','intern') DEFAULT 'full_time',
@@ -183,12 +181,10 @@ CREATE TABLE employee_profiles (
     updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     delete_flag        TINYINT(1) NOT NULL DEFAULT 0,
     KEY idx_dept (department_id),
-    KEY idx_manager (manager_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
     FOREIGN KEY (designation_id) REFERENCES designations(id) ON DELETE SET NULL,
-    FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL,
-    FOREIGN KEY (manager_id) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE employee_documents (
@@ -328,7 +324,7 @@ CREATE TABLE leave_requests (
     CHECK (to_date >= from_date)
 ) ENGINE=InnoDB;
 
--- approval history. level 1 = manager, level 2 = HR (if configured)
+-- approval history, admin/HR approve karta hai
 CREATE TABLE leave_approvals (
     id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     leave_request_id BIGINT UNSIGNED NOT NULL,
