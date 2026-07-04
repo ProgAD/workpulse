@@ -22,6 +22,8 @@ const API = {
     'employee_create':  'employees/index.php?action=create',
     'employee_update':  'employees/index.php?action=update',
     'employee_remove':  'employees/index.php?action=remove',
+    'me_profile':       'employees/index.php?action=me_profile',
+    'update_self':      'employees/index.php?action=update_self',
 
     // niche wale abhi banne hai (php file ready hote hi kaam karenge)
 
@@ -40,12 +42,16 @@ const API = {
     'leaves_mine':     'leaves/index.php?action=mine',
     'leaves':          'leaves/index.php',                              // admin list
     'leave_cancel':    'leaves/index.php?action=cancel',
+    'leave_type_create': 'leaves/index.php?action=create_type',           // admin
     'leave_review':    'leaves/index.php?action=review',                // approve / reject
 
     'my_payslips':     'payroll/index.php?action=my_payslips',
     'payroll_runs':    'payroll/index.php?action=runs',                 // admin
     'payroll_create':  'payroll/index.php?action=create_run',           // admin
     'run_payslips':    'payroll/index.php?action=run_payslips',         // admin
+
+    'salary_structure': 'salary/index.php?action=structure',              // ?user_id= admin ke liye
+    'salary_save':      'salary/index.php?action=save',                   // admin
 
     'notifications':   'notifications/index.php',
     'notif_read':      'notifications/index.php?action=mark_read',

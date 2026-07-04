@@ -14,7 +14,7 @@ workpulse/
 |-- employee/
 |   |-- dashboard.html      -> profile info, attendance aayega yahan
 |
-|-- assests/
+|-- assets/
 |   |-- css/
 |   |-- js/
 |   |   |-- api.js          -> saari api calls yahi se, direct fetch mat likhna pages me
@@ -35,7 +35,9 @@ workpulse/
 |   |-- leaves/
 |   |   |-- index.php       -> types, balances, apply, mine, cancel, review     [DONE]
 |   |-- payroll/
-|   |   |-- index.php       -> my_payslips, runs, create_run                    [DONE]
+|   |   |-- index.php       -> my_payslips, runs, create_run, run_payslips      [DONE]
+|   |-- salary/
+|   |   |-- index.php       -> structure (GET), save (wage do, components auto) [DONE]
 |   |-- notifications/
 |   |   |-- index.php       -> list, mark_read                                  [DONE]
 |   |-- helpers/
@@ -63,5 +65,5 @@ quick setup:
 1. schema import: mysql -u root < schema/hrms_schema.sql
 2. dev data:      mysql -u root < schema/seed_dev.sql
 3. config/.env.example ko copy karke .env banao, db details bharo
-4. uploads writable karo: chmod 777 assests/uploads  (apache daemon user se chalta hai)
+4. uploads writable karo: chmod 777 assets/uploads  (apache daemon user se chalta hai)
 5. test login:    admin@workpulse.test / admin123

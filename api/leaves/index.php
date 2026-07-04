@@ -47,6 +47,34 @@ if ($ACTION === 'types' && $METHOD === 'GET') {
     ok($stmt->fetchAll());
 }
 
+// admin naya leave type banata hai (PL/SL jaise)
+if ($ACTION === 'create_type' && $METHOD === 'POST') {
+    $me = require_auth('leave.approve');
+    $in = body();
+    require_fields($in, ['name', 'code']);
+
+    $code = strtoupper(trim($in['code']));
+    if (!preg_match('/^[A-Z]{1,10}$/', $code)) fail('Code sirf letters, max 10', 422);
+
+    $stmt = db()->prepare("SELECT id FROM leave_types WHERE company_id = ? AND code = ?");
+    $stmt->execute([$me['company_id'], $code]);
+    if ($stmt->fetch()) fail('Ye code pehle se hai', 409);
+
+    $quota = ($in['annual_quota'] ?? '') !== '' ? (float)$in['annual_quota'] : null;
+
+    db()->prepare(
+        "INSERT INTO leave_types (company_id, name, code, is_paid, annual_quota)
+         VALUES (?, ?, ?, ?, ?)"
+    )->execute([
+        $me['company_id'], trim($in['name']), $code,
+        !empty($in['is_paid']) ? 1 : 0, $quota,
+    ]);
+
+    $typeId = (int)db()->lastInsertId();
+    audit('create', 'leave_type', $typeId);
+    ok(['id' => $typeId], 'Leave type created');
+}
+
 if ($ACTION === 'balances' && $METHOD === 'GET') {
     $me   = require_auth();
     $year = (int)($_GET['year'] ?? date('Y'));
