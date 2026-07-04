@@ -148,6 +148,14 @@
         <div class="detail-row"><span class="dk">To</span><span id="rv_to" class="dv">--</span></div>
         <div class="detail-row"><span class="dk">Total Days</span><span id="rv_days" class="dv">--</span></div>
         <div class="detail-row"><span class="dk">Reason</span><span id="rv_reason" class="dv">--</span></div>
+      </div>
+
+      <!-- leave allocation of this employee for this leave type -->
+      <div style="background:var(--surface-low);border-radius:var(--radius);padding:12px 16px">
+        <div class="detail-row"><span class="dk">Allocated (this type)</span><span id="rv_alloc" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">Used so far</span><span id="rv_used" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">Remaining</span><span id="rv_remaining" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">Balance after approval</span><span id="rv_after" class="dv">--</span></div>
         <div class="detail-row" id="rv_doc_row" style="display:none"><span class="dk">Document</span><span class="dv"><a id="rv_doc" href="#" target="_blank" style="color:var(--primary)">View file</a></span></div>
       </div>
       <div id="rv_review_block">
@@ -374,6 +382,30 @@
     function closeModals() { overlay.classList.add('hidden'); hideModals(); }
     function showModal(id) { overlay.classList.remove('hidden'); hideModals(); document.getElementById(id).classList.remove('hidden'); }
 
+    // us employee ki is leave type me allocation / remaining dikhao.
+    // balances sirf paid + quota wale types me track hote hai, warna "No limit".
+    function round2(n) { return Math.round(n * 100) / 100; }
+    function renderAllocation(l) {
+        const setTxt = (id, txt, red) => { const el = document.getElementById(id); el.innerText = txt; el.style.color = red ? 'var(--error)' : ''; };
+        const quota = l.annual_quota != null ? parseFloat(l.annual_quota) : null;
+        const used = parseFloat(l.bal_used || 0);
+        const days = parseFloat(l.total_days || 0);
+        if (quota == null) {
+            setTxt('rv_alloc', 'No limit (unpaid)');
+            setTxt('rv_used', round2(used) + ' day(s)');
+            setTxt('rv_remaining', 'No limit');
+            setTxt('rv_after', 'No limit');
+            return;
+        }
+        const pool = quota + parseFloat(l.bal_opening || 0) + parseFloat(l.bal_adjusted || 0);
+        const remaining = round2(pool - used);
+        const after = round2(remaining - days);
+        setTxt('rv_alloc', round2(pool) + ' day(s)');
+        setTxt('rv_used', round2(used) + ' day(s)');
+        setTxt('rv_remaining', remaining + ' day(s)', remaining < 0);
+        setTxt('rv_after', after + ' day(s)' + (after < 0 ? '  (exceeds allocation)' : ''), after < 0);
+    }
+
     function openReview(id) {
         const l = allLeaves.find(x => x.id === id);
         if (!l) return;
@@ -390,6 +422,7 @@
         document.getElementById('rv_to').innerText = l.to_date + (Number(l.half_day_end) ? ' (half)' : '');
         document.getElementById('rv_days').innerText = l.total_days + ' day(s)';
         document.getElementById('rv_reason').innerText = l.reason || '—';
+        renderAllocation(l);
         const docRow = document.getElementById('rv_doc_row');
         if (l.document_url) { docRow.style.display = ''; document.getElementById('rv_doc').href = l.document_url; }
         else docRow.style.display = 'none';

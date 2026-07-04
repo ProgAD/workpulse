@@ -314,12 +314,19 @@ if ($ACTION === 'review' && $METHOD === 'POST') {
 if ($METHOD === 'GET') {
     $me  = require_auth('leave.view_all');
     $sql =
-        "SELECT lr.*, lt.name AS leave_type, lt.code AS leave_code,
+        "SELECT lr.*, lt.name AS leave_type, lt.code AS leave_code, lt.annual_quota,
+                COALESCE(lb.opening, 0)  AS bal_opening,
+                COALESCE(lb.adjusted, 0) AS bal_adjusted,
+                COALESCE(lb.used, 0)     AS bal_used,
                 u.emp_code, p.first_name, p.last_name
          FROM leave_requests lr
          JOIN leave_types lt ON lt.id = lr.leave_type_id
          JOIN users u ON u.id = lr.user_id
          LEFT JOIN employee_profiles p ON p.user_id = u.id
+         LEFT JOIN leave_balances lb
+                ON lb.user_id = lr.user_id
+               AND lb.leave_type_id = lr.leave_type_id
+               AND lb.year = YEAR(lr.from_date)
          WHERE u.company_id = ?";
     $args = [$me['company_id']];
     if (!empty($_GET['status']))  { $sql .= " AND lr.status = ?";  $args[] = $_GET['status']; }
