@@ -72,3 +72,26 @@ function audit(string $action, string $entityType, ?int $entityId, $old = null, 
         $_SERVER['REMOTE_ADDR'] ?? null,
     ]);
 }
+
+// kisi user ko notification bhej do - bell icon me dikhega.
+// leave approve/reject, payslip ready wagaira sab isi se jaate hai
+function notify(int $userId, string $type, string $title, ?string $body = null, ?string $entityType = null, ?int $entityId = null): void
+{
+    db()->prepare(
+        "INSERT INTO notifications (user_id, type, title, body, entity_type, entity_id)
+         VALUES (?, ?, ?, ?, ?, ?)"
+    )->execute([$userId, $type, $title, $body, $entityType, $entityId]);
+}
+
+// company ke saare admin/HR - jinke paas ye permission hai unhe notify karne ke kaam aata hai
+function admins_of_company(int $companyId, string $permission): array
+{
+    $stmt = db()->prepare(
+        "SELECT DISTINCT u.id FROM users u
+         JOIN role_permissions rp ON rp.role_id = u.role_id
+         JOIN permissions p ON p.id = rp.permission_id
+         WHERE u.company_id = ? AND p.name = ? AND u.status = 'active' AND u.delete_flag = 0"
+    );
+    $stmt->execute([$companyId, $permission]);
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
