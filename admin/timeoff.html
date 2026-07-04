@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Leave Management - Workpulse</title>
+<title>Time Off - Workpulse</title>
 <link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -38,7 +38,7 @@
     <header class="topbar">
       <div class="topbar-left">
         <button id="menuBtn" class="menu-btn"><span class="material-symbols-outlined">menu</span></button>
-        <h2 class="page-title hide-sm">Leave Management</h2>
+        <h2 class="page-title hide-sm">Time Off</h2>
       </div>
       <div class="topbar-right">
         <div class="notif-wrap">
@@ -57,45 +57,80 @@
 
     <div class="content custom-scrollbar">
 
-      <section class="grid grid-4">
-        <div class="stat-card"><p class="stat-label">Pending</p><h3 id="stat_pending" class="stat-value tert">—</h3></div>
-        <div class="stat-card"><p class="stat-label">Approved</p><h3 id="stat_approved" class="stat-value green">—</h3></div>
-        <div class="stat-card"><p class="stat-label">Rejected</p><h3 id="stat_rejected" class="stat-value red">—</h3></div>
-        <div class="stat-card"><p class="stat-label">Total Requests</p><h3 id="stat_total" class="stat-value">—</h3></div>
-      </section>
+      <!-- section tabs -->
+      <div class="tabs" id="sectionTabs">
+        <button class="tab active" data-sec="requests">Requests</button>
+        <button class="tab" data-sec="types">Leave Types</button>
+      </div>
 
-      <section class="card">
-        <div class="card-head">
-          <div class="tabs" id="statusTabs">
-            <button class="tab active" data-status="pending">Pending</button>
-            <button class="tab" data-status="">All</button>
-            <button class="tab" data-status="approved">Approved</button>
-            <button class="tab" data-status="rejected">Rejected</button>
-            <button class="tab" data-status="cancelled">Cancelled</button>
+      <!-- REQUESTS -->
+      <div id="panel-requests" class="tab-panel active">
+        <section class="grid grid-4">
+          <div class="stat-card"><p class="stat-label">Pending</p><h3 id="stat_pending" class="stat-value tert">—</h3></div>
+          <div class="stat-card"><p class="stat-label">Approved</p><h3 id="stat_approved" class="stat-value green">—</h3></div>
+          <div class="stat-card"><p class="stat-label">Rejected</p><h3 id="stat_rejected" class="stat-value red">—</h3></div>
+          <div class="stat-card"><p class="stat-label">Total Requests</p><h3 id="stat_total" class="stat-value">—</h3></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div class="tabs" id="statusTabs">
+              <button class="tab active" data-status="pending">Pending</button>
+              <button class="tab" data-status="">All</button>
+              <button class="tab" data-status="approved">Approved</button>
+              <button class="tab" data-status="rejected">Rejected</button>
+              <button class="tab" data-status="cancelled">Cancelled</button>
+            </div>
+            <div class="search">
+              <span class="material-symbols-outlined">search</span>
+              <input id="searchInput" type="text" placeholder="Search name / ID / req no...">
+            </div>
           </div>
-          <div class="search">
-            <span class="material-symbols-outlined">search</span>
-            <input id="searchInput" type="text" placeholder="Search name / ID / req no...">
+          <div class="table-wrap">
+            <table class="data min">
+              <thead>
+                <tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th class="t-right">Action</th></tr>
+              </thead>
+              <tbody id="leaveTableBody"></tbody>
+            </table>
           </div>
-        </div>
-        <div class="table-wrap">
-          <table class="data min">
-            <thead>
-              <tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th class="t-right">Action</th></tr>
-            </thead>
-            <tbody id="leaveTableBody"></tbody>
-          </table>
-        </div>
-        <div id="loadingState" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading requests...</p></div>
-        <div id="emptyState" class="state-box hidden"><span class="material-symbols-outlined">event_available</span><h3>No leave requests</h3><p>Nothing matches this filter.</p></div>
-      </section>
+          <div id="reqLoading" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading requests...</p></div>
+          <div id="reqEmpty" class="state-box hidden"><span class="material-symbols-outlined">event_available</span><h3>No leave requests</h3><p>Nothing matches this filter.</p></div>
+        </section>
+      </div>
+
+      <!-- LEAVE TYPES -->
+      <div id="panel-types" class="tab-panel">
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h4>Leave Types</h4>
+              <p class="sub">Configure the time-off categories employees can apply for</p>
+            </div>
+            <button onclick="openTypeModal()" class="btn btn-primary"><span class="material-symbols-outlined">add</span> New Type</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data min">
+              <thead>
+                <tr><th>Name</th><th>Code</th><th>Paid</th><th>Annual Quota</th><th>Half-day</th><th>Document</th></tr>
+              </thead>
+              <tbody id="typesTableBody"></tbody>
+            </table>
+          </div>
+          <div id="typesLoading" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading types...</p></div>
+          <div id="typesEmpty" class="state-box hidden"><span class="material-symbols-outlined">category</span><h3>No leave types</h3><p>Create your first leave type (e.g. Paid Leave, Sick Leave).</p></div>
+        </section>
+      </div>
+
     </div>
   </main>
 </div>
 
-<!-- review modal -->
+<!-- modals -->
 <div id="modalOverlay" class="overlay hidden">
-  <div id="reviewModal" class="modal md">
+
+  <!-- review -->
+  <div id="reviewModal" class="modal md hidden">
     <div class="modal-head">
       <h3>Leave Request</h3>
       <button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button>
@@ -103,13 +138,9 @@
     <div class="modal-body">
       <div class="emp-cell">
         <div id="rv_avatar" class="emp-avatar lg">--</div>
-        <div class="emp-meta">
-          <div id="rv_name" class="emp-name">--</div>
-          <div id="rv_code" class="emp-sub">--</div>
-        </div>
+        <div class="emp-meta"><div id="rv_name" class="emp-name">--</div><div id="rv_code" class="emp-sub">--</div></div>
         <div style="margin-left:auto"><span id="rv_status" class="badge">--</span></div>
       </div>
-
       <div>
         <div class="detail-row"><span class="dk">Request No</span><span id="rv_reqno" class="dv">--</span></div>
         <div class="detail-row"><span class="dk">Leave Type</span><span id="rv_type" class="dv">--</span></div>
@@ -119,7 +150,6 @@
         <div class="detail-row"><span class="dk">Reason</span><span id="rv_reason" class="dv">--</span></div>
         <div class="detail-row" id="rv_doc_row" style="display:none"><span class="dk">Document</span><span class="dv"><a id="rv_doc" href="#" target="_blank" style="color:var(--primary)">View file</a></span></div>
       </div>
-
       <div id="rv_review_block">
         <div class="form-group"><label>Comment (optional)</label><textarea id="rv_comment" class="textarea" placeholder="Add a note for the employee..."></textarea></div>
         <div class="modal-foot between">
@@ -135,33 +165,45 @@
       </div>
     </div>
   </div>
+
+  <!-- new leave type -->
+  <div id="typeModal" class="modal sm hidden">
+    <div class="modal-head">
+      <h3>New Leave Type</h3>
+      <button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="modal-body">
+      <form id="typeForm" onsubmit="handleCreateType(event)" style="display:flex;flex-direction:column;gap:16px">
+        <div class="form-group"><label>Name <span class="req">*</span></label><input type="text" id="ty_name" required placeholder="Paid Leave"></div>
+        <div class="form-group"><label>Code <span class="req">*</span></label><input type="text" id="ty_code" required maxlength="10" style="text-transform:uppercase" placeholder="PL"></div>
+        <div class="form-group"><label>Annual Quota</label><input type="number" id="ty_quota" min="0" step="0.5" placeholder="Blank = no limit (e.g. unpaid)"></div>
+        <label style="display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer">
+          <input type="checkbox" id="ty_paid" checked style="width:16px;height:16px"> This is a paid leave type
+        </label>
+        <div class="modal-foot">
+          <button type="button" onclick="closeModals()" class="btn btn-outline">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Type</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script src="../assets/js/api.js"></script>
 <script>
-    Object.assign(API._endpointMap, {
-        'leaves':       'leaves/index.php',
-        'leave_review': 'leaves/index.php?action=review',
-        'notifications':'notifications/index.php',
-    });
-
     let allLeaves = [];
     let filtered = [];
     let activeStatus = 'pending';
     let currentLeave = null;
+    let typesLoaded = false;
 
     document.addEventListener('DOMContentLoaded', async () => {
         initSidebar();
         initNotifBell();
+        setupSectionTabs();
+        setupStatusTabs();
         document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.querySelectorAll('#statusTabs .tab').forEach(t => {
-            t.addEventListener('click', () => {
-                document.querySelectorAll('#statusTabs .tab').forEach(x => x.classList.remove('active'));
-                t.classList.add('active');
-                activeStatus = t.dataset.status;
-                applyFilters();
-            });
-        });
+
         try {
             const res = await API.get('me');
             const u = res.data;
@@ -171,6 +213,7 @@
             document.getElementById('sideName').innerText = name;
             document.getElementById('sideAvatar').src = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
         } catch (e) {}
+
         loadLeaves();
     });
 
@@ -179,6 +222,9 @@
         menu.addEventListener('click', () => { sb.classList.add('open'); bd.classList.add('show'); });
         bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
     }
+    async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
+
+    // ---------- notification bell (shared) ----------
     function initNotifBell() {
         const btn = document.getElementById('bellBtn');
         const pop = document.getElementById('notifPopup');
@@ -221,8 +267,24 @@
             if (l) l.innerHTML = '<div class="notif-popup-empty">No notifications</div>';
         }
     }
-    async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
 
+    // ---------- section tabs (Requests / Leave Types) ----------
+    function setupSectionTabs() {
+        const scroller = document.querySelector('.content');
+        document.querySelectorAll('#sectionTabs .tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('#sectionTabs .tab').forEach(x => x.classList.remove('active'));
+                t.classList.add('active');
+                const sec = t.dataset.sec;
+                document.getElementById('panel-requests').classList.toggle('active', sec === 'requests');
+                document.getElementById('panel-types').classList.toggle('active', sec === 'types');
+                if (scroller) scroller.scrollTop = 0;
+                if (sec === 'types' && !typesLoaded) loadTypes();
+            });
+        });
+    }
+
+    // ---------- helpers ----------
     function initials(r) {
         const a = (r.first_name || '').trim(), b = (r.last_name || '').trim();
         return ((a[0] || '') + (b[0] || (a[1] || ''))).toUpperCase() || '?';
@@ -234,14 +296,27 @@
         if (status === 'cancelled') return '<span class="badge badge-grey">Cancelled</span>';
         return '<span class="badge badge-orange">Pending</span>';
     }
+    function yesno(v) { return Number(v) ? '<span class="badge badge-green">Yes</span>' : '<span class="badge badge-grey">No</span>'; }
+
+    // ---------- requests ----------
+    function setupStatusTabs() {
+        document.querySelectorAll('#statusTabs .tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('#statusTabs .tab').forEach(x => x.classList.remove('active'));
+                t.classList.add('active');
+                activeStatus = t.dataset.status;
+                applyFilters();
+            });
+        });
+    }
 
     async function loadLeaves() {
-        const loader = document.getElementById('loadingState');
+        const loader = document.getElementById('reqLoading');
         document.getElementById('leaveTableBody').innerHTML = '';
-        document.getElementById('emptyState').classList.add('hidden');
+        document.getElementById('reqEmpty').classList.add('hidden');
         loader.classList.remove('hidden');
         try {
-            const res = await API.get('leaves');   // saari requests, filter client-side
+            const res = await API.get('leaves');
             allLeaves = (res.success && res.data) ? res.data : [];
             renderStats();
             applyFilters();
@@ -250,7 +325,6 @@
             allLeaves = []; renderStats(); applyFilters();
         } finally { loader.classList.add('hidden'); }
     }
-
     function renderStats() {
         const c = { pending: 0, approved: 0, rejected: 0 };
         allLeaves.forEach(l => { if (c[l.status] !== undefined) c[l.status]++; });
@@ -259,7 +333,6 @@
         document.getElementById('stat_rejected').innerText = c.rejected;
         document.getElementById('stat_total').innerText = allLeaves.length;
     }
-
     function applyFilters() {
         const term = document.getElementById('searchInput').value.toLowerCase();
         filtered = allLeaves.filter(l => {
@@ -271,10 +344,9 @@
         });
         renderTable();
     }
-
     function renderTable() {
         const body = document.getElementById('leaveTableBody');
-        const empty = document.getElementById('emptyState');
+        const empty = document.getElementById('reqEmpty');
         body.innerHTML = '';
         if (filtered.length === 0) { empty.classList.remove('hidden'); return; }
         empty.classList.add('hidden');
@@ -296,9 +368,12 @@
         });
     }
 
-    // ---- review modal ----
+    // ---------- review modal ----------
     const overlay = document.getElementById('modalOverlay');
-    function closeModals() { overlay.classList.add('hidden'); }
+    function hideModals() { document.getElementById('reviewModal').classList.add('hidden'); document.getElementById('typeModal').classList.add('hidden'); }
+    function closeModals() { overlay.classList.add('hidden'); hideModals(); }
+    function showModal(id) { overlay.classList.remove('hidden'); hideModals(); document.getElementById(id).classList.remove('hidden'); }
+
     function openReview(id) {
         const l = allLeaves.find(x => x.id === id);
         if (!l) return;
@@ -318,16 +393,12 @@
         const docRow = document.getElementById('rv_doc_row');
         if (l.document_url) { docRow.style.display = ''; document.getElementById('rv_doc').href = l.document_url; }
         else docRow.style.display = 'none';
-
         document.getElementById('rv_comment').value = '';
-        // sirf pending par approve/reject dikhao
         const canReview = l.status === 'pending';
         document.getElementById('rv_review_block').classList.toggle('hidden', !canReview);
         document.getElementById('rv_done_block').classList.toggle('hidden', canReview);
-
-        overlay.classList.remove('hidden');
+        showModal('reviewModal');
     }
-
     async function submitReview(action) {
         if (!currentLeave) return;
         const comment = document.getElementById('rv_comment').value.trim();
@@ -344,6 +415,62 @@
             btnA.disabled = false; btnR.disabled = false;
             btnA.innerText = 'Approve'; btnR.innerText = 'Reject';
         }
+    }
+
+    // ---------- leave types ----------
+    async function loadTypes() {
+        const loader = document.getElementById('typesLoading');
+        document.getElementById('typesTableBody').innerHTML = '';
+        document.getElementById('typesEmpty').classList.add('hidden');
+        loader.classList.remove('hidden');
+        try {
+            const res = await API.get('leave_types');
+            const types = (res.success && res.data) ? res.data : [];
+            typesLoaded = true;
+            renderTypes(types);
+        } catch (err) {
+            console.error('Types load failed:', err.message);
+            renderTypes([]);
+        } finally { loader.classList.add('hidden'); }
+    }
+    function renderTypes(types) {
+        const body = document.getElementById('typesTableBody');
+        const empty = document.getElementById('typesEmpty');
+        body.innerHTML = '';
+        if (types.length === 0) { empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+        types.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b style="color:var(--on-surface)">${t.name}</b></td>
+                <td><span class="badge badge-grey" style="font-family:monospace">${t.code}</span></td>
+                <td>${Number(t.is_paid) ? '<span class="badge badge-green">Paid</span>' : '<span class="badge badge-orange">Unpaid</span>'}</td>
+                <td>${t.annual_quota != null ? t.annual_quota + ' days' : '<span style="color:var(--outline)">No limit</span>'}</td>
+                <td>${yesno(t.allow_half_day)}</td>
+                <td>${yesno(t.needs_document)}</td>`;
+            body.appendChild(tr);
+        });
+    }
+    function openTypeModal() { showModal('typeModal'); }
+    async function handleCreateType(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const name = document.getElementById('ty_name').value.trim();
+        const code = document.getElementById('ty_code').value.trim().toUpperCase();
+        if (!/^[A-Z]{1,10}$/.test(code)) return alert('Code should be letters only (max 10), e.g. PL / SL / LWP');
+        const quota = document.getElementById('ty_quota').value;
+        const payload = { name, code, is_paid: document.getElementById('ty_paid').checked ? 1 : 0 };
+        if (quota !== '') payload.annual_quota = Number(quota);
+        btn.disabled = true; btn.innerText = 'Creating...';
+        try {
+            await API.post('leave_type_create', payload);
+            closeModals();
+            document.getElementById('typeForm').reset();
+            document.getElementById('ty_paid').checked = true;
+            loadTypes();
+        } catch (err) {
+            alert(err.message || 'Could not create leave type');
+        } finally { btn.disabled = false; btn.innerText = 'Create Type'; }
     }
 
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals(); });
