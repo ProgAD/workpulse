@@ -12,35 +12,49 @@
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="topbar-in">
-      <div class="tb-brand"><img src="../assets/images/logo.svg" alt=""> Workpulse</div>
-      <nav class="tb-nav">
-        <a href="dashboard.html" class="active">Dashboard</a>
-        <a href="attendance.html">Attendance</a>
-        <a href="timeoff.html">Time Off</a>
-        <a href="profile.html">My Profile</a>
-      </nav>
-      <div class="tb-right">
-        <button class="tb-icon" id="notifBtn" title="Notifications">
+  <div class="app">
+  <div id="sbBackdrop" class="sb-backdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="../assets/images/logo.svg" alt="">
+      <div>
+        <h1 class="brand-name">Workpulse</h1>
+        <p class="brand-sub">Employee Portal</p>
+      </div>
+    </div>
+    <nav class="snav">
+      <a href="dashboard.html" class="snav-link active"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a href="attendance.html" class="snav-link"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+      <a href="timeoff.html" class="snav-link"><span class="material-symbols-outlined">event_busy</span><span>Time Off</span></a>
+      <a href="profile.html" class="snav-link"><span class="material-symbols-outlined">person</span><span>My Profile</span></a>
+      <div class="snav-div"></div>
+      <a href="../change-password.html" class="snav-link"><span class="material-symbols-outlined">key</span><span>Change Password</span></a>
+    </nav>
+    <div class="side-user">
+      <a href="profile.html" class="su-link">
+        <img id="tbAvatar" src="" alt="">
+        <div>
+          <p class="su-name" id="suName">&mdash;</p>
+          <p class="su-role">Employee</p>
+        </div>
+      </a>
+      <button class="su-logout" id="logoutBtn" title="Log Out"><span class="material-symbols-outlined">logout</span></button>
+    </div>
+  </aside>
+  <main class="main-area">
+    <button class="menu-btn" id="menuBtn"><span class="material-symbols-outlined">menu</span></button>
+    <div class="wrap">
+    <div class="page-head">
+      <div class="greet">
+        <h2 id="greetName">Hi!</h2>
+        <div class="date" id="greetDate"></div>
+      </div>
+      <div class="ph-actions">
+        <button class="ph-icon" id="notifBtn" title="Mark All Notifications Read">
           <span class="material-symbols-outlined">notifications</span>
           <span class="badge" id="notifBadge" style="display:none">0</span>
         </button>
-        <button class="tb-icon" onclick="location.href='../change-password.html'" title="Change password">
-          <span class="material-symbols-outlined">key</span>
-        </button>
-        <button class="tb-icon" id="logoutBtn" title="Log out">
-          <span class="material-symbols-outlined">logout</span>
-        </button>
-        <img class="tb-avatar" id="tbAvatar" src="" alt="" onclick="location.href='profile.html'" style="cursor:pointer">
       </div>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <div class="greet">
-      <h2 id="greetName">Hi!</h2>
-      <div class="date" id="greetDate"></div>
     </div>
 
     <!-- aaj ka kaam - live timer jab tak checked in ho -->
@@ -89,7 +103,9 @@
         <div id="qNotifList"><div class="q-sub">Loading...</div></div>
       </section>
     </div>
+    </div>
   </main>
+</div>
 
   <script src="../assets/js/api.js"></script>
   <script>
@@ -128,6 +144,7 @@
         const wish = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
         document.getElementById('greetName').textContent = `${wish}, ${me.first_name}!`;
         document.getElementById('qName').textContent = name;
+        document.getElementById('suName').textContent = name;
         document.getElementById('qDesig').textContent = me.designation || 'Employee';
         document.getElementById('qCode').textContent = me.emp_code;
         document.getElementById('qPic').src = avatarUrl(name, me.photo_url);
@@ -153,7 +170,7 @@
       if (punchedIn) {
         dot.classList.add('in');
         document.getElementById('tLabel').textContent = 'Working Since ' + checkInAt.toTimeString().slice(0, 5);
-        document.getElementById('tSub').textContent = 'Timer Is Running — Don't Forget To Check Out';
+        document.getElementById('tSub').textContent = 'Timer Is Running — Remember To Check Out';
         btn.className = 'btn btn-out';
         btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:19px">logout</span> Check Out';
         tick();
@@ -255,6 +272,13 @@
     document.getElementById('notifBtn').addEventListener('click', async () => {
       try { await API.post('notif_read', { all: true }); loadNotifs(); } catch (e) {}
     });
+
+    
+    // mobile sidebar toggle
+    const _sb = document.getElementById('sidebar');
+    const _bd = document.getElementById('sbBackdrop');
+    document.getElementById('menuBtn').addEventListener('click', () => { _sb.classList.add('open'); _bd.classList.add('show'); });
+    _bd.addEventListener('click', () => { _sb.classList.remove('open'); _bd.classList.remove('show'); });
 
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try { await API.post('logout'); } catch (e) {}

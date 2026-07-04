@@ -75,25 +75,38 @@
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="topbar-in">
-      <div class="tb-brand" onclick="location.href='dashboard.html'" style="cursor:pointer">
-        <img src="../assets/images/logo.svg" alt=""> Workpulse
-      </div>
-      <nav class="tb-nav">
-        <a href="dashboard.html">Dashboard</a>
-        <a href="attendance.html">Attendance</a>
-        <a href="timeoff.html" class="active">Time Off</a>
-        <a href="profile.html">My Profile</a>
-      </nav>
-      <div class="tb-right">
-        <button class="tb-icon" id="logoutBtn" title="Log out"><span class="material-symbols-outlined">logout</span></button>
-        <img class="tb-avatar" id="tbAvatar" src="" alt="" onclick="location.href='profile.html'" style="cursor:pointer">
+  <div class="app">
+  <div id="sbBackdrop" class="sb-backdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <img src="../assets/images/logo.svg" alt="">
+      <div>
+        <h1 class="brand-name">Workpulse</h1>
+        <p class="brand-sub">Employee Portal</p>
       </div>
     </div>
-  </header>
-
-  <main class="wrap">
+    <nav class="snav">
+      <a href="dashboard.html" class="snav-link"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a href="attendance.html" class="snav-link"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+      <a href="timeoff.html" class="snav-link active"><span class="material-symbols-outlined">event_busy</span><span>Time Off</span></a>
+      <a href="profile.html" class="snav-link"><span class="material-symbols-outlined">person</span><span>My Profile</span></a>
+      <div class="snav-div"></div>
+      <a href="../change-password.html" class="snav-link"><span class="material-symbols-outlined">key</span><span>Change Password</span></a>
+    </nav>
+    <div class="side-user">
+      <a href="profile.html" class="su-link">
+        <img id="tbAvatar" src="" alt="">
+        <div>
+          <p class="su-name" id="suName">&mdash;</p>
+          <p class="su-role">Employee</p>
+        </div>
+      </a>
+      <button class="su-logout" id="logoutBtn" title="Log Out"><span class="material-symbols-outlined">logout</span></button>
+    </div>
+  </aside>
+  <main class="main-area">
+    <button class="menu-btn" id="menuBtn"><span class="material-symbols-outlined">menu</span></button>
+    <div class="wrap">
     <div class="head-row">
       <div class="greet">
         <h2>Time Off</h2>
@@ -117,7 +130,9 @@
 
     <div class="greet" style="margin-top:26px"><h2 style="font-size:16px">My Requests</h2></div>
     <div id="reqList" style="margin-top:12px"><p class="date">Loading...</p></div>
+    </div>
   </main>
+</div>
 
   <!-- request modal -->
   <div class="overlay" id="overlay">
@@ -155,6 +170,7 @@
         if (Number(res.data.must_change_password) === 1) { location.href = '../change-password.html'; return; }
         document.getElementById('tbAvatar').src =
           'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(res.data.email.split('@')[0]);
+        document.getElementById('suName').textContent = res.data.email.split('@')[0];
       } catch (e) { return; }
       loadBalances();
       loadTypes();
@@ -322,6 +338,13 @@
         alert(err.message || 'Could Not Apply');
       } finally { btn.disabled = false; btn.textContent = 'Submit'; }
     });
+
+    
+    // mobile sidebar toggle
+    const _sb = document.getElementById('sidebar');
+    const _bd = document.getElementById('sbBackdrop');
+    document.getElementById('menuBtn').addEventListener('click', () => { _sb.classList.add('open'); _bd.classList.add('show'); });
+    _bd.addEventListener('click', () => { _sb.classList.remove('open'); _bd.classList.remove('show'); });
 
     document.getElementById('logoutBtn').addEventListener('click', async () => {
       try { await API.post('logout'); } catch (e) {}
