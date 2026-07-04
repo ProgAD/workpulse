@@ -327,14 +327,18 @@
             background: rgb(0 0 0 / .2); color: #fff;
             display: flex; align-items: center; justify-content: center;
         }
-        .view-top { padding: 0 28px 18px; display: flex; gap: 18px; align-items: flex-end; margin-top: -38px; border-bottom: 1px solid var(--border-light); }
+        .view-top { padding: 0 28px 18px; display: flex; gap: 18px; align-items: flex-start; border-bottom: 1px solid var(--border-light); }
+        /* sirf avatar hero pe overlap karta hai, text niche hi rehta hai */
         .view-top img {
             width: 86px; height: 86px;
             border-radius: var(--radius-full);
             border: 4px solid #fff;
             box-shadow: var(--shadow-md);
             background: #fff; object-fit: cover;
+            margin-top: -43px;
+            flex-shrink: 0;
         }
+        .view-top .vt-info { padding-top: 10px; }
         .view-top .vt-info { padding-bottom: 4px; }
         .view-top h2 { font-size: 20px; font-weight: 700; display: inline; }
         .badge {
