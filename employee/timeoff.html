@@ -28,6 +28,8 @@
     .mini th { color: var(--text-light); font-weight: 600; padding: 2px; text-align: center; font-size: 9.5px; }
     .mini td { text-align: center; padding: 2.5px 2px; border-radius: 4px; font-variant-numeric: tabular-nums; }
     .mini td.sun { color: var(--text-light); }
+    .mini td[data-date] { cursor: pointer; }
+    .mini td[data-date]:hover { background: var(--primary-light); }
     .mini td.today { outline: 1.5px solid var(--primary); outline-offset: -1.5px; font-weight: 700; }
     .mini td.approved { background: #bbf7d0; color: #14532d; font-weight: 600; }
     .mini td.pending { background: #fef08a; color: #713f12; font-weight: 600; }
@@ -240,7 +242,7 @@
             key === today ? 'today' : '',
             dayState[key] || '',
           ].filter(Boolean).join(' ');
-          cells += `<td class="${cls}">${d}</td>`;
+          cells += `<td class="${cls}" data-date="${key}">${d}</td>`;
           if (dt.getDay() === 6 && d !== daysIn) cells += '</tr><tr>';
         }
         cells += '</tr>';
@@ -256,6 +258,16 @@
     // ---- modal ----
     const overlay = document.getElementById('overlay');
     document.getElementById('newBtn').addEventListener('click', () => overlay.classList.add('open'));
+
+    // calendar ki date pe click karo to wahi date bhar ke modal khul jata hai
+    document.getElementById('calGrid').addEventListener('click', (e) => {
+      const td = e.target.closest('td[data-date]');
+      if (!td) return;
+      document.getElementById('m_from').value = td.dataset.date;
+      document.getElementById('m_to').value = td.dataset.date;
+      calcAlloc();
+      overlay.classList.add('open');
+    });
     document.getElementById('mDiscard').addEventListener('click', () => overlay.classList.remove('open'));
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
 
