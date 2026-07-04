@@ -348,7 +348,7 @@ table.data tbody tr:hover { background: var(--surface-low); }
 /* view modal */
 .view-hero { height: 96px; background: var(--primary-container); position: relative; }
 .view-hero .modal-x { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: var(--radius-full); background: rgba(0,0,0,.2); color: #fff; display: flex; align-items: center; justify-content: center; }
-.view-top { padding: 30 24px 16px; display: flex; align-items: flex-end; gap: 16px; border-bottom: 1px solid var(--outline-variant); }
+.view-top { padding: 30px 24px 16px; display: flex; align-items: flex-end; gap: 16px; border-bottom: 1px solid var(--outline-variant); }
 .view-top img { width: 80px; height: 80px; border-radius: var(--radius-full); border: 4px solid var(--surface-lowest); object-fit: cover; background: var(--surface-lowest); margin-top: -40px; flex-shrink: 0; }
 .view-top .vt { flex: 1; padding-bottom: 4px; }
 .view-top h2 { font-size: 20px; font-weight: 600; display: inline; }
