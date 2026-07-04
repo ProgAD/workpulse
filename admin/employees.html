@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Employees - Workpulse</title>
+<link rel="icon" type="image/svg+xml" href="../assests/images/logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assests/css/admin.css"/>
+</head>
+<body>
+<div class="app">
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">
+      <img src="../assests/images/logo.svg" alt="" class="brand-logo"/>
+      <div><h1 class="brand-name">Workpulse</h1><p class="brand-sub">Management Portal</p></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a class="nav-link active" href="employees.html"><span class="material-symbols-outlined">groups</span><span>Employees</span></a>
+      <a class="nav-link" href="attendance.html"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+    </nav>
+    <div class="side-user">
+      <img id="sideAvatar" class="side-user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+      <div class="side-user-info"><p id="sideName" class="side-user-name">Admin</p><p class="side-user-role">Administrator</p></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menuBtn" class="menu-btn"><span class="material-symbols-outlined">menu</span></button>
+        <h2 class="page-title hide-sm">Employees</h2>
+      </div>
+      <div class="topbar-right">
+        <div class="divider hide-sm"></div>
+        <div class="avatar-wrap">
+          <button id="avatarBtn" class="avatar-btn">
+            <img id="navAvatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+            <span class="avatar-name">Administrator</span>
+          </button>
+          <div id="userDropdown" class="dropdown hidden">
+            <div class="dd-head"><div class="lbl">Signed in as</div><div id="ddEmail" class="val">--</div></div>
+            <a href="profile.html" class="dd-item"><span class="material-symbols-outlined">person</span> My Profile</a>
+            <button onclick="logout()" class="dd-item danger"><span class="material-symbols-outlined">logout</span> Log Out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content custom-scrollbar">
+
+      <section class="grid grid-4">
+        <div class="stat-card"><p class="stat-label">Total</p><h3 id="stat_total" class="stat-value">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Active</p><h3 id="stat_active" class="stat-value green">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Suspended</p><h3 id="stat_suspended" class="stat-value tert">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Exited</p><h3 id="stat_exited" class="stat-value red">—</h3></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h4>Employee Directory</h4>
+            <p class="sub">View, edit and manage all personnel</p>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+            <div class="search">
+              <span class="material-symbols-outlined">search</span>
+              <input id="searchInput" type="text" placeholder="Search...">
+            </div>
+            <select id="statusFilter" class="select">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+              <option value="exited">Exited</option>
+            </select>
+            <button onclick="openAddModal()" class="btn btn-primary"><span class="material-symbols-outlined">add</span> Add Employee</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data min">
+            <thead>
+              <tr><th>Employee</th><th>Login ID</th><th>Email</th><th>Phone</th><th>Status</th><th class="t-right">Actions</th></tr>
+            </thead>
+            <tbody id="employeeTableBody"></tbody>
+          </table>
+        </div>
+        <div id="loadingState" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading employees...</p></div>
+        <div id="emptyState" class="state-box hidden"><span class="material-symbols-outlined">group_off</span><h3>No employees found</h3><p>Try adjusting your search/filter or add a new employee.</p></div>
+        <div class="pager">
+          <span id="pageInfo" class="info">—</span>
+          <div class="btns">
+            <button id="prevBtn" onclick="changePage(-1)" class="pg-btn" disabled>Previous</button>
+            <button id="nextBtn" onclick="changePage(1)" class="pg-btn" disabled>Next</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<button onclick="openAddModal()" class="fab"><span class="material-symbols-outlined">add</span></button>
+
+<!-- modals -->
+<div id="modalOverlay" class="overlay hidden">
+
+  <!-- add -->
+  <div id="addEmployeeModal" class="modal lg hidden">
+    <div class="modal-head"><h3>Add New Employee</h3><button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button></div>
+    <div class="modal-body">
+      <form id="addEmployeeForm" onsubmit="handleAddEmployee(event)" style="display:flex;flex-direction:column;gap:16px">
+        <div class="form-row">
+          <div class="form-group"><label>First Name <span class="req">*</span></label><input type="text" id="add_first_name" required></div>
+          <div class="form-group"><label>Last Name</label><input type="text" id="add_last_name"></div>
+        </div>
+        <div class="form-group"><label>Email Address <span class="req">*</span></label><input type="email" id="add_email" required placeholder="employee@workpulse.test"></div>
+        <div class="form-group"><label>Phone <span class="req">*</span></label><input type="tel" id="add_phone" required maxlength="10" inputmode="numeric" placeholder="10 digit number"></div>
+        <div class="form-group"><label>Date of Joining</label><input type="date" id="add_doj"></div>
+        <div class="modal-foot">
+          <button type="button" onclick="closeModals()" class="btn btn-outline">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- credentials -->
+  <div id="credModal" class="modal sm hidden">
+    <div class="modal-head"><h3>Employee Created 🎉</h3></div>
+    <div class="modal-body">
+      <div>
+        <p class="cred-warn">Ye password dobara nahi dikhega — abhi copy karke employee ko de do.</p>
+        <div class="cred-box">
+          <div><span>Login ID</span> <b id="cred_login_id"></b></div>
+          <div><span>Password</span> <b id="cred_password"></b></div>
+        </div>
+      </div>
+      <div class="modal-foot" style="border-top:none;padding-top:0">
+        <button onclick="copyCreds()" class="btn btn-outline"><span class="material-symbols-outlined" style="font-size:18px">content_copy</span> Copy</button>
+        <button onclick="closeModals()" class="btn btn-primary">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- edit -->
+  <div id="editEmployeeModal" class="modal lg hidden">
+    <div class="modal-head"><h3>Edit Employee</h3><button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button></div>
+    <div class="modal-body">
+      <form id="editEmployeeForm" onsubmit="handleEditEmployee(event)" style="display:flex;flex-direction:column;gap:16px">
+        <input type="hidden" id="edit_id">
+        <div class="form-group"><label>Full Name</label><input type="text" id="edit_name"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="edit_phone" maxlength="10" inputmode="numeric"></div>
+        <div class="form-group"><label>Status</label>
+          <select id="edit_status">
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="exited">Exited</option>
+          </select>
+        </div>
+        <div class="modal-foot between">
+          <button type="button" onclick="removeEmployee()" class="btn btn-danger-text"><span class="material-symbols-outlined" style="font-size:18px">delete</span> Remove</button>
+          <div class="grp">
+            <button type="button" onclick="closeModals()" class="btn btn-outline">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- view -->
+  <div id="viewEmployeeModal" class="modal lg hidden" style="padding:0">
+    <div class="view-hero"><button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined" style="font-size:20px">close</span></button></div>
+    <div class="view-top">
+      <img id="view_avatar" src="" alt=""/>
+      <div class="vt">
+        <h2 id="view_name">--</h2><span id="view_status_badge" class="badge">--</span>
+        <div id="view_designation" class="desig">--</div>
+        <div id="view_emp_code" class="code">Login ID: --</div>
+      </div>
+      <button onclick="editFromView()" class="btn btn-outline" style="margin-bottom:4px"><span class="material-symbols-outlined" style="font-size:18px">edit</span> Edit</button>
+    </div>
+    <div class="view-body">
+      <div>
+        <h4>Contact Information</h4>
+        <div class="kv"><span class="material-symbols-outlined">mail</span><div><div class="k">Email Address</div><div id="view_email" class="v">--</div></div></div>
+        <div class="kv"><span class="material-symbols-outlined">call</span><div><div class="k">Phone Number</div><div id="view_phone" class="v">--</div></div></div>
+      </div>
+      <div>
+        <h4>Employment Details</h4>
+        <div class="kv"><span class="material-symbols-outlined">apartment</span><div><div class="k">Department</div><div id="view_department" class="v">--</div></div></div>
+        <div class="kv"><span class="material-symbols-outlined">event</span><div><div class="k">Date of Joining</div><div id="view_doj" class="v">--</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../assests/js/api.js"></script>
+<script>
+    Object.assign(API._endpointMap, { 'notifications': 'notifications/index.php' });
+
+    let employeesData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    let currentEmp = null;
+    const PAGE_SIZE = 10;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        initSidebar();
+        initDropdown();
+        setupPhoneInputs();
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        try {
+            const res = await API.get('me');
+            const u = res.data;
+            if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+            if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
+            const name = u.email.split('@')[0];
+            document.getElementById('ddEmail').innerText = u.email;
+            document.getElementById('sideName').innerText = name;
+            const av = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
+            document.getElementById('navAvatar').src = av;
+            document.getElementById('sideAvatar').src = av;
+        } catch (e) {}
+        loadEmployees();
+    });
+
+    function initSidebar() {
+        const sb = document.getElementById('sidebar'), bd = document.getElementById('sidebarBackdrop'), menu = document.getElementById('menuBtn');
+        menu.addEventListener('click', () => { sb.classList.add('open'); bd.classList.add('show'); });
+        bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
+    }
+    function initDropdown() {
+        const btn = document.getElementById('avatarBtn'), menu = document.getElementById('userDropdown');
+        btn.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); });
+        document.addEventListener('click', (e) => { if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.add('hidden'); });
+    }
+    function setupPhoneInputs() {
+        document.querySelectorAll('input[type="tel"]').forEach(inp => { inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, '').slice(0, 10); }); });
+    }
+    async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
+
+    function initials(emp) {
+        const a = (emp.first_name || '').trim(), b = (emp.last_name || '').trim();
+        return ((a[0] || '') + (b[0] || (a[1] || ''))).toUpperCase() || '?';
+    }
+    function avatarUrl(emp) {
+        return emp.avatar || 'https://ui-avatars.com/api/?background=random&name=' + encodeURIComponent((emp.first_name || '') + ' ' + (emp.last_name || ''));
+    }
+    function statusBadge(status) {
+        if (status === 'active') return '<span class="badge badge-green">Active</span>';
+        if (status === 'suspended') return '<span class="badge badge-orange">Suspended</span>';
+        if (status === 'exited') return '<span class="badge badge-red">Exited</span>';
+        return '<span class="badge badge-grey">' + (status || '—') + '</span>';
+    }
+
+    async function loadEmployees() {
+        const loader = document.getElementById('loadingState');
+        document.getElementById('employeeTableBody').innerHTML = '';
+        document.getElementById('emptyState').classList.add('hidden');
+        loader.classList.remove('hidden');
+        try {
+            const res = await API.get('employees');
+            if (res.success) { employeesData = res.data; renderStats(); applyFilters(); }
+        } catch (err) { console.error("Failed to fetch employees:", err); }
+        finally { loader.classList.add('hidden'); }
+    }
+    function renderStats() {
+        const c = { active: 0, suspended: 0, exited: 0 };
+        employeesData.forEach(e => { if (c[e.status] !== undefined) c[e.status]++; });
+        document.getElementById('stat_total').innerText = employeesData.length;
+        document.getElementById('stat_active').innerText = c.active;
+        document.getElementById('stat_suspended').innerText = c.suspended;
+        document.getElementById('stat_exited').innerText = c.exited;
+    }
+    function applyFilters() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        filteredData = employeesData.filter(emp => {
+            const matchTerm = (emp.first_name || '').toLowerCase().includes(term)
+                || (emp.last_name || '').toLowerCase().includes(term)
+                || (emp.emp_code || '').toLowerCase().includes(term)
+                || (emp.email || '').toLowerCase().includes(term);
+            const matchStatus = !status || emp.status === status;
+            return matchTerm && matchStatus;
+        });
+        currentPage = 1; renderTable();
+    }
+    function renderTable() {
+        const body = document.getElementById('employeeTableBody');
+        const empty = document.getElementById('emptyState');
+        body.innerHTML = '';
+        if (filteredData.length === 0) { empty.classList.remove('hidden'); updatePager(); return; }
+        empty.classList.add('hidden');
+        const start = (currentPage - 1) * PAGE_SIZE;
+        filteredData.slice(start, start + PAGE_SIZE).forEach(emp => {
+            const name = `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.emp_code;
+            const desig = emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><div class="emp-cell"><div class="emp-avatar">${initials(emp)}</div><div class="emp-meta"><div class="emp-name">${name}</div><div class="emp-sub">${desig}</div></div></div></td>
+                <td>${emp.emp_code}</td>
+                <td class="cell-ellipsis">${emp.email || '—'}</td>
+                <td>${emp.phone || '—'}</td>
+                <td>${statusBadge(emp.status)}</td>
+                <td>
+                    <div class="row-actions">
+                        <button class="act-btn" title="View" onclick="openViewModal(${emp.id})"><span class="material-symbols-outlined">visibility</span></button>
+                        <button class="act-btn" title="Edit" onclick="openEditModal(${emp.id})"><span class="material-symbols-outlined">edit</span></button>
+                    </div>
+                </td>`;
+            body.appendChild(tr);
+        });
+        updatePager();
+    }
+    function updatePager() {
+        const total = filteredData.length;
+        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (currentPage > pages) currentPage = pages;
+        const start = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+        const end = Math.min(currentPage * PAGE_SIZE, total);
+        document.getElementById('pageInfo').innerText = total === 0 ? 'No employees' : `Showing ${start}–${end} of ${total}`;
+        document.getElementById('prevBtn').disabled = currentPage <= 1;
+        document.getElementById('nextBtn').disabled = currentPage >= pages;
+    }
+    function changePage(delta) {
+        const pages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+        currentPage = Math.min(pages, Math.max(1, currentPage + delta));
+        renderTable();
+    }
+
+    // ---- modals ----
+    const overlay = document.getElementById('modalOverlay');
+    const modals = ['addEmployeeModal', 'credModal', 'editEmployeeModal', 'viewEmployeeModal'];
+    function hideAllModals() { modals.forEach(id => document.getElementById(id).classList.add('hidden')); }
+    function closeModals() {
+        overlay.classList.add('hidden'); hideAllModals();
+        document.getElementById('addEmployeeForm').reset();
+        document.getElementById('editEmployeeForm').reset();
+    }
+    function showModal(id) { overlay.classList.remove('hidden'); hideAllModals(); document.getElementById(id).classList.remove('hidden'); }
+    function openAddModal() { showModal('addEmployeeModal'); }
+
+    async function openViewModal(id) {
+        showModal('viewEmployeeModal');
+        document.getElementById('view_name').innerText = 'Loading...';
+        try {
+            const res = await API.get('employees/' + id);
+            if (res.success) {
+                const emp = res.data; currentEmp = emp;
+                document.getElementById('view_avatar').src = avatarUrl(emp);
+                document.getElementById('view_name').innerText = `${emp.first_name} ${emp.last_name || ''}`;
+                document.getElementById('view_designation').innerText = emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee');
+                document.getElementById('view_emp_code').innerText = `Login ID: ${emp.emp_code}`;
+                document.getElementById('view_email').innerText = emp.email || 'Not provided';
+                document.getElementById('view_phone').innerText = emp.phone || 'Not provided';
+                document.getElementById('view_department').innerText = emp.department || '—';
+                document.getElementById('view_doj').innerText = emp.doj || '—';
+                const badge = document.getElementById('view_status_badge');
+                if (emp.status === 'active') { badge.className = 'badge badge-green'; badge.innerText = 'Active'; }
+                else { badge.className = 'badge badge-red'; badge.innerText = emp.status || 'Inactive'; }
+            }
+        } catch (err) { console.error(err); closeModals(); }
+    }
+    function editFromView() { if (currentEmp) openEditModal(currentEmp.id); }
+
+    async function openEditModal(id) {
+        showModal('editEmployeeModal');
+        try {
+            const res = await API.get('employees/' + id);
+            if (res.success) {
+                const emp = res.data; currentEmp = emp;
+                document.getElementById('edit_id').value = emp.id;
+                document.getElementById('edit_name').value = `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
+                document.getElementById('edit_phone').value = emp.phone || '';
+                document.getElementById('edit_status').value = emp.status || 'active';
+            }
+        } catch (err) { console.error(err); closeModals(); }
+    }
+    async function handleEditEmployee(e) {
+        e.preventDefault();
+        const id = document.getElementById('edit_id').value;
+        const phone = document.getElementById('edit_phone').value.trim();
+        if (phone && !/^\d{10}$/.test(phone)) { alert('Phone number exactly 10 digits ka hona chahiye'); return; }
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.disabled = true; btn.innerText = 'Saving...';
+        const payload = { name: document.getElementById('edit_name').value.trim(), phone, status: document.getElementById('edit_status').value };
+        try { await API.post('employee_update/' + id, payload); closeModals(); loadEmployees(); }
+        catch (error) { alert(error.message || 'Update nahi hua'); }
+        finally { btn.disabled = false; btn.innerText = 'Save Changes'; }
+    }
+    async function removeEmployee() {
+        const id = document.getElementById('edit_id').value;
+        if (!id) return;
+        if (!confirm('Is employee ko remove karna hai? Ye soft-delete hoga.')) return;
+        try { await API.post('employee_remove/' + id); closeModals(); loadEmployees(); }
+        catch (error) { alert(error.message || 'Remove nahi hua'); }
+    }
+    async function handleAddEmployee(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const phone = document.getElementById('add_phone').value.trim();
+        if (!/^\d{10}$/.test(phone)) { alert('Phone number exactly 10 digits ka hona chahiye (sirf numbers)'); return; }
+        btn.innerText = 'Saving...'; btn.disabled = true;
+        const payload = {
+            name: (document.getElementById('add_first_name').value.trim() + ' ' + document.getElementById('add_last_name').value.trim()).trim(),
+            email: document.getElementById('add_email').value.trim(),
+            phone, doj: document.getElementById('add_doj').value
+        };
+        try {
+            const res = await API.post('employee_create', payload);
+            if (res.success) {
+                hideAllModals();
+                document.getElementById('cred_login_id').innerText = res.data.login_id;
+                document.getElementById('cred_password').innerText = res.data.temp_password;
+                document.getElementById('credModal').classList.remove('hidden');
+                loadEmployees();
+            }
+        } catch (error) { alert(error.message || 'Employee create nahi hua'); }
+        finally { btn.innerText = 'Create Employee'; btn.disabled = false; }
+    }
+    function copyCreds() {
+        const txt = 'Login ID: ' + document.getElementById('cred_login_id').innerText
+            + '\nPassword: ' + document.getElementById('cred_password').innerText
+            + '\nLogin: ' + location.origin + '/workpulse/';
+        navigator.clipboard.writeText(txt);
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals(); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModals(); });
+</script>
+</body>
+</html>

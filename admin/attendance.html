@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Attendance - Workpulse</title>
+<link rel="icon" type="image/svg+xml" href="../assests/images/logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assests/css/admin.css"/>
+</head>
+<body>
+<div class="app">
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">
+      <img src="../assests/images/logo.svg" alt="" class="brand-logo"/>
+      <div><h1 class="brand-name">Workpulse</h1><p class="brand-sub">Management Portal</p></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a class="nav-link" href="employees.html"><span class="material-symbols-outlined">groups</span><span>Employees</span></a>
+      <a class="nav-link active" href="attendance.html"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+    </nav>
+    <div class="side-user">
+      <img id="sideAvatar" class="side-user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+      <div class="side-user-info"><p id="sideName" class="side-user-name">Admin</p><p class="side-user-role">Administrator</p></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menuBtn" class="menu-btn"><span class="material-symbols-outlined">menu</span></button>
+        <h2 class="page-title hide-sm">Attendance</h2>
+      </div>
+      <div class="topbar-right">
+        <div class="divider hide-sm"></div>
+        <div class="avatar-wrap">
+          <button id="avatarBtn" class="avatar-btn">
+            <img id="navAvatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+            <span class="avatar-name">Administrator</span>
+          </button>
+          <div id="userDropdown" class="dropdown hidden">
+            <div class="dd-head"><div class="lbl">Signed in as</div><div id="ddEmail" class="val">--</div></div>
+            <a href="profile.html" class="dd-item"><span class="material-symbols-outlined">person</span> My Profile</a>
+            <button onclick="logout()" class="dd-item danger"><span class="material-symbols-outlined">logout</span> Log Out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content custom-scrollbar">
+
+      <section class="date-bar">
+        <div class="date-nav">
+          <button onclick="shiftDay(-1)" class="icon-square"><span class="material-symbols-outlined" style="font-size:20px">chevron_left</span></button>
+          <input id="datePicker" type="date">
+          <button onclick="shiftDay(1)" class="icon-square"><span class="material-symbols-outlined" style="font-size:20px">chevron_right</span></button>
+          <button onclick="goToday()" class="btn btn-outline">Today</button>
+        </div>
+        <p id="dateLabel" class="date-label"></p>
+      </section>
+
+      <section class="grid grid-5">
+        <div class="stat-card"><p class="stat-label">Present</p><h3 id="sum_present" class="stat-value green">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Half-day</p><h3 id="sum_half" class="stat-value orange">—</h3></div>
+        <div class="stat-card"><p class="stat-label">On Leave</p><h3 id="sum_leave" class="stat-value blue">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Absent</p><h3 id="sum_absent" class="stat-value red">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Late</p><h3 id="sum_late" class="stat-value tert">—</h3></div>
+      </section>
+
+      <section id="regSection" class="card hidden">
+        <div class="card-head" style="justify-content:flex-start;gap:8px">
+          <span class="material-symbols-outlined" style="color:var(--tertiary)">edit_calendar</span>
+          <h4>Regularization Requests</h4>
+          <span id="regCount" class="sub"></span>
+        </div>
+        <div id="regList"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h4>Daily Attendance</h4>
+            <p class="sub">Check-in / check-out of all employees</p>
+          </div>
+          <div class="search">
+            <span class="material-symbols-outlined">search</span>
+            <input id="searchInput" type="text" placeholder="Search employee...">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data min">
+            <thead>
+              <tr><th>Employee</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Work Hours</th></tr>
+            </thead>
+            <tbody id="attTableBody"></tbody>
+          </table>
+        </div>
+        <div id="loadingState" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading attendance...</p></div>
+        <div id="emptyState" class="state-box hidden"><span class="material-symbols-outlined">event_busy</span><h3>No records</h3><p>No matching employees for this day.</p></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="../assests/js/api.js"></script>
+<script>
+    Object.assign(API._endpointMap, {
+        'attendance':        'attendance/index.php',
+        'regularizations':   'attendance/index.php?action=regularizations',
+        'regularize_review': 'attendance/index.php?action=review',
+    });
+
+    let attRows = [];
+    let filtered = [];
+    let selectedDate = new Date().toISOString().slice(0, 10);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        initSidebar();
+        initDropdown();
+        document.getElementById('datePicker').value = selectedDate;
+        document.getElementById('datePicker').addEventListener('change', (e) => { selectedDate = e.target.value; loadAttendance(); });
+        document.getElementById('searchInput').addEventListener('input', applySearch);
+        try {
+            const res = await API.get('me');
+            const u = res.data;
+            if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+            if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
+            const name = u.email.split('@')[0];
+            document.getElementById('ddEmail').innerText = u.email;
+            document.getElementById('sideName').innerText = name;
+            const av = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
+            document.getElementById('navAvatar').src = av;
+            document.getElementById('sideAvatar').src = av;
+        } catch (e) {}
+        loadAttendance();
+        loadRegularizations();
+    });
+
+    function initSidebar() {
+        const sb = document.getElementById('sidebar'), bd = document.getElementById('sidebarBackdrop'), menu = document.getElementById('menuBtn');
+        menu.addEventListener('click', () => { sb.classList.add('open'); bd.classList.add('show'); });
+        bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
+    }
+    function initDropdown() {
+        const btn = document.getElementById('avatarBtn'), menu = document.getElementById('userDropdown');
+        btn.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); });
+        document.addEventListener('click', (e) => { if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.add('hidden'); });
+    }
+    async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
+
+    function initials(r) {
+        const a = (r.first_name || '').trim(), b = (r.last_name || '').trim();
+        return ((a[0] || '') + (b[0] || (a[1] || ''))).toUpperCase() || '?';
+    }
+    function fmtTime(ts) { return ts ? ts.slice(11, 16) : '—'; }
+    function fmtHours(mins) {
+        if (!mins) return '—';
+        const h = Math.floor(mins / 60), m = mins % 60;
+        return `${h}h ${m.toString().padStart(2, '0')}m`;
+    }
+    function effStatus(r) { return r.status || 'absent'; }
+    function statusBadge(status, isLate) {
+        let html;
+        if (status === 'present') html = '<span class="badge badge-green">Present</span>';
+        else if (status === 'half_day') html = '<span class="badge badge-orange">Half-day</span>';
+        else if (status === 'on_leave') html = '<span class="badge badge-blue">Leave</span>';
+        else html = '<span class="badge badge-red">Absent</span>';
+        if (isLate) html += ' <span class="badge badge-tert">Late</span>';
+        return html;
+    }
+
+    function shiftDay(delta) {
+        const d = new Date(selectedDate + 'T00:00:00');
+        d.setDate(d.getDate() + delta);
+        selectedDate = d.toISOString().slice(0, 10);
+        document.getElementById('datePicker').value = selectedDate;
+        loadAttendance();
+    }
+    function goToday() {
+        selectedDate = new Date().toISOString().slice(0, 10);
+        document.getElementById('datePicker').value = selectedDate;
+        loadAttendance();
+    }
+
+    async function loadAttendance() {
+        const loader = document.getElementById('loadingState');
+        document.getElementById('attTableBody').innerHTML = '';
+        document.getElementById('emptyState').classList.add('hidden');
+        loader.classList.remove('hidden');
+        document.getElementById('dateLabel').innerText = new Date(selectedDate + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        try {
+            const res = await API.get('attendance', { date: selectedDate });
+            attRows = (res.data && res.data.rows) ? res.data.rows : [];
+        } catch (err) { console.error('Attendance load failed:', err.message); attRows = []; }
+        finally {
+            loader.classList.add('hidden');
+            renderSummary();
+            applySearch();
+        }
+    }
+    function renderSummary() {
+        const s = { present: 0, half_day: 0, on_leave: 0, absent: 0, late: 0 };
+        attRows.forEach(r => { const st = effStatus(r); if (s[st] !== undefined) s[st]++; if (r.is_late) s.late++; });
+        document.getElementById('sum_present').innerText = s.present;
+        document.getElementById('sum_half').innerText = s.half_day;
+        document.getElementById('sum_leave').innerText = s.on_leave;
+        document.getElementById('sum_absent').innerText = s.absent;
+        document.getElementById('sum_late').innerText = s.late;
+    }
+    function applySearch() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        filtered = attRows.filter(r =>
+            (r.first_name || '').toLowerCase().includes(term) ||
+            (r.last_name || '').toLowerCase().includes(term) ||
+            (r.emp_code || '').toLowerCase().includes(term));
+        renderTable();
+    }
+    function renderTable() {
+        const body = document.getElementById('attTableBody');
+        const empty = document.getElementById('emptyState');
+        body.innerHTML = '';
+        if (filtered.length === 0) { empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+        filtered.forEach(r => {
+            const name = `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.emp_code;
+            const reg = r.is_regularized ? ' <span class="material-symbols-outlined" style="color:var(--primary);font-size:16px" title="Regularized">verified</span>' : '';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><div class="emp-cell"><div class="emp-avatar">${initials(r)}</div><div class="emp-meta"><div class="emp-name">${name}</div><div class="emp-sub">${r.emp_code}</div></div></div></td>
+                <td>${statusBadge(effStatus(r), r.is_late)}</td>
+                <td>${fmtTime(r.check_in)}</td>
+                <td>${fmtTime(r.check_out)}</td>
+                <td>${fmtHours(r.work_mins)}${reg}</td>`;
+            body.appendChild(tr);
+        });
+    }
+
+    // ---------- regularizations ----------
+    async function loadRegularizations() {
+        const section = document.getElementById('regSection');
+        const list = document.getElementById('regList');
+        try {
+            const res = await API.get('regularizations', { status: 'pending' });
+            const rows = (res.success && res.data) ? res.data : [];
+            if (rows.length === 0) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            document.getElementById('regCount').innerText = rows.length + ' pending';
+            list.innerHTML = '';
+            rows.forEach(rr => {
+                const name = `${rr.first_name || ''} ${rr.last_name || ''}`.trim() || rr.emp_code;
+                const div = document.createElement('div');
+                div.className = 'reg-item';
+                div.innerHTML = `
+                    <div class="emp-cell">
+                        <div class="emp-avatar md">${initials(rr)}</div>
+                        <div class="emp-meta">
+                            <p class="emp-name">${name} <span style="color:var(--outline);font-weight:400">· ${rr.att_date}</span></p>
+                            <p class="emp-sub">In: ${rr.req_check_in ? rr.req_check_in.slice(11,16) : '—'} · Out: ${rr.req_check_out ? rr.req_check_out.slice(11,16) : '—'}</p>
+                            <p class="emp-sub">${rr.reason || ''}</p>
+                        </div>
+                    </div>
+                    <div class="reg-actions">
+                        <button class="btn btn-primary" onclick="reviewReg(${rr.id}, 'approve', this)">Approve</button>
+                        <button class="btn btn-soft" onclick="reviewReg(${rr.id}, 'reject', this)">Reject</button>
+                    </div>`;
+                list.appendChild(div);
+            });
+        } catch (e) { section.classList.add('hidden'); }
+    }
+    async function reviewReg(id, action, btn) {
+        const row = btn.closest('.reg-item');
+        row.style.opacity = '0.5';
+        row.querySelectorAll('button').forEach(b => b.disabled = true);
+        try { await API.post('regularize_review', { id, action }); loadRegularizations(); loadAttendance(); }
+        catch (e) { row.style.opacity = '1'; row.querySelectorAll('button').forEach(b => b.disabled = false); alert(e.message || 'Could not update request'); }
+    }
+</script>
+</body>
+</html>
