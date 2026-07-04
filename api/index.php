@@ -3,8 +3,8 @@
 // route files register handlers with route('GET', '/auth/me', fn() => ...)
 
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../src/helpers/Response.php';
-require_once __DIR__ . '/../src/helpers/Auth.php';
+require_once __DIR__ . '/helpers/Response.php';
+require_once __DIR__ . '/helpers/Auth.php';
 
 $GLOBALS['routes'] = [];
 
