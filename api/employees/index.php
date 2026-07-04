@@ -136,6 +136,7 @@ if ($ACTION === 'me_profile' && $METHOD === 'GET') {
                 p.emergency_contact, p.emergency_phone,
                 p.doj, p.emp_type, p.work_mode,
                 p.bank_name, p.bank_ifsc, p.bank_account, p.pan, p.uan,
+                p.about, p.job_love, p.interests, p.skills, p.certifications,
                 d.name AS department, g.title AS designation, c.name AS company
          FROM users u
          JOIN roles r ON r.id = u.role_id
@@ -163,7 +164,8 @@ if ($ACTION === 'update_self' && $METHOD === 'POST') {
         fail('Invalid marital status', 422);
     }
 
-    $allowed = ['phone', 'marital_status', 'current_address', 'permanent_address'];
+    $allowed = ['phone', 'marital_status', 'current_address', 'permanent_address',
+                'about', 'job_love', 'interests', 'skills', 'certifications'];
     $sets = [];
     $vals = [];
     foreach ($allowed as $f) {

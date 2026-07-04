@@ -12,7 +12,9 @@ workpulse/
 |-- admin/
 |   |-- dashboard.html      -> employee list + add employee (id/password auto milta hai)
 |-- employee/
-|   |-- dashboard.html      -> profile info, attendance aayega yahan
+|   |-- dashboard.html      -> live work timer, punch in/out, leave balance, notifications
+|   |-- attendance.html     -> apna month-wise attendance, working hours, extra hours
+|   |-- profile.html        -> resume (editable), personal, salary, documents, security
 |
 |-- assets/
 |   |-- css/

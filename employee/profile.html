@@ -122,6 +122,40 @@
     }
     .upload-btn:hover { background: var(--primary-hover); }
 
+    /* resume tab */
+    .rz {
+      width: 100%;
+      font: inherit; font-size: 13.5px;
+      border: none; outline: none; resize: vertical;
+      background: transparent;
+      color: var(--text-main);
+      line-height: 1.55;
+      min-height: 56px;
+    }
+    .rz::placeholder { color: var(--text-light); }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 20px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--primary-light); color: var(--primary-hover);
+      font-size: 12.5px; font-weight: 600;
+      padding: 5px 11px; border-radius: var(--radius-full);
+    }
+    .pill button { color: inherit; display: flex; opacity: .6; }
+    .pill button:hover { opacity: 1; }
+    .add-row { display: flex; gap: 8px; }
+    .add-row input {
+      flex: 1; font: inherit; font-size: 13px;
+      border: 1px solid var(--border-color); border-radius: var(--radius-md);
+      padding: 8px 12px; outline: none;
+    }
+    .add-row input:focus { border-color: var(--primary); }
+    .btn.sm { padding: 8px 14px; font-size: 13px; }
+    .cert-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-light); font-size: 13.5px; }
+    .cert-row b { display: block; }
+    .cert-row span { font-size: 11.5px; color: var(--text-light); }
+    .cert-row button { color: var(--text-light); display: flex; }
+    .cert-row button:hover { color: var(--red); }
+
     /* toast */
     .toast {
       position: fixed; bottom: 24px; left: 50%;
@@ -145,6 +179,7 @@
       </div>
       <nav class="tb-nav">
         <a href="dashboard.html">Dashboard</a>
+        <a href="attendance.html">Attendance</a>
         <a href="profile.html" class="active">My Profile</a>
       </nav>
       <div class="tb-right">
@@ -185,14 +220,57 @@
 
     <!-- tabs -->
     <div class="tabs" role="tablist">
-      <button class="tab active" data-pane="personal">Personal</button>
+      <button class="tab active" data-pane="resume">Resume</button>
+      <button class="tab" data-pane="personal">Personal</button>
       <button class="tab" data-pane="salary">Salary</button>
       <button class="tab" data-pane="documents">Documents</button>
       <button class="tab" data-pane="security">Security</button>
     </div>
 
+    <!-- resume - employee khud likhta hai -->
+    <div class="pane active" id="pane-resume">
+      <div class="cols">
+        <div style="display:grid; gap:16px">
+          <section class="card panel">
+            <h4>About</h4>
+            <textarea class="rz" id="rz_about" rows="3" placeholder="Apne baare me do line likho..."></textarea>
+          </section>
+          <section class="card panel">
+            <h4>What I love about my job</h4>
+            <textarea class="rz" id="rz_job_love" rows="3" placeholder="Kaam ki kaunsi cheez sabse achhi lagti hai?"></textarea>
+          </section>
+          <section class="card panel">
+            <h4>My interests and hobbies</h4>
+            <textarea class="rz" id="rz_interests" rows="2" placeholder="Photography, cricket, music..."></textarea>
+          </section>
+          <div class="save-row">
+            <button class="btn btn-in" id="resumeSaveBtn">Save resume</button>
+          </div>
+        </div>
+        <div style="display:grid; gap:16px">
+          <section class="card panel">
+            <h4>Skills</h4>
+            <div class="pills" id="skillPills"></div>
+            <div class="add-row">
+              <input id="skillInput" placeholder="e.g. PHP" maxlength="30">
+              <button class="btn btn-in sm" id="skillAddBtn">Add</button>
+            </div>
+          </section>
+          <section class="card panel">
+            <h4>Certification</h4>
+            <div id="certList"></div>
+            <div class="add-row">
+              <input id="certName" placeholder="Certificate name" style="flex:1.4">
+              <input id="certYear" placeholder="Year" maxlength="4" inputmode="numeric" style="flex:.6">
+              <button class="btn btn-in sm" id="certAddBtn">Add</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
     <!-- personal -->
-    <div class="pane active" id="pane-personal">
+    <div class="pane" id="pane-personal">
       <div class="cols">
         <div>
           <section class="card panel">
@@ -350,8 +428,70 @@
         set('v_ifsc', me.bank_ifsc);
         set('v_pan', me.pan);
         set('v_uan', me.uan);
+
+        fillResume();
       } catch (e) { toast('Profile load nahi hua'); }
     }
+
+    // ---- resume tab ----
+    let skills = [];
+    let certs = [];
+
+    function fillResume() {
+      document.getElementById('rz_about').value = me.about || '';
+      document.getElementById('rz_job_love').value = me.job_love || '';
+      document.getElementById('rz_interests').value = me.interests || '';
+      skills = (me.skills || '').split(',').map(x => x.trim()).filter(Boolean);
+      try { certs = JSON.parse(me.certifications || '[]'); } catch (e) { certs = []; }
+      renderSkills();
+      renderCerts();
+    }
+
+    function renderSkills() {
+      document.getElementById('skillPills').innerHTML = skills.length
+        ? skills.map((sk, i) => `<span class="pill">${esc(sk)}<button onclick="removeSkill(${i})" title="Remove"><span class="material-symbols-outlined" style="font-size:14px">close</span></button></span>`).join('')
+        : '<span class="sal-note">Abhi koi skill nahi — niche se add karo</span>';
+    }
+    function removeSkill(i) { skills.splice(i, 1); renderSkills(); }
+    document.getElementById('skillAddBtn').addEventListener('click', () => {
+      const v = document.getElementById('skillInput').value.trim();
+      if (!v) return;
+      if (!skills.includes(v)) skills.push(v);
+      document.getElementById('skillInput').value = '';
+      renderSkills();
+    });
+    document.getElementById('skillInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); document.getElementById('skillAddBtn').click(); }
+    });
+
+    function renderCerts() {
+      document.getElementById('certList').innerHTML = certs.length
+        ? certs.map((c, i) => `<div class="cert-row"><div><b>${esc(c.name)}</b><span>${c.year ? 'Issued ' + esc(c.year) : ''}</span></div><button onclick="removeCert(${i})" title="Remove"><span class="material-symbols-outlined" style="font-size:17px">delete</span></button></div>`).join('')
+        : '<p class="sal-note" style="margin-bottom:10px">Abhi koi certification nahi.</p>';
+    }
+    function removeCert(i) { certs.splice(i, 1); renderCerts(); }
+    document.getElementById('certAddBtn').addEventListener('click', () => {
+      const name = document.getElementById('certName').value.trim();
+      const year = document.getElementById('certYear').value.trim();
+      if (!name) return toast('Certificate ka naam likho');
+      certs.push({ name, year });
+      document.getElementById('certName').value = '';
+      document.getElementById('certYear').value = '';
+      renderCerts();
+    });
+
+    document.getElementById('resumeSaveBtn').addEventListener('click', async () => {
+      try {
+        await API.post('update_self', {
+          about: document.getElementById('rz_about').value.trim(),
+          job_love: document.getElementById('rz_job_love').value.trim(),
+          interests: document.getElementById('rz_interests').value.trim(),
+          skills: skills.join(','),
+          certifications: JSON.stringify(certs),
+        });
+        toast('Resume saved ✔');
+      } catch (err) { toast(err.message || 'Save nahi hua'); }
+    });
 
     // phone me sirf digits
     document.getElementById('f_phone').addEventListener('input', e => {

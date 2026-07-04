@@ -181,6 +181,14 @@ CREATE TABLE employee_profiles (
     bank_name         VARCHAR(150),
     uan               VARCHAR(20),
 
+    -- resume tab (employee khud bharta hai)
+    about             TEXT,
+    job_love          TEXT,
+    interests         TEXT,
+    skills            TEXT,           -- comma separated
+    certifications    TEXT,           -- json array
+
+
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     delete_flag        TINYINT(1) NOT NULL DEFAULT 0,
