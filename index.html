@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WorkPulse — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="assests/css/app.css">
+  <style>
+    /* sirf login page ka layout, common cheeze app.css me hai */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: linear-gradient(160deg, var(--md-primary) 0%, var(--md-primary-dark) 55%, #1a237e 100%);
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--md-shadow-3);
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 6px;
+    }
+    .logo-row .material-icons {
+      color: var(--md-primary);
+      font-size: 34px;
+    }
+    .logo-row h1 { font-size: 24px; font-weight: 700; }
+    .tagline {
+      text-align: center;
+      color: var(--md-text-2);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrap">
+    <div class="md-card login-card">
+      <div class="logo-row">
+        <span class="material-icons">monitor_heart</span>
+        <h1>WorkPulse</h1>
+      </div>
+      <p class="tagline">Sign in to your HRMS account</p>
+
+      <form id="loginForm" novalidate>
+        <div class="md-field" id="emailField">
+          <input type="email" id="email" placeholder=" " autocomplete="email" required>
+          <label for="email">Email</label>
+          <div class="field-msg" id="emailMsg"></div>
+        </div>
+
+        <div class="md-field" id="passField">
+          <input type="password" id="password" placeholder=" " autocomplete="current-password" required>
+          <label for="password">Password</label>
+          <button type="button" class="toggle-eye" id="toggleEye" tabindex="-1" aria-label="Show password">
+            <span class="material-icons" style="font-size:20px">visibility</span>
+          </button>
+          <div class="field-msg" id="passMsg"></div>
+        </div>
+
+        <button type="submit" class="md-btn md-btn-primary md-btn-block" id="loginBtn">
+          <span id="btnText">Sign In</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="md-snackbar" id="snackbar"></div>
+
+  <script src="assests/js/api.js"></script>
+  <script>
+    // login page logic
+    const form = document.getElementById('loginForm');
+    const btn = document.getElementById('loginBtn');
+    const btnText = document.getElementById('btnText');
+    const snackbar = document.getElementById('snackbar');
+
+    // password dikhao/chhupao
+    document.getElementById('toggleEye').addEventListener('click', () => {
+      const pass = document.getElementById('password');
+      const icon = document.querySelector('#toggleEye .material-icons');
+      const show = pass.type === 'password';
+      pass.type = show ? 'text' : 'password';
+      icon.textContent = show ? 'visibility_off' : 'visibility';
+    });
+
+    let snackTimer;
+    function toast(msg, isError = true) {
+      clearTimeout(snackTimer);
+      snackbar.textContent = msg;
+      snackbar.className = 'md-snackbar show' + (isError ? ' error' : '');
+      snackTimer = setTimeout(() => snackbar.classList.remove('show'), 4000);
+    }
+
+    function setFieldError(fieldId, msgId, msg) {
+      document.getElementById(fieldId).classList.toggle('has-error', !!msg);
+      document.getElementById(msgId).textContent = msg || '';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      // basic validation, server bhi check karega hi
+      setFieldError('emailField', 'emailMsg', email ? '' : 'Email required');
+      setFieldError('passField', 'passMsg', password ? '' : 'Password required');
+      if (!email || !password) return;
+
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="md-spinner"></span>';
+
+      try {
+        const res = await API.post('login', { email, password });
+        // role ke hisab se dashboard pe bhejo
+        const role = res.data && res.data.role;
+        window.location.href = role === 'admin'
+          ? 'admin/dashboard.html'
+          : 'employee/dashboard.html';
+      } catch (err) {
+        toast(err.message || 'Login failed');
+        btn.disabled = false;
+        btnText.textContent = 'Sign In';
+      }
+    });
+
+    // agar pehle se logged in hai to seedha dashboard
+    API.get('me').then(res => {
+      const role = res.data && res.data.role;
+      window.location.href = role === 'admin'
+        ? 'admin/dashboard.html'
+        : 'employee/dashboard.html';
+    }).catch(() => { /* logged in nahi hai, login form hi dikhao */ });
+  </script>
+</body>
+</html>

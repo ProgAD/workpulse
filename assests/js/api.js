@@ -85,8 +85,9 @@ const API = {
       }
 
       if (!res.ok) {
-        // session khatam -> wapas login pe
-        if (res.status === 401 && endpoint !== 'login') {
+        // session khatam -> wapas login pe (login page pe ho to redirect mat karo, loop ban jayega)
+        const onLoginPage = window.location.pathname.endsWith('/workpulse/') || window.location.pathname.endsWith(this.LOGIN_PAGE);
+        if (res.status === 401 && endpoint !== 'login' && !onLoginPage) {
           if (!this._redirecting401) {
             this._redirecting401 = true;
             window.location.href = this.LOGIN_PAGE;
