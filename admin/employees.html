@@ -566,5 +566,18 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals(); });
     overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModals(); });
 </script>
+<script>
+// signup me jo company name/logo diya tha wo sidebar brand me dikhta hai
+(function brandCompany() {
+  if (typeof API === 'undefined') return;
+  API.get('me_profile').then(r => {
+    const p = r.data || {};
+    const sub = document.querySelector('.brand-sub');
+    const logo = document.querySelector('.brand-logo, .logo-area img');
+    if (p.company && sub) sub.textContent = p.company;
+    if (p.company_logo && logo) logo.src = p.company_logo;
+  }).catch(() => {});
+})();
+</script>
 </body>
 </html>

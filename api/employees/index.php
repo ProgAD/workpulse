@@ -137,7 +137,7 @@ if ($ACTION === 'me_profile' && $METHOD === 'GET') {
                 p.doj, p.emp_type, p.work_mode,
                 p.bank_name, p.bank_ifsc, p.bank_account, p.pan, p.uan,
                 p.about, p.job_love, p.interests, p.skills, p.certifications,
-                d.name AS department, g.title AS designation, c.name AS company
+                d.name AS department, g.title AS designation, c.name AS company, c.logo_url AS company_logo
          FROM users u
          JOIN roles r ON r.id = u.role_id
          JOIN companies c ON c.id = u.company_id
