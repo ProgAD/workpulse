@@ -5,7 +5,7 @@
 // payroll.php?action=run_payslips  GET   -> admin, ek run ki payslips list (?run_id=)
 //                                  POST  -> admin, us run ki payslips generate karo {run_id}
 
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 // mahine ke working days - weekend aur company holidays nikaal ke
 function payroll_working_days(int $companyId, string $monthStart, string $monthEnd): int
