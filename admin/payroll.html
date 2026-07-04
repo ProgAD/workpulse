@@ -107,7 +107,7 @@
 
 <!-- create run modal -->
 <div id="modalOverlay" class="overlay hidden">
-  <div id="createModal" class="modal sm">
+  <div id="createModal" class="modal sm hidden">
     <div class="modal-head"><h3>New Payroll Run</h3><button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button></div>
     <div class="modal-body">
       <form id="createForm" onsubmit="handleCreateRun(event)" style="display:flex;flex-direction:column;gap:16px">
@@ -130,15 +130,24 @@
       </form>
     </div>
   </div>
+
+  <!-- payslip detail -->
+  <div id="payslipModal" class="modal md hidden">
+    <div class="modal-head"><h3>Payslip Detail</h3><button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button></div>
+    <div class="modal-body"><div id="payslipDetail"></div></div>
+  </div>
 </div>
 
 <script src="../assets/js/api.js"></script>
 <script>
     Object.assign(API._endpointMap, {
-        'payroll_runs':   'payroll/index.php?action=runs',
-        'payroll_create': 'payroll/index.php?action=create_run',
-        'run_payslips':   'payroll/index.php?action=run_payslips',
-        'notifications':  'notifications/index.php',
+        'payroll_runs':      'payroll/index.php?action=runs',
+        'payroll_create':    'payroll/index.php?action=create_run',
+        'run_payslips':      'payroll/index.php?action=run_payslips',
+        'payroll_mark_paid': 'payroll/index.php?action=mark_paid',
+        'payslip_detail':    'payroll/index.php?action=payslip_detail',
+        'payroll_delete':    'payroll/index.php?action=delete_run',
+        'notifications':     'notifications/index.php',
     });
 
     const MONTHS = ['', 'January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -212,6 +221,7 @@
     async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
 
     function money(n) { return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function numFmt(n) { n = Number(n || 0); return Number.isInteger(n) ? n : Math.round(n * 10) / 10; }
     function initials(r) {
         const a = (r.first_name || '').trim(), b = (r.last_name || '').trim();
         return ((a[0] || '') + (b[0] || (a[1] || ''))).toUpperCase() || '?';
@@ -247,12 +257,15 @@
             const tr = document.createElement('tr');
             tr.style.cursor = 'pointer';
             tr.onclick = () => openPayslips(r.id);
+            const acts = [`<button class="btn btn-outline" onclick="event.stopPropagation(); openPayslips(${r.id})">View</button>`];
+            if (r.status === 'finalized') acts.push(`<button class="btn btn-primary" onclick="event.stopPropagation(); markPaid(${r.id})">Mark Paid</button>`);
+            if (r.status !== 'paid') acts.push(`<button class="act-btn" title="Delete run" onclick="event.stopPropagation(); deleteRun(${r.id})"><span class="material-symbols-outlined">delete</span></button>`);
             tr.innerHTML = `
                 <td><b style="color:var(--on-surface)">${MONTHS[r.month]} ${r.year}</b></td>
                 <td>${runStatusBadge(r.status)}</td>
                 <td>${r.payslip_count || 0}</td>
                 <td><span class="money">${money(r.total_net)}</span></td>
-                <td class="t-right"><button class="btn btn-outline" onclick="event.stopPropagation(); openPayslips(${r.id})">View</button></td>`;
+                <td><div class="row-actions">${acts.join('')}</div></td>`;
             body.appendChild(tr);
         });
     }
@@ -293,17 +306,32 @@
         rows.forEach(p => {
             const name = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.emp_code;
             const tr = document.createElement('tr');
+            tr.style.cursor = 'pointer';
+            tr.title = 'View breakdown';
+            tr.onclick = () => openPayslipDetail(p.id);
             tr.innerHTML = `
                 <td><div class="emp-cell"><div class="emp-avatar">${initials(p)}</div><div class="emp-meta"><div class="emp-name">${name}</div><div class="emp-sub">${p.emp_code}</div></div></div></td>
-                <td>${p.working_days}</td>
-                <td>${p.present_days}</td>
-                <td>${p.paid_leaves}</td>
-                <td>${p.lop_days}</td>
+                <td>${numFmt(p.working_days)}</td>
+                <td>${numFmt(p.present_days)}</td>
+                <td>${numFmt(p.paid_leaves)}</td>
+                <td>${numFmt(p.lop_days)}</td>
                 <td><span class="money">${money(p.gross)}</span></td>
                 <td><span class="money">${money(p.deductions)}</span></td>
                 <td><span class="money net">${money(p.net_pay)}</span></td>`;
             body.appendChild(tr);
         });
+        // run total footer
+        const tg = rows.reduce((a, p) => a + Number(p.gross || 0), 0);
+        const td = rows.reduce((a, p) => a + Number(p.deductions || 0), 0);
+        const tn = rows.reduce((a, p) => a + Number(p.net_pay || 0), 0);
+        const foot = document.createElement('tr');
+        foot.style.fontWeight = '700';
+        foot.style.background = 'var(--surface-low)';
+        foot.innerHTML = `<td colspan="5" class="t-right">Total · ${rows.length} employee(s)</td>
+            <td><span class="money">${money(tg)}</span></td>
+            <td><span class="money">${money(td)}</span></td>
+            <td><span class="money net">${money(tn)}</span></td>`;
+        body.appendChild(foot);
     }
 
     function closePayslips() { document.getElementById('payslipSection').classList.add('hidden'); selectedRun = null; }
@@ -315,7 +343,10 @@
         btn.disabled = true; btn.innerText = 'Generating...';
         try {
             const res = await API.post('run_payslips', { run_id: selectedRun.id });
-            alert(res.message || 'Payslips generated');
+            const d = res.data || {};
+            let msg = res.message || 'Payslips generated';
+            if (d.skipped) msg += `\n\n⚠ ${d.skipped} employee(s) skipped — no salary structure set. Set their salary from the Employees page and re-generate.`;
+            alert(msg);
             await loadRuns();
             openPayslips(selectedRun.id);
         } catch (e) {
@@ -325,10 +356,73 @@
         }
     }
 
-    // ---- create run ----
+    // ---- modals ----
     const overlay = document.getElementById('modalOverlay');
-    function openCreateModal() { overlay.classList.remove('hidden'); }
-    function closeModals() { overlay.classList.add('hidden'); document.getElementById('createForm').reset(); }
+    function hideModals() { document.getElementById('createModal').classList.add('hidden'); document.getElementById('payslipModal').classList.add('hidden'); }
+    function showModal(id) { overlay.classList.remove('hidden'); hideModals(); document.getElementById(id).classList.remove('hidden'); }
+    function closeModals() { overlay.classList.add('hidden'); hideModals(); document.getElementById('createForm').reset(); }
+    function openCreateModal() {
+        // reset ke baad stale defaults na rahe - current month/year bhar do
+        document.getElementById('run_month').value = new Date().getMonth() + 1;
+        document.getElementById('run_year').value = new Date().getFullYear();
+        showModal('createModal');
+    }
+
+    // ---- mark paid / delete run ----
+    async function markPaid(id) {
+        const r = runs.find(x => x.id === id); if (!r) return;
+        if (!confirm(`Mark ${MONTHS[r.month]} ${r.year} payroll as PAID? Iske baad ye run lock ho jayega.`)) return;
+        try {
+            await API.post('payroll_mark_paid', { run_id: id });
+            await loadRuns();
+            if (selectedRun && selectedRun.id === id) openPayslips(id);
+        } catch (e) { alert(e.message || 'Could not mark paid'); }
+    }
+    async function deleteRun(id) {
+        const r = runs.find(x => x.id === id); if (!r) return;
+        if (!confirm(`Delete ${MONTHS[r.month]} ${r.year} payroll run? Ye run aur iski saari payslips permanently hat jayengi.`)) return;
+        try {
+            await API.post('payroll_delete', { run_id: id });
+            if (selectedRun && selectedRun.id === id) closePayslips();
+            loadRuns();
+        } catch (e) { alert(e.message || 'Could not delete run'); }
+    }
+
+    // ---- payslip detail (component breakdown) ----
+    async function openPayslipDetail(id) {
+        showModal('payslipModal');
+        document.getElementById('payslipDetail').innerHTML = '<div class="state-box"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading...</p></div>';
+        try {
+            const res = await API.get('payslip_detail', { id });
+            renderPayslipDetail(res.data || {});
+        } catch (e) { alert(e.message || 'Could not load payslip'); closeModals(); }
+    }
+    function renderPayslipDetail(s) {
+        const name = `${s.first_name || ''} ${s.last_name || ''}`.trim() || s.emp_code;
+        const list = arr => arr.length
+            ? arr.map(i => `<div class="detail-row"><span class="dk">${i.component_name}</span><span class="dv"><span class="money">${money(i.amount)}</span></span></div>`).join('')
+            : '<div class="detail-row"><span class="dk" style="color:var(--outline)">None</span></div>';
+        const earnings = (s.items || []).filter(i => i.kind === 'earning');
+        const deductions = (s.items || []).filter(i => i.kind === 'deduction');
+        document.getElementById('payslipDetail').innerHTML = `
+            <div class="emp-cell" style="margin-bottom:14px">
+                <div class="emp-avatar lg">${initials(s)}</div>
+                <div class="emp-meta"><div class="emp-name">${name}</div><div class="emp-sub">${s.emp_code} · ${MONTHS[s.month]} ${s.year}</div></div>
+                <div style="margin-left:auto">${runStatusBadge(s.run_status)}</div>
+            </div>
+            <div class="detail-row"><span class="dk">Working Days</span><span class="dv">${numFmt(s.working_days)}</span></div>
+            <div class="detail-row"><span class="dk">Present</span><span class="dv">${numFmt(s.present_days)}</span></div>
+            <div class="detail-row"><span class="dk">Paid Leave</span><span class="dv">${numFmt(s.paid_leaves)}</span></div>
+            <div class="detail-row"><span class="dk">Loss of Pay</span><span class="dv">${numFmt(s.lop_days)}</span></div>
+            <h4 class="section-title" style="margin-top:16px">Earnings</h4>
+            ${list(earnings)}
+            <div class="detail-row"><span class="dk"><b>Gross</b></span><span class="dv"><span class="money"><b>${money(s.gross)}</b></span></span></div>
+            <h4 class="section-title" style="margin-top:16px">Deductions</h4>
+            ${list(deductions)}
+            <div class="detail-row"><span class="dk"><b>Total Deductions</b></span><span class="dv"><span class="money"><b>${money(s.deductions)}</b></span></span></div>
+            <div class="detail-row" style="border-top:2px solid var(--outline-variant);margin-top:6px;padding-top:12px"><span class="dk"><b>Net Pay</b></span><span class="dv"><span class="money net"><b>${money(s.net_pay)}</b></span></span></div>
+            <div class="modal-foot" style="border-top:none;padding-top:14px"><button onclick="closeModals()" class="btn btn-primary">Close</button></div>`;
+    }
 
     async function handleCreateRun(e) {
         e.preventDefault();

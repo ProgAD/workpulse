@@ -185,7 +185,10 @@
         <div id="view_designation" class="desig">--</div>
         <div id="view_emp_code" class="code">Login ID: --</div>
       </div>
-      <button onclick="editFromView()" class="btn btn-outline" style="margin-bottom:4px"><span class="material-symbols-outlined" style="font-size:18px">edit</span> Edit</button>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:4px">
+        <button onclick="editFromView()" class="btn btn-outline"><span class="material-symbols-outlined" style="font-size:18px">edit</span> Edit</button>
+        <button onclick="salaryFromView()" class="btn btn-outline"><span class="material-symbols-outlined" style="font-size:18px">payments</span> Salary</button>
+      </div>
     </div>
     <div class="view-body">
       <div>
@@ -198,6 +201,30 @@
         <div class="kv"><span class="material-symbols-outlined">apartment</span><div><div class="k">Department</div><div id="view_department" class="v">--</div></div></div>
         <div class="kv"><span class="material-symbols-outlined">event</span><div><div class="k">Date of Joining</div><div id="view_doj" class="v">--</div></div></div>
       </div>
+    </div>
+  </div>
+
+  <!-- set salary -->
+  <div id="salaryModal" class="modal md hidden">
+    <div class="modal-head"><h3>Set Salary</h3><button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button></div>
+    <div class="modal-body">
+      <p id="sal_emp" class="emp-name">--</p>
+      <p id="sal_current" class="emp-sub" style="margin-bottom:4px"></p>
+      <form id="salaryForm" onsubmit="handleSaveSalary(event)" style="display:flex;flex-direction:column;gap:16px">
+        <input type="hidden" id="sal_user_id">
+        <div class="form-row">
+          <div class="form-group"><label>Monthly Wage (₹) <span class="req">*</span></label><input type="number" id="sal_wage" min="1" step="1" required placeholder="e.g. 50000"></div>
+          <div class="form-group"><label>Effective From</label><input type="date" id="sal_effective"></div>
+        </div>
+        <div>
+          <h4 class="section-title">Auto-calculated breakdown</h4>
+          <div id="sal_preview"><p class="emp-sub">Enter a wage to preview components.</p></div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" onclick="closeModals()" class="btn btn-outline">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Salary</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
@@ -349,6 +376,7 @@
                     <div class="row-actions">
                         <button class="act-btn" title="View" onclick="openViewModal(${emp.id})"><span class="material-symbols-outlined">visibility</span></button>
                         <button class="act-btn" title="Edit" onclick="openEditModal(${emp.id})"><span class="material-symbols-outlined">edit</span></button>
+                        <button class="act-btn" title="Set Salary" onclick="openSalaryModal(${emp.id})"><span class="material-symbols-outlined">payments</span></button>
                     </div>
                 </td>`;
             body.appendChild(tr);
@@ -373,12 +401,13 @@
 
     // ---- modals ----
     const overlay = document.getElementById('modalOverlay');
-    const modals = ['addEmployeeModal', 'credModal', 'editEmployeeModal', 'viewEmployeeModal'];
+    const modals = ['addEmployeeModal', 'credModal', 'editEmployeeModal', 'viewEmployeeModal', 'salaryModal'];
     function hideAllModals() { modals.forEach(id => document.getElementById(id).classList.add('hidden')); }
     function closeModals() {
         overlay.classList.add('hidden'); hideAllModals();
         document.getElementById('addEmployeeForm').reset();
         document.getElementById('editEmployeeForm').reset();
+        document.getElementById('salaryForm').reset();
     }
     function showModal(id) { overlay.classList.remove('hidden'); hideAllModals(); document.getElementById(id).classList.remove('hidden'); }
     function openAddModal() { showModal('addEmployeeModal'); }
@@ -461,6 +490,72 @@
         } catch (error) { alert(error.message || 'Employee create nahi hua'); }
         finally { btn.innerText = 'Create Employee'; btn.disabled = false; }
     }
+    // ---- salary structure ----
+    function money(n) { return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    // backend (salary/index.php) jaisa hi calculation - preview ke liye
+    function calcComponents(wage) {
+        const r2 = n => Math.round(n * 100) / 100;
+        const basic = r2(wage * 0.50), hra = r2(basic * 0.50), std = r2(wage * 0.0833);
+        const perf = r2(basic * 0.0833), lta = r2(basic * 0.0833);
+        const fixed = r2(Math.max(wage - (basic + hra + std + perf + lta), 0)), pf = r2(basic * 0.12);
+        return {
+            earnings: [['Basic Salary', basic], ['House Rent Allowance', hra], ['Standard Allowance', std], ['Performance Bonus', perf], ['Leave Travel Allowance', lta], ['Fixed Allowance', fixed]],
+            deductions: [['PF Employee', pf], ['Professional Tax', 200]]
+        };
+    }
+    function renderSalaryPreview() {
+        const wage = parseFloat(document.getElementById('sal_wage').value) || 0;
+        const box = document.getElementById('sal_preview');
+        if (!wage) { box.innerHTML = '<p class="emp-sub">Enter a wage to preview components.</p>'; return; }
+        const c = calcComponents(wage);
+        const gross = c.earnings.reduce((a, x) => a + x[1], 0);
+        const ded = c.deductions.reduce((a, x) => a + x[1], 0);
+        const rows = arr => arr.map(x => `<div class="detail-row"><span class="dk">${x[0]}</span><span class="dv"><span class="money">${money(x[1])}</span></span></div>`).join('');
+        box.innerHTML = `${rows(c.earnings)}
+            <div class="detail-row"><span class="dk"><b>Gross</b></span><span class="dv"><span class="money"><b>${money(gross)}</b></span></span></div>
+            ${rows(c.deductions)}
+            <div class="detail-row" style="border-top:2px solid var(--outline-variant);margin-top:4px;padding-top:10px"><span class="dk"><b>Net Pay</b></span><span class="dv"><span class="money net"><b>${money(gross - ded)}</b></span></span></div>`;
+    }
+    async function openSalaryModal(id) {
+        showModal('salaryModal');
+        const emp = employeesData.find(e => e.id === id) || currentEmp || {};
+        document.getElementById('sal_user_id').value = id;
+        document.getElementById('sal_emp').innerText = (`${emp.first_name || ''} ${emp.last_name || ''}`.trim() || ('Employee #' + id)) + (emp.emp_code ? ' · ' + emp.emp_code : '');
+        document.getElementById('sal_wage').value = '';
+        document.getElementById('sal_effective').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('sal_current').innerText = 'Loading current salary...';
+        renderSalaryPreview();
+        document.getElementById('sal_wage').oninput = renderSalaryPreview;
+        try {
+            const res = await API.get('salary_structure', { user_id: id });
+            const s = res.data;
+            if (s && s.month_wage) {
+                document.getElementById('sal_wage').value = Math.round(s.month_wage);
+                document.getElementById('sal_current').innerText = `Current: ₹${Math.round(s.month_wage)}/month (since ${s.effective_from || '—'})`;
+                renderSalaryPreview();
+            } else {
+                document.getElementById('sal_current').innerText = 'No salary structure set yet.';
+            }
+        } catch (e) { document.getElementById('sal_current').innerText = ''; }
+    }
+    function salaryFromView() { if (currentEmp) openSalaryModal(currentEmp.id); }
+    async function handleSaveSalary(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const wage = parseFloat(document.getElementById('sal_wage').value);
+        if (!wage || wage <= 0) { alert('Enter a valid monthly wage'); return; }
+        const payload = { user_id: Number(document.getElementById('sal_user_id').value), month_wage: wage };
+        const eff = document.getElementById('sal_effective').value;
+        if (eff) payload.effective_from = eff;
+        btn.disabled = true; btn.innerText = 'Saving...';
+        try {
+            await API.post('salary_save', payload);
+            closeModals();
+            alert('Salary structure saved ✔');
+        } catch (err) { alert(err.message || 'Could not save salary'); }
+        finally { btn.disabled = false; btn.innerText = 'Save Salary'; }
+    }
+
     function copyCreds() {
         const txt = 'Login ID: ' + document.getElementById('cred_login_id').innerText
             + '\nPassword: ' + document.getElementById('cred_password').innerText

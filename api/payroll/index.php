@@ -236,4 +236,66 @@ if ($ACTION === 'run_payslips' && $METHOD === 'POST') {
     ], "Payslips generated for {$generated} employee(s)");
 }
 
+// admin: finalized run ko paid mark karo (salary disburse hone ke baad)
+if ($ACTION === 'mark_paid' && $METHOD === 'POST') {
+    $me = require_auth('payroll.manage');
+    $in = body();
+    require_fields($in, ['run_id']);
+
+    $stmt = db()->prepare("SELECT * FROM payroll_runs WHERE id = ? AND company_id = ?");
+    $stmt->execute([(int)$in['run_id'], $me['company_id']]);
+    $run = $stmt->fetch();
+    if (!$run) fail('Run not found', 404);
+    if ($run['status'] !== 'finalized') fail('Only a finalized run can be marked paid', 409);
+
+    db()->prepare("UPDATE payroll_runs SET status = 'paid' WHERE id = ?")->execute([$run['id']]);
+    audit('mark_paid', 'payroll_run', (int)$run['id']);
+    ok(null, 'Run marked as paid');
+}
+
+// admin: ek payslip ki poori detail (line items ke saath) - accuracy check ke liye
+if ($ACTION === 'payslip_detail' && $METHOD === 'GET') {
+    $me = require_auth('payroll.view_all');
+    $id = (int)($_GET['id'] ?? 0);
+    if (!$id) fail('id required', 422);
+
+    $stmt = db()->prepare(
+        "SELECT ps.*, u.emp_code, p.first_name, p.last_name,
+                pr.month, pr.year, pr.status AS run_status
+         FROM payslips ps
+         JOIN payroll_runs pr ON pr.id = ps.run_id
+         JOIN users u ON u.id = ps.user_id
+         LEFT JOIN employee_profiles p ON p.user_id = u.id
+         WHERE ps.id = ? AND pr.company_id = ?"
+    );
+    $stmt->execute([$id, $me['company_id']]);
+    $slip = $stmt->fetch();
+    if (!$slip) fail('Payslip not found', 404);
+
+    $items = db()->prepare(
+        "SELECT component_name, kind, amount FROM payslip_items WHERE payslip_id = ? ORDER BY kind DESC, id"
+    );
+    $items->execute([$id]);
+    $slip['items'] = $items->fetchAll();
+    ok($slip);
+}
+
+// admin: galat run delete karo. paid run delete nahi hoga.
+// payslips + items FK cascade se apne aap hat jayenge.
+if ($ACTION === 'delete_run' && $METHOD === 'POST') {
+    $me = require_auth('payroll.manage');
+    $in = body();
+    require_fields($in, ['run_id']);
+
+    $stmt = db()->prepare("SELECT * FROM payroll_runs WHERE id = ? AND company_id = ?");
+    $stmt->execute([(int)$in['run_id'], $me['company_id']]);
+    $run = $stmt->fetch();
+    if (!$run) fail('Run not found', 404);
+    if ($run['status'] === 'paid') fail('A paid run cannot be deleted', 409);
+
+    db()->prepare("DELETE FROM payroll_runs WHERE id = ?")->execute([$run['id']]);
+    audit('delete', 'payroll_run', (int)$run['id']);
+    ok(null, 'Payroll run deleted');
+}
+
 fail('Unknown action: ' . $ACTION, 404);
