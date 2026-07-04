@@ -105,9 +105,14 @@ CREATE TABLE role_permissions (
 CREATE TABLE users (
     id                 BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id         BIGINT UNSIGNED NOT NULL,
+    -- login id, system generated: [company initials][2+2 letters of name][join year][serial]
+    -- e.g. OIJODO20220001 = Odoo India + JOhn DOe + 2022 + 0001
     emp_code           VARCHAR(30) NOT NULL,
     email              VARCHAR(255) NOT NULL,
     password           VARCHAR(255) NOT NULL,   -- bcrypt
+    -- admin jab employee banata hai to password auto-generate hota hai,
+    -- pehli login pe change karwana padta hai
+    must_change_password TINYINT(1) NOT NULL DEFAULT 0,
     role_id            INT UNSIGNED NOT NULL,
     email_verified_at  TIMESTAMP NULL DEFAULT NULL,
     status             ENUM('invited','active','suspended','exited') NOT NULL DEFAULT 'invited',

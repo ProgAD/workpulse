@@ -9,14 +9,17 @@ if ($ACTION === 'login' && $METHOD === 'POST') {
     $in = body();
     require_fields($in, ['email', 'password']);
 
+    // email field me login id (emp_code) ya email dono chalta hai
+    $identifier = trim($in['email']);
     $stmt = db()->prepare(
         "SELECT id, email, password, status, failed_logins, locked_until
-         FROM users WHERE email = ? AND deleted_at IS NULL"
+         FROM users
+         WHERE (email = ? OR emp_code = ?) AND deleted_at IS NULL"
     );
-    $stmt->execute([trim(strtolower($in['email']))]);
+    $stmt->execute([strtolower($identifier), strtoupper($identifier)]);
     $user = $stmt->fetch();
 
-    if (!$user) fail('Invalid email or password', 401);
+    if (!$user) fail('Invalid login id / email or password', 401);
 
     if ($user['locked_until'] !== null && strtotime($user['locked_until']) > time()) {
         fail('Account locked. Try again later.', 423);
@@ -95,10 +98,13 @@ if ($ACTION === 'signup' && $METHOD === 'POST') {
             ->execute([trim($in['company']), $in['phone'], $logoUrl]);
         $companyId = $pdo->lastInsertId();
 
+        // system generated login id, admin is company ka pehla joinee hota hai
+        $loginId = generate_login_id($companyId, $in['company'], $nameParts[0], $nameParts[1] ?? null);
+
         $pdo->prepare(
             "INSERT INTO users (company_id, emp_code, email, password, role_id, status, email_verified_at)
-             VALUES (?, 'EMP001', ?, ?, ?, 'active', NOW())"
-        )->execute([$companyId, $email, password_hash($in['password'], PASSWORD_BCRYPT), $roleId]);
+             VALUES (?, ?, ?, ?, ?, 'active', NOW())"
+        )->execute([$companyId, $loginId, $email, password_hash($in['password'], PASSWORD_BCRYPT), $roleId]);
         $userId = $pdo->lastInsertId();
 
         $pdo->prepare("INSERT INTO employee_profiles (user_id, first_name, last_name, phone) VALUES (?, ?, ?, ?)")
@@ -116,6 +122,27 @@ if ($ACTION === 'signup' && $METHOD === 'POST') {
 
     audit('signup', 'company', (int)$companyId);
     ok(current_user(), 'Account created');
+}
+
+// system generated password badalne ke liye (aur waise bhi)
+if ($ACTION === 'change_password' && $METHOD === 'POST') {
+    $user = require_auth();
+    $in = body();
+    require_fields($in, ['old_password', 'new_password']);
+
+    if (strlen($in['new_password']) < 6) fail('New password must be at least 6 characters', 422);
+
+    $stmt = db()->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt->execute([$user['id']]);
+    $hash = $stmt->fetchColumn();
+
+    if (!password_verify($in['old_password'], $hash)) fail('Current password is wrong', 401);
+
+    db()->prepare("UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?")
+        ->execute([password_hash($in['new_password'], PASSWORD_BCRYPT), $user['id']]);
+
+    audit('password_change', 'user', (int)$user['id']);
+    ok(null, 'Password changed');
 }
 
 if ($ACTION === 'logout' && $METHOD === 'POST') {

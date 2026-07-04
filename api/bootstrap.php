@@ -5,6 +5,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/helpers/Response.php';
 require_once __DIR__ . '/helpers/Auth.php';
+require_once __DIR__ . '/helpers/LoginId.php';
 
 // koi bhi uncaught error ho to json me hi jaye, html error page nahi
 set_exception_handler(function ($e) {

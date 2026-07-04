@@ -26,7 +26,7 @@ function current_user(): ?array
     if ($user !== null) return $user;
 
     $stmt = db()->prepare(
-        "SELECT u.id, u.company_id, u.emp_code, u.email, u.status, u.role_id, r.name AS role
+        "SELECT u.id, u.company_id, u.emp_code, u.email, u.status, u.role_id, u.must_change_password, r.name AS role
          FROM users u JOIN roles r ON r.id = u.role_id
          WHERE u.id = ? AND u.deleted_at IS NULL AND u.status = 'active'"
     );

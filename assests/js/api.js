@@ -15,6 +15,7 @@ const API = {
     'login':           'auth.php?action=login',
     'signup':          'auth.php?action=signup',
     'logout':          'auth.php?action=logout',
+    'change_password': 'auth.php?action=change_password',
     'me':              'auth.php?action=me',
 
     // niche wale abhi banne hai (php file ready hote hi kaam karenge)
