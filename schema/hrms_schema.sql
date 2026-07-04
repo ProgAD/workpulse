@@ -22,7 +22,7 @@ CREATE TABLE companies (
     logo_url      VARCHAR(500),
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    delete_flag    TIMESTAMP NULL DEFAULT NULL
+    delete_flag    TINYINT(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
 CREATE TABLE departments (
@@ -33,7 +33,7 @@ CREATE TABLE departments (
     head_user_id  BIGINT UNSIGNED,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    delete_flag    TIMESTAMP NULL DEFAULT NULL,
+    delete_flag    TINYINT(1) NOT NULL DEFAULT 0,
     UNIQUE KEY uq_dept_code (company_id, code),
     FOREIGN KEY (company_id) REFERENCES companies(id)
 ) ENGINE=InnoDB;
@@ -44,7 +44,7 @@ CREATE TABLE designations (
     title       VARCHAR(150) NOT NULL,
     level       TINYINT UNSIGNED DEFAULT 1,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    delete_flag  TIMESTAMP NULL DEFAULT NULL,
+    delete_flag  TINYINT(1) NOT NULL DEFAULT 0,
     UNIQUE KEY uq_designation (company_id, title),
     FOREIGN KEY (company_id) REFERENCES companies(id)
 ) ENGINE=InnoDB;
@@ -120,7 +120,7 @@ CREATE TABLE users (
     last_login_ip      VARCHAR(45),
     created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    delete_flag         TIMESTAMP NULL DEFAULT NULL,
+    delete_flag         TINYINT(1) NOT NULL DEFAULT 0,
     -- email globally unique so login by email alone is never ambiguous
     UNIQUE KEY uq_email (email),
     UNIQUE KEY uq_emp_code (company_id, emp_code),
@@ -181,7 +181,7 @@ CREATE TABLE employee_profiles (
 
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    delete_flag        TIMESTAMP NULL DEFAULT NULL,
+    delete_flag        TINYINT(1) NOT NULL DEFAULT 0,
     KEY idx_dept (department_id),
     KEY idx_manager (manager_id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -203,7 +203,7 @@ CREATE TABLE employee_documents (
     verified_at TIMESTAMP NULL DEFAULT NULL,
     uploaded_by BIGINT UNSIGNED NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    delete_flag  TIMESTAMP NULL DEFAULT NULL,
+    delete_flag  TINYINT(1) NOT NULL DEFAULT 0,
     KEY idx_user_docs (user_id, delete_flag),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
