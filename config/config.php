@@ -22,8 +22,8 @@ function env(string $key, string $default = ''): string
 
 define('APP_NAME', 'WorkPulse');
 define('BASE_PATH', dirname(__DIR__));
-define('UPLOAD_DIR', BASE_PATH . '/uploads');
-define('UPLOAD_URL', '/workpulse/uploads');
+define('UPLOAD_DIR', BASE_PATH . '/assests/uploads');
+define('UPLOAD_URL', '/workpulse/assests/uploads');
 define('MAX_UPLOAD_BYTES', 5 * 1024 * 1024);
 
 define('DB_SOCKET', env('DB_SOCKET'));

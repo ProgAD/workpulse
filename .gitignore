@@ -1,6 +1,6 @@
 config/.env
-uploads/*
-!uploads/.gitkeep
+assests/uploads/*
+!assests/uploads/.gitkeep
 .DS_Store
 *.log
 vendor/
