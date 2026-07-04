@@ -1,0 +1,45 @@
+Here Is Our Skeleton Structure
+
+workpulse/
+|
+|-- README.md
+|-- .gitignore
+|
+|-- admin/                  -> admin/HR side ke saare pages yahan
+|-- employee/               -> employee self service pages
+|
+|-- assests/
+|   |-- css/
+|   |-- js/
+|   |   |-- api.js          -> saari api calls yahi se, direct fetch mat likhna pages me
+|   |   |-- helpers/        -> common js utils
+|   |-- uploads/            -> profile pics, docs, payslip pdf (git me nahi jata)
+|   |-- file_str.txt        -> ye file
+|
+|-- api/                    -> php backend, url: localhost/workpulse/api/...
+|   |-- .htaccess           -> sab requests index.php pe bhejta hai
+|   |-- index.php           -> router, yahi se sab routes dispatch hote hai
+|   |-- helpers/
+|   |   |-- Auth.php        -> session + permission check (require_auth)
+|   |   |-- Response.php    -> ok() / fail() json helpers
+|   |-- routes/
+|   |   |-- auth.php        -> login / logout / me  [DONE]
+|   |   |-- (aage yahan aayenge: employees.php, attendance.php, leaves.php, payroll.php)
+|   |-- admin/
+|   |-- employees/
+|
+|-- config/
+|   |-- config.php          -> app constants, .env se values uthata hai
+|   |-- database.php        -> db() -> PDO connection
+|   |-- .env                -> apne machine ki db details (git me nahi jata)
+|   |-- .env.example        -> iski copy banake .env banao
+|
+|-- schema/
+    |-- hrms_schema.sql     -> pura db schema, 27 tables + roles/permissions seed
+    |-- seed_dev.sql        -> testing ke liye demo company + admin user
+
+quick setup:
+1. schema import: mysql -u root < schema/hrms_schema.sql
+2. dev data:      mysql -u root < schema/seed_dev.sql
+3. config/.env.example ko copy karke .env banao, db details bharo
+4. test login:    admin@workpulse.test / admin123
