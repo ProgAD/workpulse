@@ -5,8 +5,14 @@ workpulse/
 |-- README.md
 |-- .gitignore
 |
-|-- admin/                  -> admin/HR side ke saare pages yahan
-|-- employee/               -> employee self service pages
+|-- index.html              -> login page (login id ya email dono chalta hai)
+|-- signup.html             -> company registration (admin ban jata hai)
+|-- change-password.html    -> pehli login pe force redirect hota hai yahan
+|
+|-- admin/
+|   |-- dashboard.html      -> employee list + add employee (id/password auto milta hai)
+|-- employee/
+|   |-- dashboard.html      -> profile info, attendance aayega yahan
 |
 |-- assests/
 |   |-- css/
@@ -20,8 +26,10 @@ workpulse/
 |-- api/                    -> php backend, har module ki alag file
 |   |-- bootstrap.php       -> config + db + helpers, har api file me sabse pehle include
 |   |-- health.php          -> server/db check                              [DONE]
-|   |-- auth.php            -> ?action=login / logout / me                  [DONE]
-|   |-- employees.php       -> employee crud                                [TODO]
+|   |-- auth.php            -> ?action=login / signup / logout / me / change_password  [DONE]
+|   |-- employees/
+|   |   |-- index.php       -> list, ?action=create/update/remove           [DONE]
+|   |                          create pe login id + temp password system banata hai
 |   |-- attendance.php      -> ?action=punch_in / punch_out / today / mine  [TODO]
 |   |-- leaves.php          -> ?action=types / balances / apply / review    [TODO]
 |   |-- payroll.php         -> ?action=my_payslips / runs / create_run      [TODO]

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WorkPulse — My Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assests/images/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="../assests/css/app.css">
+  <style>
+    .appbar {
+      background: var(--md-primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      box-shadow: var(--md-shadow-2);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .appbar img { width: 30px; height: 30px; }
+    .appbar h1 { font-size: 18px; font-weight: 500; flex: 1; }
+    .icon-btn {
+      border: none; background: none; color: inherit; cursor: pointer;
+      padding: 8px; border-radius: 50%; display: flex;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,.15); }
+
+    .content { max-width: 700px; margin: 24px auto; padding: 0 16px; display: grid; gap: 18px; }
+    .hello h2 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+    .hello .code { font-family: monospace; color: var(--md-text-2); font-size: 14px; }
+    .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .row:last-child { border: none; }
+    .row .k { color: var(--md-text-2); }
+    .soon { text-align:center; color: var(--md-text-2); font-size: 14px; padding: 8px 0; }
+  </style>
+</head>
+<body>
+
+  <div class="appbar">
+    <img src="../assests/images/logo.svg" alt="">
+    <h1>WorkPulse</h1>
+    <button class="icon-btn" id="cpBtn" title="Change password"><span class="material-icons">key</span></button>
+    <button class="icon-btn" id="logoutBtn" title="Logout"><span class="material-icons">logout</span></button>
+  </div>
+
+  <div class="content">
+    <div class="md-card hello">
+      <h2 id="helloName">Hi!</h2>
+      <div class="code" id="helloCode"></div>
+    </div>
+
+    <div class="md-card">
+      <div class="row"><span class="k">Email</span><span id="pEmail">-</span></div>
+      <div class="row"><span class="k">Login ID</span><span class="code" id="pCode">-</span></div>
+      <div class="row"><span class="k">Role</span><span id="pRole">-</span></div>
+      <div class="row"><span class="k">Status</span><span id="pStatus">-</span></div>
+    </div>
+
+    <div class="md-card">
+      <div class="soon">Attendance punch in/out yahan aayega — agla module 🚧</div>
+    </div>
+  </div>
+
+  <div class="md-snackbar" id="snackbar"></div>
+
+  <script src="../assests/js/api.js"></script>
+  <script>
+    API.get('me').then(res => {
+      const u = res.data;
+      if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+      document.getElementById('helloName').textContent = 'Hi, ' + u.email.split('@')[0] + '!';
+      document.getElementById('helloCode').textContent = u.emp_code;
+      document.getElementById('pEmail').textContent = u.email;
+      document.getElementById('pCode').textContent = u.emp_code;
+      document.getElementById('pRole').textContent = u.role;
+      document.getElementById('pStatus').textContent = u.status;
+    }).catch(() => {});
+
+    document.getElementById('cpBtn').addEventListener('click', () => {
+      window.location.href = '../change-password.html';
+    });
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try { await API.post('logout'); } catch (e) {}
+      window.location.href = '../index.html';
+    });
+  </script>
+</body>
+</html>

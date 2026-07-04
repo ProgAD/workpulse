@@ -131,9 +131,13 @@
 
       try {
         const res = await API.post('login', { email, password });
+        // pehli login pe system wala password badalna zaroori hai
+        if (Number(res.data.must_change_password) === 1) {
+          window.location.href = 'change-password.html';
+          return;
+        }
         // role ke hisab se dashboard pe bhejo
-        const role = res.data && res.data.role;
-        window.location.href = role === 'admin'
+        window.location.href = res.data.role === 'admin'
           ? 'admin/dashboard.html'
           : 'employee/dashboard.html';
       } catch (err) {
@@ -145,8 +149,11 @@
 
     // agar pehle se logged in hai to seedha dashboard
     API.get('me').then(res => {
-      const role = res.data && res.data.role;
-      window.location.href = role === 'admin'
+      if (Number(res.data.must_change_password) === 1) {
+        window.location.href = 'change-password.html';
+        return;
+      }
+      window.location.href = res.data.role === 'admin'
         ? 'admin/dashboard.html'
         : 'employee/dashboard.html';
     }).catch(() => { /* logged in nahi hai, login form hi dikhao */ });

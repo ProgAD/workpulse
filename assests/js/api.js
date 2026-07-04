@@ -18,9 +18,12 @@ const API = {
     'change_password': 'auth.php?action=change_password',
     'me':              'auth.php?action=me',
 
+    'employees':        'employees/index.php',
+    'employee_create':  'employees/index.php?action=create',
+    'employee_update':  'employees/index.php?action=update',
+    'employee_remove':  'employees/index.php?action=remove',
+
     // niche wale abhi banne hai (php file ready hote hi kaam karenge)
-    'employees':       'employees.php',
-    'employee_docs':   'employees.php?action=documents',
 
     'punch_in':        'attendance.php?action=punch_in',
     'punch_out':       'attendance.php?action=punch_out',
