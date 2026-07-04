@@ -211,7 +211,7 @@ CREATE TABLE employee_documents (
 -- attendance
 -- ---------------------------------------------------------------
 
--- one row per user per day. summary gets recalculated from punches.
+-- one row per user per day. check_in pehli punch, check_out aakhri.
 -- user_id has no cascade: users must be soft-deleted, attendance history stays
 CREATE TABLE attendance (
     id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -232,20 +232,6 @@ CREATE TABLE attendance (
     KEY idx_date_status (att_date, status),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
     FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE SET NULL
-) ENGINE=InnoDB;
-
--- raw punches, append only. supports multiple in/out per day
-CREATE TABLE attendance_punches (
-    id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    attendance_id BIGINT UNSIGNED NOT NULL,
-    punch_type    ENUM('in','out') NOT NULL,
-    punched_at    DATETIME NOT NULL,
-    ip            VARCHAR(45),
-    lat           DECIMAL(10,7),
-    lng           DECIMAL(10,7),
-    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    KEY idx_att (attendance_id, punched_at),
-    FOREIGN KEY (attendance_id) REFERENCES attendance(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- "i forgot to punch out" requests
