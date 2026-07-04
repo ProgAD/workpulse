@@ -5,7 +5,7 @@
 // employees.php?action=update&id=5 (POST) -> basic edit
 // employees.php?action=remove&id=5 (POST) -> soft delete
 
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 // admin employee banata hai, id aur pehla password system generate karta hai
 if ($ACTION === 'create' && $METHOD === 'POST') {
