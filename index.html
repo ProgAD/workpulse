@@ -115,6 +115,16 @@
       document.getElementById(msgId).textContent = msg || '';
     }
 
+    // typing shuru karte hi error hata do
+    document.querySelectorAll('.md-field input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const field = inp.closest('.md-field');
+        field.classList.remove('has-error');
+        const msg = field.querySelector('.field-msg');
+        if (msg) msg.textContent = '';
+      });
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
