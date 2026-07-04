@@ -100,14 +100,25 @@
             border: 2px solid #334155;
             object-fit: cover;
         }
-        .status-dot {
-            position: absolute; top: -1px; right: -1px;
-            width: 12px; height: 12px;
+        /* check in/out systray - topbar me */
+        .systray {
+            display: flex; align-items: center; gap: 10px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: var(--radius-md);
+            padding: 6px 10px;
+        }
+        .status-dot-tray {
+            width: 10px; height: 10px;
             border-radius: var(--radius-full);
             background: var(--red);
-            border: 2px solid var(--header-bg);
+            flex-shrink: 0;
         }
-        .status-dot.in { background: var(--green); }
+        .status-dot-tray.in { background: var(--green); }
+        .tray-time { display: none; flex-direction: column; line-height: 1.2; }
+        .tray-time span { font-size: 10px; color: #94a3b8; }
+        .tray-time b { font-family: monospace; font-size: 12px; color: #fff; }
+        .systray.punched .tray-time { display: flex; }
 
         .dropdown {
             position: absolute;
@@ -327,7 +338,7 @@
             background: rgb(0 0 0 / .2); color: #fff;
             display: flex; align-items: center; justify-content: center;
         }
-        .view-top { padding: 0 28px 18px; display: flex; gap: 18px; align-items: flex-start; border-bottom: 1px solid var(--border-light); }
+        .view-top { padding: 28px 28px 18px; display: flex; gap: 3px; align-items: flex-end; border-bottom: 1px solid var(--border-light); }
         /* sirf avatar hero pe overlap karta hai, text niche hi rehta hai */
         .view-top img {
             width: 86px; height: 86px;
@@ -391,26 +402,31 @@
                 </nav>
             </div>
 
-            <div class="avatar-wrap">
-                <button class="avatar-btn" id="avatarBtn">
-                    <img id="navAvatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
-                    <span class="status-dot" id="navStatusDot"></span>
-                </button>
+            <div style="display:flex; align-items:center; gap:14px;">
+                <!-- check in/out systray - hamesha topbar me dikhta hai -->
+                <div class="systray" id="punchTray">
+                    <span class="status-dot-tray" id="navStatusDot"></span>
+                    <div class="tray-time" id="trayTime">
+                        <span id="punchTimeLabel">Not punched in</span>
+                        <b id="punchTimeVal">--:--</b>
+                    </div>
+                    <button class="punch-btn" id="punchBtn">Check IN &rarr;</button>
+                </div>
 
-                <div class="dropdown" id="userDropdown">
-                    <div class="dd-head">
-                        <div class="lbl">Signed in as</div>
-                        <div class="val" id="ddEmail">--</div>
-                    </div>
-                    <a href="profile.html" class="dd-item"><i class="fa-solid fa-user"></i> My Profile</a>
-                    <div class="dd-punch">
-                        <div class="pt">
-                            <span id="punchTimeLabel">Not punched in</span>
-                            <b id="punchTimeVal">--:--</b>
+                <div class="avatar-wrap">
+                    <button class="avatar-btn" id="avatarBtn">
+                        <img id="navAvatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+                    </button>
+
+                    <!-- dropdown me sirf profile aur logout -->
+                    <div class="dropdown" id="userDropdown">
+                        <div class="dd-head">
+                            <div class="lbl">Signed in as</div>
+                            <div class="val" id="ddEmail">--</div>
                         </div>
-                        <button class="punch-btn" id="punchBtn">Check IN &rarr;</button>
+                        <a href="profile.html" class="dd-item"><i class="fa-solid fa-user"></i> My Profile</a>
+                        <button class="dd-item danger" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Log Out</button>
                     </div>
-                    <button class="dd-item danger" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Log Out</button>
                 </div>
             </div>
         </div>
@@ -615,18 +631,21 @@
         }
 
         function updatePunchUI() {
+            const tray = document.getElementById('punchTray');
             const dot = document.getElementById('navStatusDot');
             const btn = document.getElementById('punchBtn');
             const label = document.getElementById('punchTimeLabel');
             const val = document.getElementById('punchTimeVal');
 
             if (isPunchedIn) {
+                tray.classList.add('punched');
                 dot.classList.add('in');
                 btn.innerHTML = 'Check Out &rarr;';
                 btn.classList.add('out');
                 label.innerText = 'Since';
                 val.innerText = punchTime;
             } else {
+                tray.classList.remove('punched');
                 dot.classList.remove('in');
                 btn.innerHTML = 'Check IN &rarr;';
                 btn.classList.remove('out');
