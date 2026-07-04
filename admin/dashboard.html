@@ -573,7 +573,21 @@
             } catch (e) { /* api.js 401 pe khud login pe bhej dega */ }
 
             loadEmployees();
+            initPunchState();
         });
+
+        // page khulte hi aaj ka punch status systray me dikhao
+        async function initPunchState() {
+            try {
+                const res = await API.get('att_today');
+                const att = res.data && res.data.attendance;
+                if (att && att.check_in && !att.check_out) {
+                    isPunchedIn = true;
+                    punchTime = att.check_in.slice(11, 16);
+                    updatePunchUI();
+                }
+            } catch (e) { /* attendance record nahi hai to red hi rahega */ }
+        }
 
         // phone fields me sirf digits chalenge, max 10
         function setupPhoneInputs() {
@@ -614,7 +628,9 @@
                         const res = await API.post('punch_in');
                         if (res.success) {
                             isPunchedIn = true;
-                            punchTime = res.time || new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                            punchTime = (res.data && res.data.check_in)
+                                ? res.data.check_in.slice(11, 16)
+                                : new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
                         }
                     } else {
                         const res = await API.post('punch_out');
