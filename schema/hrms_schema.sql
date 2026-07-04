@@ -112,7 +112,6 @@ CREATE TABLE users (
     -- pehli login pe change karwana padta hai
     must_change_password TINYINT(1) NOT NULL DEFAULT 0,
     role_id            INT UNSIGNED NOT NULL,
-    email_verified_at  TIMESTAMP NULL DEFAULT NULL,
     status             ENUM('invited','active','suspended','exited') NOT NULL DEFAULT 'invited',
     failed_logins      TINYINT UNSIGNED DEFAULT 0,
     locked_until       TIMESTAMP NULL DEFAULT NULL,

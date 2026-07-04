@@ -102,8 +102,8 @@ if ($ACTION === 'signup' && $METHOD === 'POST') {
         $loginId = generate_login_id($companyId, $in['company'], $nameParts[0], $nameParts[1] ?? null);
 
         $pdo->prepare(
-            "INSERT INTO users (company_id, emp_code, email, password, role_id, status, email_verified_at)
-             VALUES (?, ?, ?, ?, ?, 'active', NOW())"
+            "INSERT INTO users (company_id, emp_code, email, password, role_id, status)
+             VALUES (?, ?, ?, ?, ?, 'active')"
         )->execute([$companyId, $loginId, $email, password_hash($in['password'], PASSWORD_BCRYPT), $roleId]);
         $userId = $pdo->lastInsertId();
 
