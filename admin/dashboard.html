@@ -1,266 +1,676 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WorkPulse — Admin</title>
-  <link rel="icon" type="image/svg+xml" href="../assests/images/logo.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="../assests/css/app.css">
-  <style>
-    /* app bar + content layout */
-    .appbar {
-      background: var(--md-primary);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 20px;
-      box-shadow: var(--md-shadow-2);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .appbar img { width: 30px; height: 30px; }
-    .appbar h1 { font-size: 18px; font-weight: 500; flex: 1; }
-    .appbar .who { font-size: 13px; opacity: .85; margin-right: 6px; }
-    .icon-btn {
-      border: none; background: none; color: inherit; cursor: pointer;
-      padding: 8px; border-radius: 50%; display: flex;
-    }
-    .icon-btn:hover { background: rgba(255,255,255,.15); }
-
-    .content { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
-    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .section-head h2 { font-size: 20px; font-weight: 500; }
-
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 12px 14px; font-size: 14px; }
-    th { color: var(--md-text-2); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #e0e0e0; }
-    tbody tr { border-bottom: 1px solid #f0f0f0; }
-    tbody tr:hover { background: #fafafa; }
-    .chip { font-size: 12px; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
-    .chip.active { background: #e6f4ea; color: #137333; }
-    .chip.suspended { background: #fef7e0; color: #b06000; }
-    .chip.exited { background: #fce8e6; color: #c5221f; }
-    .code { font-family: monospace; font-size: 13px; }
-
-    /* modal */
-    .modal-back {
-      position: fixed; inset: 0; background: rgba(0,0,0,.45);
-      display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px;
-    }
-    .modal-back.open { display: flex; }
-    .modal { max-width: 420px; width: 100%; }
-    .modal h3 { font-size: 18px; font-weight: 500; margin-bottom: 20px; }
-
-    /* naya employee banne ke baad wala credentials box */
-    .cred-box {
-      background: var(--md-primary-light);
-      border-radius: 8px;
-      padding: 16px;
-      margin: 14px 0;
-      font-family: monospace;
-      font-size: 15px;
-    }
-    .cred-box div { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
-    .cred-warn { font-size: 12px; color: var(--md-error); margin-bottom: 6px; }
-    .empty-note { text-align: center; color: var(--md-text-2); padding: 32px; font-size: 14px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Workpulse</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Dropdown transition */
+        .dropdown-enter { opacity: 0; transform: scale(0.95); }
+        .dropdown-enter-active { opacity: 1; transform: scale(1); transition: opacity 150ms ease-out, transform 150ms ease-out; }
+        .dropdown-exit { opacity: 1; transform: scale(1); }
+        .dropdown-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 100ms ease-in, transform 100ms ease-in; }
+    </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
 
-  <div class="appbar">
-    <img src="../assests/images/logo.svg" alt="">
-    <h1>WorkPulse Admin</h1>
-    <span class="who" id="whoami"></span>
-    <button class="icon-btn" id="logoutBtn" title="Logout"><span class="material-icons">logout</span></button>
-  </div>
+    <!-- Top Navigation -->
+    <header class="bg-slate-900 text-white shadow-md z-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
 
-  <div class="content">
-    <div class="section-head">
-      <h2>Employees</h2>
-      <button class="md-btn md-btn-primary" id="addBtn">
-        <span class="material-icons" style="font-size:18px">person_add</span> Add Employee
-      </button>
+              
+                <!-- Left side: Logo & Links -->
+                <div class="flex items-center space-x-8">
+                    <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-xl">W</div>
+                        <span class="font-bold text-xl tracking-wide">Workpulse</span>
+                    </div>
+                    <nav class="hidden md:flex space-x-1">
+                        <a href="#" class="bg-slate-800 text-white px-3 py-2 rounded-md text-sm font-medium border-b-2 border-blue-500">Employees</a>
+                        <a href="#" class="text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Attendance</a>
+                        <a href="#" class="text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Time Off</a>
+                        <a href="#" class="text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Settings</a>
+                    </nav>
+                </div>
+
+                <!-- Right side: Avatar & Dropdown -->
+                <div class="flex items-center">
+                    <div class="relative">
+                        <!-- Avatar Button -->
+                        <button id="avatarBtn" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-slate-500 transition duration-150 ease-in-out relative">
+                            <img class="h-9 w-9 rounded-full object-cover border-2 border-slate-700" src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff" alt="User Avatar">
+                            <!-- Status Dot (Red = Not checked in, Green = Checked in) -->
+                            <span id="navStatusDot" class="absolute top-0 right-0 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-slate-900"></span>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-sm text-gray-500">Signed in as</p>
+                                    <p class="text-sm font-medium text-gray-900 truncate">admin@workpulse.test</p>
+                                </div>
+                                <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" role="menuitem"><i class="fa-solid fa-user mr-2 text-gray-400"></i> My Profile</a>
+                                <div class="border-t border-gray-100"></div>
+                                
+                                <!-- Check In/Out Section -->
+                                <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
+                                    <div class="text-xs text-gray-500 flex flex-col">
+                                        <span id="punchTimeLabel">Not punched in</span>
+                                        <span id="punchTimeVal" class="font-mono font-medium text-gray-700">--:--</span>
+                                    </div>
+                                    <button id="punchBtn" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded shadow transition-colors">
+                                        Check IN &rarr;
+                                    </button>
+                                </div>
+
+                                <div class="border-t border-gray-100"></div>
+                                <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors" role="menuitem"><i class="fa-solid fa-sign-out-alt mr-2"></i> Log Out</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 md:p-8">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- Toolbar -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h1 class="text-2xl font-bold text-gray-900">Employees Directory</h1>
+                
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <!-- Search -->
+                    <div class="relative w-full sm:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-gray-400 text-sm"></i>
+                        </div>
+                        <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow" placeholder="Search employees...">
+                    </div>
+                    <!-- New Button -->
+                    <button onclick="openAddModal()" class="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-sm shadow-sm transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> NEW
+                    </button>
+                </div>
+            </div>
+
+            <!-- Employee Grid -->
+            <div id="employeeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards will be injected here via JS -->
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="hidden text-center py-12">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-500 mb-4"></i>
+                <p class="text-gray-500">Loading employees...</p>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-12 bg-white rounded-lg border border-gray-200 border-dashed">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-500 mb-4">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900">No employees found</h3>
+                <p class="mt-1 text-sm text-gray-500">Try adjusting your search or add a new employee.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Overlay -->
+    <div id="modalOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm z-40 transition-opacity flex items-center justify-center p-4">
+        
+        <!-- Add Employee Modal (Form) -->
+        <div id="addEmployeeModal" class="hidden bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">Add New Employee</h3>
+                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <form id="addEmployeeForm" onsubmit="handleAddEmployee(event)">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="add_first_name" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                            <input type="text" id="add_last_name" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
+                        <input type="email" id="add_email" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="employee@workpulse.test">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone <span class="text-red-500">*</span></label>
+                        <input type="tel" id="add_phone" required maxlength="10" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="10 digit number">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                            <select id="add_department_id" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
+                                <option value="1">Engineering</option>
+                                <option value="2">Human Resources</option>
+                                <option value="3">Sales</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                            <select id="add_designation_id" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
+                                <option value="1">Software Engineer</option>
+                                <option value="2">HR Manager</option>
+                                <option value="3">Sales Executive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Joining</label>
+                        <input type="date" id="add_doj" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                        <button type="button" onclick="closeModals()" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">Create Employee</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Credentials Modal - create ke baad login id + password ek hi baar dikhta hai -->
+        <div id="credModal" class="hidden bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">Employee Created 🎉</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-xs text-red-600 mb-3">Ye password dobara nahi dikhega — abhi copy karke employee ko de do.</p>
+                <div class="bg-blue-50 rounded-lg p-4 font-mono text-sm space-y-2">
+                    <div class="flex justify-between"><span class="text-gray-500">Login ID</span><b id="cred_login_id"></b></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Password</span><b id="cred_password"></b></div>
+                </div>
+                <div class="flex justify-end gap-3 mt-5">
+                    <button onclick="copyCreds()" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                    <button onclick="closeModals()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">Done</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Employee Modal (View-Only Profile) -->
+        <div id="viewEmployeeModal" class="hidden bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform transition-all relative">
+            <div class="h-32 bg-gradient-to-r from-blue-600 to-indigo-700 absolute top-0 w-full z-0"></div>
+            <div class="absolute top-4 right-4 z-10">
+                <button onclick="closeModals()" class="text-white hover:text-gray-200 bg-black bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="px-8 pt-16 pb-6 relative z-10 flex flex-col sm:flex-row gap-6 items-start sm:items-end border-b border-gray-100 bg-white bg-opacity-95 mt-12 backdrop-blur-sm">
+                <img id="view_avatar" src="" alt="Profile" class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-white object-cover">
+                <div class="flex-1 mb-2">
+                    <div class="flex items-center gap-3">
+                        <h2 id="view_name" class="text-2xl font-bold text-gray-900">--</h2>
+                        <span id="view_status_badge" class="px-2.5 py-0.5 rounded-full text-xs font-medium border">--</span>
+                    </div>
+                    <p id="view_designation" class="text-gray-600 font-medium">--</p>
+                    <p id="view_emp_code" class="text-sm text-gray-400 mt-1">Emp Code: --</p>
+                </div>
+            </div>
+
+            <div class="p-8 bg-gray-50/50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Contact Info -->
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Contact Information</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-regular fa-envelope text-gray-400 mt-1 w-4"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Email Address</p>
+                                    <p id="view_email" class="text-sm font-medium text-gray-900">--</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-phone text-gray-400 mt-1 w-4"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Phone Number</p>
+                                    <p id="view_phone" class="text-sm font-medium text-gray-900">--</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Work Info -->
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Employment Details</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-building text-gray-400 mt-1 w-4"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Department</p>
+                                    <p id="view_department" class="text-sm font-medium text-gray-900">--</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-calendar-day text-gray-400 mt-1 w-4"></i>
+                                <div>
+                                    <p class="text-xs text-gray-500">Date of Joining</p>
+                                    <p id="view_doj" class="text-sm font-medium text-gray-900">--</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="md-card" style="padding:0; overflow-x:auto">
-      <table>
-        <thead>
-          <tr><th>Login ID</th><th>Name</th><th>Email</th><th>Phone</th><th>DOJ</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody id="empRows"></tbody>
-      </table>
-      <div class="empty-note" id="emptyNote" style="display:none">Abhi koi employee nahi. "Add Employee" se shuru karo.</div>
-    </div>
-  </div>
+    <!-- real api layer - stub niche sirf fallback ke liye hai -->
+    <script src="../assests/js/api.js"></script>
 
-  <!-- add employee modal -->
-  <div class="modal-back" id="addModal">
-    <div class="md-card modal">
-      <h3>Add Employee</h3>
-      <form id="addForm" novalidate>
-        <div class="md-field" id="nameField">
-          <input type="text" id="empName" placeholder=" " required>
-          <label for="empName">Full Name</label>
-          <div class="field-msg" id="nameMsg"></div>
-        </div>
-        <div class="md-field" id="emailField">
-          <input type="email" id="empEmail" placeholder=" " required>
-          <label for="empEmail">Email</label>
-          <div class="field-msg" id="emailMsg"></div>
-        </div>
-        <div class="md-field" id="phoneField">
-          <input type="tel" id="empPhone" placeholder=" " maxlength="10" required>
-          <label for="empPhone">Phone</label>
-          <div class="field-msg" id="phoneMsg"></div>
-        </div>
-        <div class="md-field">
-          <input type="date" id="empDoj">
-          <label for="empDoj" style="top:-8px;font-size:12px">Date of Joining</label>
-        </div>
-        <div style="display:flex; gap:10px; justify-content:flex-end">
-          <button type="button" class="md-btn" id="cancelAdd" style="background:#eee">Cancel</button>
-          <button type="submit" class="md-btn md-btn-primary" id="saveBtn"><span id="saveText">Create</span></button>
-        </div>
-      </form>
-    </div>
-  </div>
+    <!-- Application Script -->
+    <script>
+        /**
+         * ---------------------------------------------------------
+         * API STUB / WRAPPER
+         * ---------------------------------------------------------
+         * If standard assets/js/api.js is loaded, it will use that.
+         * Otherwise, this mock provides data conforming to the schema
+         * so the frontend is fully functional for demonstration.
+         */
+        window.API = window.API || (function() {
+            // Mock Database state based on schema
+            let mockEmployees = [
+                { id: 1, emp_code: 'WPIN2026001', first_name: 'John', last_name: 'Doe', email: 'john@workpulse.test', phone: '+91 9876543210', department: 'Engineering', designation: 'Software Engineer', doj: '2024-01-15', status: 'active', avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=random', today_status: 'present' },
+                { id: 2, emp_code: 'WPIN2026002', first_name: 'Sarah', last_name: 'Smith', email: 'sarah@workpulse.test', phone: '+91 9876543211', department: 'Human Resources', designation: 'HR Manager', doj: '2023-11-01', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Sarah+Smith&background=random', today_status: 'absent' },
+                { id: 3, emp_code: 'WPIN2026003', first_name: 'Mike', last_name: 'Johnson', email: 'mike@workpulse.test', phone: '+91 9876543212', department: 'Sales', designation: 'Sales Executive', doj: '2025-03-10', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Mike+Johnson&background=random', today_status: 'on_leave' },
+                { id: 4, emp_code: 'WPIN2026004', first_name: 'Emily', last_name: 'Davis', email: 'emily@workpulse.test', phone: '+91 9876543213', department: 'Engineering', designation: 'QA Tester', doj: '2025-06-20', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Emily+Davis&background=random', today_status: 'present' },
+                { id: 5, emp_code: 'WPIN2026005', first_name: 'Robert', last_name: 'Wilson', email: 'robert@workpulse.test', phone: '+91 9876543214', department: 'Marketing', designation: 'Content Strategist', doj: '2022-09-05', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Robert+Wilson&background=random', today_status: 'absent' },
+            ];
 
-  <!-- credentials modal, create ke baad ek hi baar dikhta hai -->
-  <div class="modal-back" id="credModal">
-    <div class="md-card modal">
-      <h3>Employee Created 🎉</h3>
-      <p class="cred-warn">Ye password dobara nahi dikhega — abhi copy karke employee ko de do.</p>
-      <div class="cred-box">
-        <div><span>Login ID</span> <b id="credId"></b></div>
-        <div><span>Password</span> <b id="credPass"></b></div>
-      </div>
-      <div style="display:flex; gap:10px; justify-content:flex-end">
-        <button class="md-btn" id="copyCred" style="background:#eee">
-          <span class="material-icons" style="font-size:18px">content_copy</span> Copy
-        </button>
-        <button class="md-btn md-btn-primary" id="credDone">Done</button>
-      </div>
-    </div>
-  </div>
+            const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
-  <div class="md-snackbar" id="snackbar"></div>
+            return {
+                get: async (endpoint, params = {}) => {
+                    await delay(300); // Simulate network
+                    if (endpoint === 'employees') {
+                        return { success: true, data: mockEmployees };
+                    }
+                    if (endpoint === 'employees/view') {
+                        const emp = mockEmployees.find(e => e.id == params.id);
+                        return emp ? { success: true, data: emp } : { success: false, error: 'Not found' };
+                    }
+                    return { success: false, error: 'Endpoint not mocked' };
+                },
+                post: async (endpoint, data = {}) => {
+                    await delay(400);
+                    if (endpoint === 'employees/create') {
+                        const newEmp = {
+                            id: mockEmployees.length + 1,
+                            emp_code: 'WPIN202600' + (mockEmployees.length + 1),
+                            first_name: data.first_name,
+                            last_name: data.last_name || '',
+                            email: data.email,
+                            department: 'Engineering', // simplified for mock
+                            designation: 'New Hire',
+                            doj: data.doj || new Date().toISOString().split('T')[0],
+                            status: 'active',
+                            avatar: `https://ui-avatars.com/api/?name=${data.first_name}+${data.last_name || ''}&background=random`,
+                            today_status: 'absent'
+                        };
+                        mockEmployees.push(newEmp);
+                        return { success: true, data: newEmp };
+                    }
+                    if (endpoint === 'attendance/punch_in') return { success: true, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
+                    if (endpoint === 'attendance/punch_out') return { success: true };
+                    return { success: false };
+                }
+            };
+        })();
 
-  <script src="../assests/js/api.js"></script>
-  <script>
-    const snackbar = document.getElementById('snackbar');
-    let snackTimer;
-    function toast(msg, isError = true) {
-      clearTimeout(snackTimer);
-      snackbar.textContent = msg;
-      snackbar.className = 'md-snackbar show' + (isError ? ' error' : '');
-      snackTimer = setTimeout(() => snackbar.classList.remove('show'), 4000);
-    }
-    function setFieldError(fieldId, msgId, msg) {
-      document.getElementById(fieldId).classList.toggle('has-error', !!msg);
-      document.getElementById(msgId).textContent = msg || '';
-    }
-    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        /**
+         * ---------------------------------------------------------
+         * STATE & INITIALIZATION
+         * ---------------------------------------------------------
+         */
+        let employeesData = [];
+        let isPunchedIn = false;
+        let punchTime = null;
 
-    // sirf admin ke liye hai ye page
-    API.get('me').then(res => {
-      if (res.data.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
-      if (Number(res.data.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
-      document.getElementById('whoami').textContent = res.data.email;
-      loadEmployees();
-    }).catch(() => {});
+        document.addEventListener('DOMContentLoaded', async () => {
+            initDropdown();
+            setupSearch();
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      try { await API.post('logout'); } catch (e) {}
-      window.location.href = '../index.html';
-    });
+            // auth guard - sirf admin ke liye
+            try {
+                const res = await API.get('me');
+                const u = res.data;
+                if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+                if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
+                const emailEl = document.querySelector('#userDropdown .truncate');
+                if (emailEl) emailEl.innerText = u.email;
+            } catch (e) { /* api.js 401 pe khud login pe bhej dega */ }
 
-    async function loadEmployees() {
-      const rows = document.getElementById('empRows');
-      try {
-        const res = await API.get('employees');
-        const list = res.data || [];
-        document.getElementById('emptyNote').style.display = list.length ? 'none' : 'block';
-        rows.innerHTML = list.map(e => `
-          <tr>
-            <td class="code">${esc(e.emp_code)}</td>
-            <td>${esc(e.first_name)} ${esc(e.last_name || '')}</td>
-            <td>${esc(e.email)}</td>
-            <td>${esc(e.phone || '-')}</td>
-            <td>${esc(e.doj || '-')}</td>
-            <td><span class="chip ${esc(e.status)}">${esc(e.status)}</span></td>
-            <td>${e.role === 'admin' ? '' : `
-              <button class="icon-btn" style="color:var(--md-error)" title="Remove" onclick="removeEmp(${e.id})">
-                <span class="material-icons" style="font-size:19px">delete</span>
-              </button>`}
-            </td>
-          </tr>`).join('');
-      } catch (err) {
-        toast(err.message);
-      }
-    }
+            loadEmployees();
+        });
 
-    async function removeEmp(id) {
-      if (!confirm('Is employee ko remove karna hai?')) return;
-      try {
-        await API.post('employee_remove/' + id);
-        toast('Employee removed', false);
-        loadEmployees();
-      } catch (err) { toast(err.message); }
-    }
+        // naam se avatar, jab tak photo upload nahi hai
+        function avatarUrl(emp) {
+            return emp.avatar || 'https://ui-avatars.com/api/?background=random&name='
+                + encodeURIComponent((emp.first_name || '') + ' ' + (emp.last_name || ''));
+        }
 
-    // add modal kholna/band karna
-    const addModal = document.getElementById('addModal');
-    document.getElementById('addBtn').addEventListener('click', () => addModal.classList.add('open'));
-    document.getElementById('cancelAdd').addEventListener('click', () => addModal.classList.remove('open'));
+        /**
+         * ---------------------------------------------------------
+         * TOP NAV & DROPDOWN LOGIC
+         * ---------------------------------------------------------
+         */
+        function initDropdown() {
+            const btn = document.getElementById('avatarBtn');
+            const menu = document.getElementById('userDropdown');
+            const punchBtn = document.getElementById('punchBtn');
 
-    document.getElementById('addForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('empName').value.trim();
-      const email = document.getElementById('empEmail').value.trim();
-      const phone = document.getElementById('empPhone').value.trim();
-      const doj = document.getElementById('empDoj').value;
+            // Toggle dropdown
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('hidden');
+            });
 
-      setFieldError('nameField', 'nameMsg', name ? '' : 'Name required');
-      setFieldError('emailField', 'emailMsg', email ? '' : 'Email required');
-      setFieldError('phoneField', 'phoneMsg',
-        !phone ? 'Phone required' : !/^\d{10}$/.test(phone) ? '10 digit number' : '');
-      if (!name || !email || !/^\d{10}$/.test(phone)) return;
+            // Close when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!btn.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
 
-      const saveBtn = document.getElementById('saveBtn');
-      saveBtn.disabled = true;
-      document.getElementById('saveText').innerHTML = '<span class="md-spinner"></span>';
+            // Punch In / Out Logic
+            punchBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const btnIcon = isPunchedIn ? 'Check Out &rarr;' : 'Check IN &rarr;';
+                punchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                punchBtn.disabled = true;
 
-      try {
-        const res = await API.post('employee_create', { name, email, phone, doj });
-        addModal.classList.remove('open');
-        document.getElementById('addForm').reset();
-        // credentials ek hi baar dikhte hai, isi modal me
-        document.getElementById('credId').textContent = res.data.login_id;
-        document.getElementById('credPass').textContent = res.data.temp_password;
-        document.getElementById('credModal').classList.add('open');
-        loadEmployees();
-      } catch (err) {
-        toast(err.message);
-      } finally {
-        saveBtn.disabled = false;
-        document.getElementById('saveText').textContent = 'Create';
-      }
-    });
+                try {
+                    if (!isPunchedIn) {
+                        const res = await API.post('punch_in');
+                        if (res.success) {
+                            isPunchedIn = true;
+                            punchTime = res.time || new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                            updatePunchUI();
+                        }
+                    } else {
+                        const res = await API.post('punch_out');
+                        if (res.success) {
+                            isPunchedIn = false;
+                            punchTime = null;
+                            updatePunchUI();
+                        }
+                    }
+                } catch (error) {
+                    // attendance api abhi ban raha hai
+                    alert(error.message || 'Attendance API abhi ready nahi hai');
+                    updatePunchUI();
+                } finally {
+                    punchBtn.disabled = false;
+                }
+            });
+        }
 
-    document.getElementById('copyCred').addEventListener('click', () => {
-      const txt = 'Login ID: ' + document.getElementById('credId').textContent
-        + '\nPassword: ' + document.getElementById('credPass').textContent
-        + '\nLogin: ' + location.origin + '/workpulse/';
-      navigator.clipboard.writeText(txt).then(() => toast('Copied!', false));
-    });
-    document.getElementById('credDone').addEventListener('click', () => {
-      document.getElementById('credModal').classList.remove('open');
-    });
-  </script>
+        function updatePunchUI() {
+            const dot = document.getElementById('navStatusDot');
+            const btn = document.getElementById('punchBtn');
+            const label = document.getElementById('punchTimeLabel');
+            const val = document.getElementById('punchTimeVal');
+
+            if (isPunchedIn) {
+                dot.classList.remove('bg-red-500');
+                dot.classList.add('bg-green-500');
+                btn.innerHTML = 'Check Out &rarr;';
+                btn.classList.remove('bg-slate-800', 'hover:bg-slate-700');
+                btn.classList.add('bg-red-500', 'hover:bg-red-600');
+                label.innerText = 'Since';
+                val.innerText = punchTime;
+            } else {
+                dot.classList.remove('bg-green-500');
+                dot.classList.add('bg-red-500');
+                btn.innerHTML = 'Check IN &rarr;';
+                btn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                btn.classList.add('bg-slate-800', 'hover:bg-slate-700');
+                label.innerText = 'Not punched in';
+                val.innerText = '--:--';
+            }
+        }
+
+        async function logout() {
+            try { await API.post('logout'); } catch (e) {}
+            window.location.href = '../index.html';
+        }
+
+        /**
+         * ---------------------------------------------------------
+         * EMPLOYEE GRID & RENDERING
+         * ---------------------------------------------------------
+         */
+        async function loadEmployees() {
+            const grid = document.getElementById('employeeGrid');
+            const loader = document.getElementById('loadingState');
+            const empty = document.getElementById('emptyState');
+            
+            grid.innerHTML = '';
+            loader.classList.remove('hidden');
+            empty.classList.add('hidden');
+
+            try {
+                const res = await API.get('employees');
+                if (res.success) {
+                    employeesData = res.data;
+                    renderGrid(employeesData);
+                }
+            } catch (err) {
+                console.error("Failed to fetch employees:", err);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function renderGrid(data) {
+            const grid = document.getElementById('employeeGrid');
+            const empty = document.getElementById('emptyState');
+            
+            grid.innerHTML = '';
+            
+            if (data.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            
+            empty.classList.add('hidden');
+
+            data.forEach(emp => {
+                // Determine Status Icon
+                let statusIconHTML = '';
+                if (emp.today_status === 'present') {
+                    statusIconHTML = `<div class="w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white shadow-sm" title="Present"></div>`;
+                } else if (emp.today_status === 'on_leave') {
+                    statusIconHTML = `<div class="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px] shadow-sm border border-blue-200" title="On Leave"><i class="fa-solid fa-plane"></i></div>`;
+                } else {
+                    statusIconHTML = `<div class="w-3.5 h-3.5 bg-yellow-400 rounded-full border-2 border-white shadow-sm" title="Absent"></div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-white border border-gray-200 rounded-xl p-5 relative cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all group transform hover:-translate-y-1";
+                card.onclick = () => openViewModal(emp.id);
+
+                card.innerHTML = `
+                    <div class="absolute top-4 right-4 z-10">
+                        ${statusIconHTML}
+                    </div>
+                    <div class="flex flex-col items-center mt-2">
+                        <div class="relative mb-4">
+                            <img src="${avatarUrl(emp)}" alt="${emp.first_name}" class="w-20 h-20 rounded-full border border-gray-100 shadow-sm object-cover group-hover:ring-4 group-hover:ring-blue-50 transition-all">
+                        </div>
+                        <h3 class="font-bold text-gray-900 text-center truncate w-full">${emp.first_name} ${emp.last_name || ''}</h3>
+                        <p class="text-xs text-gray-500 mt-1 text-center truncate w-full">${emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee')}</p>
+                        <div class="mt-4 pt-4 border-t border-gray-50 w-full flex justify-between items-center">
+                            <span class="text-[10px] uppercase tracking-wider font-semibold text-gray-400">${emp.department || '—'}</span>
+                            <span class="text-xs text-gray-400 font-mono">${emp.emp_code}</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function setupSearch() {
+            const input = document.getElementById('searchInput');
+            input.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = employeesData.filter(emp =>
+                    (emp.first_name || '').toLowerCase().includes(term) ||
+                    (emp.last_name || '').toLowerCase().includes(term) ||
+                    (emp.emp_code || '').toLowerCase().includes(term) ||
+                    (emp.designation || '').toLowerCase().includes(term)
+                );
+                renderGrid(filtered);
+            });
+        }
+
+        /**
+         * ---------------------------------------------------------
+         * MODAL MANAGEMENT
+         * ---------------------------------------------------------
+         */
+        const overlay = document.getElementById('modalOverlay');
+        const addModal = document.getElementById('addEmployeeModal');
+        const viewModal = document.getElementById('viewEmployeeModal');
+
+        function closeModals() {
+            overlay.classList.add('hidden');
+            addModal.classList.add('hidden');
+            viewModal.classList.add('hidden');
+            document.getElementById('credModal').classList.add('hidden');
+            document.getElementById('addEmployeeForm').reset();
+        }
+
+        function openAddModal() {
+            overlay.classList.remove('hidden');
+            addModal.classList.remove('hidden');
+            viewModal.classList.add('hidden');
+        }
+
+        async function openViewModal(id) {
+            overlay.classList.remove('hidden');
+            addModal.classList.add('hidden');
+            viewModal.classList.remove('hidden');
+
+            // Set loading state in modal (optional detail)
+            document.getElementById('view_name').innerText = 'Loading...';
+
+            try {
+                const res = await API.get('employees/' + id);
+                if (res.success) {
+                    const emp = res.data;
+                    document.getElementById('view_avatar').src = avatarUrl(emp);
+                    document.getElementById('view_name').innerText = `${emp.first_name} ${emp.last_name || ''}`;
+                    document.getElementById('view_designation').innerText = emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee');
+                    document.getElementById('view_emp_code').innerText = `Login ID: ${emp.emp_code}`;
+                    document.getElementById('view_email').innerText = emp.email || 'Not provided';
+                    document.getElementById('view_phone').innerText = emp.phone || 'Not provided';
+                    document.getElementById('view_department').innerText = emp.department || '—';
+                    document.getElementById('view_doj').innerText = emp.doj || '—';
+
+                    // Status badge logic
+                    const badge = document.getElementById('view_status_badge');
+                    if (emp.status === 'active') {
+                        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-medium border bg-green-50 text-green-700 border-green-200';
+                        badge.innerText = 'Active';
+                    } else {
+                        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-50 text-red-700 border-red-200';
+                        badge.innerText = 'Inactive';
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch employee details:", err);
+                closeModals();
+            }
+        }
+
+        async function handleAddEmployee(e) {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            const phone = document.getElementById('add_phone').value.trim();
+            if (!/^\d{10}$/.test(phone)) {
+                alert('10 digit phone number daalo');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            // backend name ek saath leta hai, first/last khud todta hai
+            const payload = {
+                name: (document.getElementById('add_first_name').value.trim() + ' '
+                    + document.getElementById('add_last_name').value.trim()).trim(),
+                email: document.getElementById('add_email').value.trim(),
+                phone,
+                doj: document.getElementById('add_doj').value
+            };
+
+            try {
+                const res = await API.post('employee_create', payload);
+                if (res.success) {
+                    closeModals();
+                    // login id + temp password ek hi baar milta hai, yahi dikha do
+                    document.getElementById('cred_login_id').innerText = res.data.login_id;
+                    document.getElementById('cred_password').innerText = res.data.temp_password;
+                    overlay.classList.remove('hidden');
+                    document.getElementById('credModal').classList.remove('hidden');
+                    loadEmployees();
+                }
+            } catch (error) {
+                alert(error.message || 'Employee create nahi hua');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function copyCreds() {
+            const txt = 'Login ID: ' + document.getElementById('cred_login_id').innerText
+                + '\nPassword: ' + document.getElementById('cred_password').innerText
+                + '\nLogin: ' + location.origin + '/workpulse/';
+            navigator.clipboard.writeText(txt);
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
+                closeModals();
+            }
+        });
+        
+        // Close modal when clicking on overlay background
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closeModals();
+            }
+        });
+
+    </script>
 </body>
 </html>

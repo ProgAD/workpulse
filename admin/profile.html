@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Workpulse</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-light: #eff6ff;
+            
+            --header-bg: #0f172a;
+            --header-text: #ffffff;
+            
+            --warning-bg: #fef9c3;
+            --warning-text: #a16207;
+            
+            /* Sizing & Spacing */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-full: 9999px;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        /* Reset & Base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 14px;
+        }
+
+        button { background: none; border: none; cursor: pointer; font-family: inherit; }
+        a { text-decoration: none; color: inherit; }
+        input, textarea, select { font-family: inherit; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: var(--text-light); border-radius: var(--radius-sm); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Layout Utilities */
+        .container { max-width: 1024px; margin: 0 auto; width: 100%; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-1 { gap: 4px; }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
+        .gap-4 { gap: 16px; }
+        .gap-6 { gap: 24px; }
+        .hidden { display: none !important; }
+
+        /* Header */
+        .header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+            z-index: 20;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+            padding: 0 24px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        .logo-area { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .logo-icon {
+            width: 32px; height: 32px;
+            background-color: var(--primary);
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 18px;
+        }
+        .logo-text { font-weight: 700; font-size: 18px; letter-spacing: 0.5px; }
+        
+        .main-nav { display: flex; gap: 4px; margin-left: 32px; }
+        .main-nav a {
+            color: #cbd5e1; padding: 8px 12px; border-radius: var(--radius-md);
+            font-weight: 500; font-size: 14px; transition: all 0.2s;
+        }
+        .main-nav a:hover { background-color: #334155; color: white; }
+        
+        .user-actions { display: flex; align-items: center; gap: 16px; }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: var(--radius-full);
+            border: 2px solid #334155; object-fit: cover;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1; overflow-y: auto; padding: 32px 16px;
+        }
+        .profile-container {
+            max-width: 1024px; margin: 0 auto;
+            display: flex; flex-direction: column; gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        
+        /* Profile Summary Card */
+        .profile-summary {
+            display: flex; padding: 32px; gap: 32px; align-items: center;
+        }
+        .avatar-section { position: relative; flex-shrink: 0; }
+        .profile-pic {
+            width: 128px; height: 128px; border-radius: var(--radius-full);
+            border: 4px solid white; box-shadow: var(--shadow-md); object-fit: cover;
+        }
+        .edit-avatar-btn {
+            position: absolute; bottom: 0; right: 0;
+            background-color: var(--primary); color: white;
+            width: 32px; height: 32px; border-radius: var(--radius-full);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--shadow-sm); transition: background 0.2s;
+        }
+        .edit-avatar-btn:hover { background-color: var(--primary-hover); }
+
+        .basic-info { flex: 1; min-width: 0; }
+        .profile-name-group { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .profile-name { font-size: 28px; font-weight: 700; color: var(--text-main); width: 100%; }
+        
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px 32px; margin-top: 16px;
+        }
+        .info-item { display: flex; flex-direction: column; gap: 4px; }
+        .info-label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-value { font-size: 14px; color: var(--text-main); }
+        .badge { background: var(--border-light); padding: 4px 8px; border-radius: var(--radius-sm); font-family: monospace; width: max-content; }
+
+        .work-details {
+            flex: 1; border-left: 1px solid var(--border-color); padding-left: 32px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .work-detail-row {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-light); padding-bottom: 8px;
+        }
+        .work-detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .work-detail-label { color: var(--text-light); }
+        .work-detail-value { font-weight: 500; color: var(--text-main); }
+        .text-link { color: var(--primary); cursor: pointer; }
+        .text-link:hover { text-decoration: underline; }
+
+        /* Form Elements & Editing */
+        .editable-group:hover .edit-icon { opacity: 1; }
+        .edit-icon { opacity: 0; transition: opacity 0.2s; color: var(--text-light); cursor: pointer; }
+        .edit-icon:hover { color: var(--primary); }
+        
+        .ghost-input {
+            background: transparent; border: 1px solid transparent;
+            font-size: inherit; font-weight: inherit; color: inherit; width: 100%; padding: 2px 0; transition: all 0.2s;
+        }
+        .ghost-input:hover:not(:disabled):not([readonly]) { border-bottom: 1px solid var(--border-color); }
+        .ghost-input:focus { outline: none; border-bottom: 1px solid var(--primary); background: #f8fafc; }
+        
+        textarea.ghost-input { resize: none; line-height: 1.5; padding: 8px; }
+
+        /* Tabs Navigation */
+        .tabs-nav {
+            display: flex; gap: 24px; padding: 0 24px; overflow-x: auto;
+            border-bottom: 1px solid var(--border-color); background: var(--bg-card);
+            border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+        }
+        .tab-btn {
+            padding: 16px 4px; font-weight: 500; color: var(--text-muted);
+            border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s;
+        }
+        .tab-btn:hover { color: var(--text-main); border-bottom-color: var(--border-color); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Resume Grid */
+        .resume-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+        .resume-section { display: flex; flex-direction: column; gap: 24px; }
+        
+        .panel { padding: 24px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .panel-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
+        
+        .pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .pill {
+            padding: 4px 12px; background: var(--primary-light); color: var(--primary-hover);
+            border: 1px solid #bfdbfe; border-radius: var(--radius-full); font-size: 12px; font-weight: 500;
+        }
+        .add-btn {
+            width: 100%; padding: 12px; border-top: 1px solid var(--border-light);
+            color: var(--primary); font-weight: 500; text-align: center; margin-top: 16px; transition: background 0.2s;
+        }
+        .add-btn:hover { background: var(--bg-body); }
+
+        .cert-item { display: flex; gap: 12px; margin-top: 16px; }
+        .cert-icon { width: 32px; height: 32px; background: var(--warning-bg); color: var(--warning-text); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+        /* Salary Info specific */
+        .salary-summary-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+            padding-bottom: 32px; margin-bottom: 32px; border-bottom: 1px solid var(--border-light);
+        }
+        .salary-stat { display: flex; align-items: baseline; gap: 16px; margin-bottom: 16px; }
+        .salary-stat-label { width: 120px; font-weight: 500; color: var(--text-muted); }
+        .salary-stat-val-group { flex: 1; display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+        .salary-amount { font-family: monospace; font-size: 20px; font-weight: 700; width: 100%; border: none; background: transparent; }
+        
+        .salary-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+        .salary-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-main); margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--border-light); letter-spacing: 0.5px; }
+        
+        .salary-row { margin-bottom: 24px; }
+        .salary-row-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+        .salary-row-title { font-weight: 600; font-size: 14px; }
+        .salary-row-values { display: flex; gap: 16px; align-items: baseline; font-family: monospace; }
+        .salary-val-amt { border-bottom: 1px solid var(--border-color); padding-bottom: 2px; }
+        .salary-val-pct { border-bottom: 1px solid var(--border-color); padding-bottom: 2px; width: 64px; text-align: right; color: var(--text-muted); }
+        .salary-row-desc { font-size: 12px; color: var(--text-light); line-height: 1.5; padding-right: 48px; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 16px; right: 16px; background: var(--header-bg); color: white;
+            padding: 8px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+            font-size: 14px; z-index: 50; transition: opacity 0.3s; opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-summary { flex-direction: column; text-align: center; padding: 24px; }
+            .work-details { border-left: none; border-top: 1px solid var(--border-color); padding-left: 0; padding-top: 24px; width: 100%; }
+            .resume-grid { grid-template-columns: 1fr; }
+            .salary-summary-grid, .salary-details-grid { grid-template-columns: 1fr; }
+            .main-nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="flex items-center gap-6">
+                <div class="logo-area">
+                    <div class="logo-icon">W</div>
+                    <span class="logo-text">Workpulse</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="#">Employees</a>
+                    <a href="#">Attendance</a>
+                    <a href="#">Time Off</a>
+                </nav>
+            </div>
+            <div class="user-actions">
+                <span style="color: var(--text-light); font-size: 14px; display: none;" id="role-indicator">My Profile</span>
+                <button>
+                    <img class="user-avatar" src="https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff" alt="Avatar">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="profile-container">
+            
+            <!-- Profile Header Card -->
+            <div class="card profile-summary">
+                
+                <!-- Avatar Section -->
+                <div class="avatar-section">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=f1f5f9&color=334155&size=128" alt="Profile Picture" class="profile-pic">
+                    <button class="edit-avatar-btn" title="Edit Avatar">
+                        <i class="fa-solid fa-pencil" style="font-size: 12px;"></i>
+                    </button>
+                </div>
+
+                <!-- Basic Info -->
+                <div class="basic-info">
+                    <div class="profile-name-group editable-group">
+                        <input type="text" value="John Doe" class="ghost-input profile-name" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);">
+                        <button class="edit-icon" onclick="this.previousElementSibling.removeAttribute('readonly'); this.previousElementSibling.focus();"><i class="fa-solid fa-pen-to-square"></i></button>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Login ID</span>
+                            <span class="badge">WPIN2026001</span>
+                        </div>
+                        <div class="info-item editable-group">
+                            <span class="info-label">Email <i class="fa-solid fa-pen edit-icon" style="font-size: 10px; margin-left: 4px;"></i></span>
+                            <input type="email" value="john.doe@workpulse.test" class="ghost-input info-value">
+                        </div>
+                        <div class="info-item editable-group">
+                            <span class="info-label">Mobile <i class="fa-solid fa-pen edit-icon" style="font-size: 10px; margin-left: 4px;"></i></span>
+                            <input type="text" value="+91 98765 43210" class="ghost-input info-value">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Work Details (Right Side) -->
+                <div class="work-details">
+                    <div class="work-detail-row">
+                        <span class="work-detail-label">Company</span>
+                        <span class="work-detail-value">Workpulse India</span>
+                    </div>
+                    <div class="work-detail-row">
+                        <span class="work-detail-label">Department</span>
+                        <span class="work-detail-value">Engineering</span>
+                    </div>
+                    <div class="work-detail-row">
+                        <span class="work-detail-label">Manager</span>
+                        <span class="work-detail-value text-link">Sarah Smith</span>
+                    </div>
+                    <div class="work-detail-row">
+                        <span class="work-detail-label">Location</span>
+                        <span class="work-detail-value">Bangalore, IN</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="tabs-nav">
+                <button onclick="switchTab('resume')" id="tab-resume" class="tab-btn active">Resume</button>
+                <button onclick="switchTab('private')" id="tab-private" class="tab-btn">Private Info</button>
+                <button onclick="switchTab('salary')" id="tab-salary" class="tab-btn hidden">
+                    Salary Info <i class="fa-solid fa-lock" style="font-size: 10px; margin-left: 4px; color: var(--text-light);"></i>
+                </button>
+            </div>
+
+            <!-- TAB CONTENT: RESUME -->
+            <div id="content-resume" class="tab-content active">
+                <div class="resume-grid">
+                    
+                    <!-- Left Column (Text areas) -->
+                    <div class="resume-section">
+                        
+                        <!-- About -->
+                        <div class="panel editable-group">
+                            <div class="panel-header">
+                                <h3 class="panel-title">About</h3>
+                                <button class="edit-icon"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                            <textarea class="ghost-input" style="color: var(--text-muted);" rows="3" readonly>I am a passionate software engineer with 5 years of experience building scalable web applications. I thrive in collaborative environments and enjoy solving complex problems.</textarea>
+                        </div>
+
+                        <!-- What I love -->
+                        <div class="panel editable-group">
+                            <div class="panel-header">
+                                <h3 class="panel-title">What I love about my job</h3>
+                                <button class="edit-icon"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                            <textarea class="ghost-input" style="color: var(--text-muted);" rows="3" readonly>The constant opportunity to learn new technologies and the satisfaction of seeing my code positively impact our users' daily workflows.</textarea>
+                        </div>
+
+                        <!-- Hobbies -->
+                        <div class="panel editable-group">
+                            <div class="panel-header">
+                                <h3 class="panel-title">My interests and hobbies</h3>
+                                <button class="edit-icon"><i class="fa-solid fa-pen"></i></button>
+                            </div>
+                            <textarea class="ghost-input" style="color: var(--text-muted);" rows="2" readonly>Photography, hiking in the mountains, and playing the acoustic guitar.</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Right Column (Lists) -->
+                    <div class="resume-section">
+                        
+                        <!-- Skills -->
+                        <div class="panel" style="padding: 0; display: flex; flex-direction: column;">
+                            <div class="panel-header" style="padding: 16px 24px; margin: 0; border-bottom: 1px solid var(--border-light);">
+                                <h3 class="panel-title">Skills</h3>
+                            </div>
+                            <div style="padding: 16px 24px;">
+                                <div class="pill-list">
+                                    <span class="pill">JavaScript</span>
+                                    <span class="pill">React.js</span>
+                                    <span class="pill">Node.js</span>
+                                    <span class="pill">CSS / HTML</span>
+                                    <span class="pill">PHP</span>
+                                </div>
+                            </div>
+                            <button class="add-btn"><i class="fa-solid fa-plus"></i> Add Skills</button>
+                        </div>
+
+                        <!-- Certifications -->
+                        <div class="panel" style="padding: 0; display: flex; flex-direction: column;">
+                            <div class="panel-header" style="padding: 16px 24px; margin: 0; border-bottom: 1px solid var(--border-light);">
+                                <h3 class="panel-title">Certification</h3>
+                            </div>
+                            <div style="padding: 16px 24px;">
+                                <div class="cert-item">
+                                    <div class="cert-icon"><i class="fa-solid fa-certificate"></i></div>
+                                    <div>
+                                        <p style="font-weight: 500;">AWS Certified Developer</p>
+                                        <p style="font-size: 12px; color: var(--text-light); margin-top: 2px;">Issued Jan 2025</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="add-btn"><i class="fa-solid fa-plus"></i> Add Certification</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: PRIVATE INFO -->
+            <div id="content-private" class="tab-content">
+                <div class="panel" style="text-align: center; padding: 48px 24px;">
+                    <div style="width: 64px; height: 64px; background: var(--border-light); color: var(--text-light); border-radius: var(--radius-full); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px;">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <h3 class="panel-title" style="font-size: 18px;">Private Information</h3>
+                    <p style="color: var(--text-muted); max-width: 400px; margin: 8px auto 24px;">This section contains sensitive personal information such as banking details, PAN, and Aadhaar numbers. Ensure you are in a private location before editing.</p>
+                    <button style="background: var(--header-bg); color: white; padding: 8px 16px; border-radius: var(--radius-md); font-weight: 500;">View Secure Details</button>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: SALARY INFO (Admin Only) -->
+            <div id="content-salary" class="tab-content">
+                <div class="panel" style="padding: 32px;">
+                    
+                    <!-- Top Summary Stats -->
+                    <div class="salary-summary-grid">
+                        <div>
+                            <div class="salary-stat">
+                                <span class="salary-stat-label">Month Wage</span>
+                                <div class="salary-stat-val-group">
+                                    <input type="text" value="50000" class="salary-amount" readonly>
+                                    <span style="color: var(--text-light);">/ Month</span>
+                                </div>
+                            </div>
+                            <div class="salary-stat">
+                                <span class="salary-stat-label">Yearly Wage</span>
+                                <div class="salary-stat-val-group">
+                                    <input type="text" value="600000" class="salary-amount" readonly>
+                                    <span style="color: var(--text-light);">/ Yearly</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="salary-stat">
+                                <span class="salary-stat-label" style="width: 160px; line-height: 1.2;">No of working days<br>in a week:</span>
+                                <div class="salary-stat-val-group">
+                                    <input type="text" value="5" class="salary-amount" style="text-align: right;" readonly>
+                                </div>
+                            </div>
+                            <div class="salary-stat">
+                                <span class="salary-stat-label" style="width: 160px;">Working hours:</span>
+                                <div class="salary-stat-val-group">
+                                    <input type="text" value="40" class="salary-amount" style="text-align: right;" readonly>
+                                    <span style="color: var(--text-light);">/ hrs</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Salary Details Grid -->
+                    <div class="salary-details-grid">
+                        
+                        <!-- Left Column: Components -->
+                        <div>
+                            <h4 class="salary-section-title">Salary Components</h4>
+                            
+                            <!-- Component Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Basic Salary</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">25000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">50.00 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">Define Basic salary from company cost compute it based on monthly Wages.</p>
+                            </div>
+                            
+                            <!-- Component Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">House Rent Allowance</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">12500.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">50.00 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">HRA provided to employees 50% of the basic salary.</p>
+                            </div>
+
+                            <!-- Component Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Standard Allowance</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">4167.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">16.67 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">A standard allowance is a predetermined, fixed amount provided to employee as part of their salary.</p>
+                            </div>
+
+                            <!-- Component Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Performance Bonus</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">8.33 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">Variable amount paid during payroll. The value defined by the company and calculated as a % of the basic salary.</p>
+                            </div>
+
+                            <!-- Component Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Leave Travel Allowance</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">8.33 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">LTA is paid by the company to employees to cover their travel expenses, and calculated as a % of the basic salary.</p>
+                            </div>
+
+                            <!-- Component Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Fixed Allowance</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">2918.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">11.67 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">Fixed allowance portion of wages is determined after calculating all salary components.</p>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: PF & Tax -->
+                        <div>
+                            <h4 class="salary-section-title">Provident Fund (PF) Contribution</h4>
+                            
+                            <!-- PF Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Employee</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">12.00 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">PF is calculated based on the basic salary.</p>
+                            </div>
+                            
+                            <!-- PF Item -->
+                            <div class="salary-row" style="margin-bottom: 48px;">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Employer</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct">12.00 %</span>
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">PF is calculated based on the basic salary.</p>
+                            </div>
+
+                            <h4 class="salary-section-title">Tax Deductions</h4>
+                            
+                            <!-- Tax Item -->
+                            <div class="salary-row">
+                                <div class="salary-row-header">
+                                    <span class="salary-row-title">Professional Tax</span>
+                                    <div class="salary-row-values">
+                                        <span class="salary-val-amt">200.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct" style="border:none;"></span> <!-- Spacer -->
+                                    </div>
+                                </div>
+                                <p class="salary-row-desc">Professional Tax deducted from the Gross salary.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        /**
+         * Simulating Authentication & Roles based on requirements.
+         * Requirement: "Salary Info tab Should only be visible to Admin"
+         */
+        const currentUser = {
+            id: 1,
+            role: 'admin', // Change to 'employee' to test hiding the Salary tab
+            permissions: ['employee.edit_self', 'employee.view_all']
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initPermissions();
+            
+            // Auto-resize textareas to fit content
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(ta => {
+                ta.style.height = 'auto';
+                ta.style.height = (ta.scrollHeight) + 'px';
+                
+                // Adjust height on input
+                ta.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            });
+
+            // Show indicator on header for small screens if needed
+            if (window.innerWidth > 768) {
+                document.getElementById('role-indicator').style.display = 'inline-block';
+            }
+        });
+
+        function initPermissions() {
+            const salaryTabBtn = document.getElementById('tab-salary');
+            
+            if (currentUser.role === 'admin') {
+                // Make salary tab visible for Admin
+                salaryTabBtn.classList.remove('hidden');
+            } else {
+                // Ensure it's hidden
+                salaryTabBtn.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabName) {
+            const tabs = ['resume', 'private', 'salary'];
+            
+            // Validation: Prevent non-admins from accessing salary via console
+            if (tabName === 'salary' && currentUser.role !== 'admin') {
+                console.warn('Unauthorized access to Salary Info blocked.');
+                return;
+            }
+
+            tabs.forEach(tab => {
+                const btn = document.getElementById(`tab-${tab}`);
+                const content = document.getElementById(`content-${tab}`);
+                
+                if (!btn || !content) return;
+
+                if (tab === tabName) {
+                    btn.classList.add('active');
+                    content.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                    content.classList.remove('active');
+                }
+            });
+        }
+        
+        // Add minimal mock interaction for inputs to show they are "editable"
+        document.querySelectorAll('input:not([readonly])').forEach(input => {
+            input.addEventListener('change', (e) => {
+                console.log(`Updated field value to: ${e.target.value}`);
+                showToast('Changes saved locally.');
+            });
+        });
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

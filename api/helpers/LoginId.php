@@ -28,12 +28,14 @@ function generate_login_id(int $companyId, string $companyName, string $firstNam
     $base = company_initials($companyName) . _name_letters($firstName) . _name_letters($lastName) . $year;
 
     // last 8 chars = YYYYSSSS, usi saal ke sab codes me se max serial nikaalo
+    // (regexp mat use karna - hostinger mysql pe collation error deta hai)
     $stmt = db()->prepare(
         "SELECT COALESCE(MAX(CAST(RIGHT(emp_code, 4) AS UNSIGNED)), 0)
          FROM users
-         WHERE company_id = ? AND emp_code REGEXP CONCAT(?, '[0-9]{4}$')"
+         WHERE company_id = ?
+           AND SUBSTRING(emp_code, CHAR_LENGTH(emp_code) - 7, 4) = ?"
     );
-    $stmt->execute([$companyId, $year]);
+    $stmt->execute([$companyId, (string)$year]);
     $serial = (int)$stmt->fetchColumn() + 1;
 
     return $base . str_pad($serial, 4, '0', STR_PAD_LEFT);
