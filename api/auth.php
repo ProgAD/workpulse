@@ -144,7 +144,7 @@ if ($ACTION === 'change_password' && $METHOD === 'POST') {
     $stmt->execute([$user['id']]);
     $hash = $stmt->fetchColumn();
 
-    if (!password_verify($in['old_password'], $hash)) fail('Current password is wrong', 401);
+    if (!password_verify($in['old_password'], $hash)) fail('Current Password Is Wrong', 422);
 
     db()->prepare("UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?")
         ->execute([password_hash($in['new_password'], PASSWORD_BCRYPT), $user['id']]);

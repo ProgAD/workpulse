@@ -11,3 +11,11 @@ FROM companies c, roles r WHERE c.name = 'WorkPulse Demo Co' AND r.name = 'admin
 
 INSERT INTO employee_profiles (user_id, first_name, last_name)
 SELECT id, 'Admin', 'User' FROM users WHERE email = 'admin@workpulse.test';
+
+-- default leave types demo company ke liye (signup se banao to ye khud aate hai)
+INSERT INTO leave_types (company_id, name, code, is_paid, annual_quota)
+SELECT c.id, 'Paid Leave', 'PL', 1, 12 FROM companies c WHERE c.name = 'WorkPulse Demo Co';
+INSERT INTO leave_types (company_id, name, code, is_paid, annual_quota)
+SELECT c.id, 'Sick Leave', 'SL', 1, 6 FROM companies c WHERE c.name = 'WorkPulse Demo Co';
+INSERT INTO leave_types (company_id, name, code, is_paid, annual_quota)
+SELECT c.id, 'Leave Without Pay', 'LWP', 0, NULL FROM companies c WHERE c.name = 'WorkPulse Demo Co';
