@@ -98,7 +98,7 @@ const API = {
       } catch (parseErr) {
         // 404 matlab wo php file abhi bani hi nahi hai
         if (res.status === 404) {
-          throw new Error('Ye API endpoint abhi bana nahi hai (' + endpoint + ')');
+          throw new Error('This Feature Is Not Available Yet (' + endpoint + ')');
         }
         // warna php ne html error ya warning print kar di hogi
         throw new Error('Server returned invalid JSON — check PHP errors');

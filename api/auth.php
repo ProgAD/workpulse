@@ -62,7 +62,7 @@ if ($ACTION === 'signup' && $METHOD === 'POST') {
     $email = trim(strtolower($in['email']));
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) fail('Invalid email address', 422);
     if (strlen($in['password']) < 6) fail('Password must be at least 6 characters', 422);
-    if (!preg_match('/^\d{10}$/', $in['phone'])) fail('Enter a valid 10 digit phone', 422);
+    if (!preg_match('/^\d{10}$/', $in['phone'])) fail('Enter A Valid 10 Digit Phone', 422);
 
     $stmt = db()->prepare("SELECT id FROM users WHERE email = ? AND delete_flag = 0");
     $stmt->execute([$email]);
@@ -71,17 +71,17 @@ if ($ACTION === 'signup' && $METHOD === 'POST') {
     // company logo optional hai
     $logoUrl = null;
     if (!empty($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
-        if ($_FILES['logo']['size'] > MAX_UPLOAD_BYTES) fail('Logo too big, max 5MB', 422);
+        if ($_FILES['logo']['size'] > MAX_UPLOAD_BYTES) fail('Logo Is Larger Than 5MB', 422);
         $mime = mime_content_type($_FILES['logo']['tmp_name']);
         $extMap = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp', 'image/svg+xml' => 'svg'];
-        if (!isset($extMap[$mime])) fail('Logo must be an image (png/jpg/webp/svg)', 422);
+        if (!isset($extMap[$mime])) fail('Logo Must Be An Image (PNG/JPG/WEBP/SVG)', 422);
         // random naam taaki koi guess na kar sake aur clash na ho
         $fname = 'logo_' . bin2hex(random_bytes(8)) . '.' . $extMap[$mime];
         if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0777, true);
         // apache daemon user se chalta hai, folder writable nahi to yahi pakdo
         if (!move_uploaded_file($_FILES['logo']['tmp_name'], UPLOAD_DIR . '/' . $fname)) {
             error_log('logo upload failed - check uploads folder permissions');
-            fail('Could not save logo. Try again or skip it.', 500);
+            fail('Could Not Save The Logo. Try Again Or Skip It.', 500);
         }
         $logoUrl = UPLOAD_URL . '/' . $fname;
     }

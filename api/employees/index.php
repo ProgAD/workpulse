@@ -49,7 +49,7 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
         fail('Invalid personal email', 422);
     }
     if (!empty($in['emergency_phone']) && !preg_match('/^\d{10}$/', $in['emergency_phone'])) {
-        fail('Emergency phone 10 digit ka hona chahiye', 422);
+        fail('Emergency Phone Must Be 10 Digits', 422);
     }
 
     $pdo = db();
@@ -189,18 +189,18 @@ if ($ACTION === 'upload_photo' && $METHOD === 'POST') {
     $me = require_auth('employee.edit_self');
 
     if (empty($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
-        fail('Photo select karo', 422);
+        fail('Please Select A Photo', 422);
     }
-    if ($_FILES['photo']['size'] > MAX_UPLOAD_BYTES) fail('Photo 5MB se badi hai', 422);
+    if ($_FILES['photo']['size'] > MAX_UPLOAD_BYTES) fail('Photo Is Larger Than 5MB', 422);
 
     $mime = mime_content_type($_FILES['photo']['tmp_name']);
     $extMap = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp'];
-    if (!isset($extMap[$mime])) fail('Sirf jpg/png/webp chalega', 422);
+    if (!isset($extMap[$mime])) fail('Only JPG, PNG Or WEBP Images Are Allowed', 422);
 
     $fname = 'pic_' . bin2hex(random_bytes(8)) . '.' . $extMap[$mime];
     if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0777, true);
     if (!move_uploaded_file($_FILES['photo']['tmp_name'], UPLOAD_DIR . '/' . $fname)) {
-        fail('Photo save nahi hui, uploads folder ki permission dekho', 500);
+        fail('Could Not Save The Photo', 500);
     }
 
     $url = UPLOAD_URL . '/' . $fname;

@@ -54,11 +54,11 @@ if ($ACTION === 'create_type' && $METHOD === 'POST') {
     require_fields($in, ['name', 'code']);
 
     $code = strtoupper(trim($in['code']));
-    if (!preg_match('/^[A-Z]{1,10}$/', $code)) fail('Code sirf letters, max 10', 422);
+    if (!preg_match('/^[A-Z]{1,10}$/', $code)) fail('Code Must Be Letters Only, Max 10', 422);
 
     $stmt = db()->prepare("SELECT id FROM leave_types WHERE company_id = ? AND code = ?");
     $stmt->execute([$me['company_id'], $code]);
-    if ($stmt->fetch()) fail('Ye code pehle se hai', 409);
+    if ($stmt->fetch()) fail('This Code Already Exists', 409);
 
     $quota = ($in['annual_quota'] ?? '') !== '' ? (float)$in['annual_quota'] : null;
 

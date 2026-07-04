@@ -11,21 +11,21 @@ if ($ACTION === 'upload' && $METHOD === 'POST') {
     require_fields($in, ['title']);
 
     if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-        fail('File select karo', 422);
+        fail('Please Select A File', 422);
     }
-    if ($_FILES['file']['size'] > MAX_UPLOAD_BYTES) fail('File 5MB se badi hai', 422);
+    if ($_FILES['file']['size'] > MAX_UPLOAD_BYTES) fail('File Is Larger Than 5MB', 422);
 
     $mime = mime_content_type($_FILES['file']['tmp_name']);
     $extMap = [
         'application/pdf' => 'pdf',
         'image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp',
     ];
-    if (!isset($extMap[$mime])) fail('Sirf pdf/jpg/png/webp chalega', 422);
+    if (!isset($extMap[$mime])) fail('Only PDF, JPG, PNG Or WEBP Files Are Allowed', 422);
 
     $fname = 'doc_' . bin2hex(random_bytes(8)) . '.' . $extMap[$mime];
     if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0777, true);
     if (!move_uploaded_file($_FILES['file']['tmp_name'], UPLOAD_DIR . '/' . $fname)) {
-        fail('File save nahi hui, uploads folder ki permission dekho', 500);
+        fail('Could Not Save The File', 500);
     }
 
     db()->prepare(

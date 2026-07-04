@@ -97,7 +97,7 @@
     <div class="head-row">
       <div class="greet">
         <h2>Time Off</h2>
-        <div class="date">Apni chhuttiyan yahan se apply aur track karo</div>
+        <div class="date">Apply For Time Off And Track Your Requests</div>
       </div>
       <button class="btn btn-in" id="newBtn"><span class="material-symbols-outlined" style="font-size:19px">add</span> New Request</button>
     </div>
@@ -109,7 +109,7 @@
       <aside class="legend">
         <h5>Legend</h5>
         <div class="lg-row"><span class="lg-dot" style="background:#bbf7d0"></span> Approved</div>
-        <div class="lg-row"><span class="lg-dot" style="background:#fef08a"></span> To approve</div>
+        <div class="lg-row"><span class="lg-dot" style="background:#fef08a"></span> To Approve</div>
         <div class="lg-row"><span class="lg-dot" style="background:#fecaca"></span> Refused</div>
         <div class="lg-row"><span class="lg-dot" style="outline:1.5px solid var(--primary); outline-offset:-1.5px"></span> Today</div>
       </aside>
@@ -122,8 +122,8 @@
   <!-- request modal -->
   <div class="overlay" id="overlay">
     <div class="modal">
-      <h3>Time off Request</h3>
-      <div class="m-field"><label>Time off type</label>
+      <h3>Time Off Request</h3>
+      <div class="m-field"><label>Time Off Type</label>
         <select id="m_type"></select>
       </div>
       <div class="m-field"><label>From</label><input type="date" id="m_from"></div>
@@ -131,11 +131,11 @@
       <div class="m-field"><label>Allocation</label><span class="m-alloc" id="m_alloc">0.00 Days</span></div>
       <div class="m-field"><label>Attachment</label>
         <label class="attach-btn"><span class="material-symbols-outlined" style="font-size:17px">upload</span>
-          <span id="attachName">Choose file</span>
+          <span id="attachName">Choose File</span>
           <input type="file" id="m_file" accept=".pdf,image/*" style="display:none">
         </label>
       </div>
-      <p class="m-note">Sick leave 2 din se zyada ho to certificate lagao</p>
+      <p class="m-note">Attach A Certificate For Sick Leave Longer Than 2 Days</p>
       <div class="m-foot">
         <button class="btn btn-ghost" id="mDiscard">Discard</button>
         <button class="btn btn-in" id="mSubmit">Submit</button>
@@ -191,7 +191,7 @@
         requests = res.data || [];
         renderCalendar();
         if (!requests.length) {
-          list.innerHTML = '<p class="date">Abhi koi request nahi — New Request se apply karo.</p>';
+          list.innerHTML = '<p class="date">No Requests Yet — Click New Request To Apply.</p>';
           return;
         }
         list.innerHTML = requests.map(r => `
@@ -199,15 +199,15 @@
             <span class="chip ${r.status === 'approved' ? 'green' : 'gray'}">${r.status}</span>
             <div class="grow">
               <b>${r.leave_type || r.leave_code || 'Leave'}</b>
-              <div class="mono">${r.from_date} → ${r.to_date} · ${parseFloat(r.total_days)} din · ${r.req_no}</div>
+              <div class="mono">${r.from_date} → ${r.to_date} · ${parseFloat(r.total_days)} Days · ${r.req_no}</div>
             </div>
             ${r.status === 'pending' ? `<button class="cancel" onclick="cancelReq(${r.id})">Cancel</button>` : ''}
           </div>`).join('');
-      } catch (e) { list.innerHTML = '<p class="date">Load nahi hua</p>'; }
+      } catch (e) { list.innerHTML = '<p class="date">Could Not Load</p>'; }
     }
 
     async function cancelReq(id) {
-      if (!confirm('Ye request cancel karni hai?')) return;
+      if (!confirm('Cancel This Request?')) return;
       try { await API.post('leave_cancel', { id }); loadRequests(); loadBalances(); }
       catch (err) { alert(err.message); }
     }
@@ -284,15 +284,15 @@
     document.getElementById('m_to').addEventListener('change', calcAlloc);
 
     document.getElementById('m_file').addEventListener('change', e => {
-      document.getElementById('attachName').textContent = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+      document.getElementById('attachName').textContent = e.target.files[0] ? e.target.files[0].name : 'Choose File';
     });
 
     document.getElementById('mSubmit').addEventListener('click', async () => {
       const typeId = document.getElementById('m_type').value;
       const from = document.getElementById('m_from').value;
       const to = document.getElementById('m_to').value;
-      if (!typeId || !from || !to) return alert('Type aur dates bharo');
-      if (to < from) return alert('To date From se pehle nahi ho sakti');
+      if (!typeId || !from || !to) return alert('Please Select A Type And Dates');
+      if (to < from) return alert('To Date Cannot Be Before From Date');
 
       const btn = document.getElementById('mSubmit');
       btn.disabled = true; btn.textContent = 'Submitting...';
@@ -314,12 +314,12 @@
         document.getElementById('m_from').value = '';
         document.getElementById('m_to').value = '';
         document.getElementById('m_file').value = '';
-        document.getElementById('attachName').textContent = 'Choose file';
+        document.getElementById('attachName').textContent = 'Choose File';
         calcAlloc();
         loadRequests();
         loadBalances();
       } catch (err) {
-        alert(err.message || 'Apply nahi hua');
+        alert(err.message || 'Could Not Apply');
       } finally { btn.disabled = false; btn.textContent = 'Submit'; }
     });
 

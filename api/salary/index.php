@@ -83,7 +83,7 @@ if ($ACTION === 'save' && $METHOD === 'POST') {
 
     $uid  = (int)$in['user_id'];
     $wage = (float)$in['month_wage'];
-    if ($wage <= 0) fail('Wage 0 se zyada hona chahiye', 422);
+    if ($wage <= 0) fail('Wage Must Be Greater Than 0', 422);
 
     // employee isi company ka hona chahiye
     $stmt = db()->prepare("SELECT id FROM users WHERE id = ? AND company_id = ? AND delete_flag = 0");

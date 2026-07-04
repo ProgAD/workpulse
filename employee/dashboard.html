@@ -48,9 +48,9 @@
       <div class="today-left">
         <span class="pulse-dot" id="pulseDot"></span>
         <div>
-          <div class="t-label" id="tLabel">Not checked in yet</div>
+          <div class="t-label" id="tLabel">Not Checked In Yet</div>
           <div class="t-timer mono" id="tTimer">00:00:00</div>
-          <div class="t-sub" id="tSub">Ready to start your day?</div>
+          <div class="t-sub" id="tSub">Ready To Start Your Day?</div>
         </div>
       </div>
       <button class="btn btn-in" id="punchBtn">
@@ -70,14 +70,14 @@
           </div>
         </div>
         <div class="q-sub mono" id="qCode"></div>
-        <a class="q-link" href="profile.html">View profile →</a>
+        <a class="q-link" href="profile.html">View Profile →</a>
       </section>
 
       <!-- leave balance -->
       <section class="card qcard">
         <div class="q-title">Leave Balance</div>
         <div id="qLeaves"><div class="q-sub">Loading...</div></div>
-        <a class="q-link" href="#" title="Time Off page aa raha hai">Apply for leave →</a>
+        <a class="q-link" href="#" title="Time Off page aa raha hai">Apply For Leave →</a>
       </section>
 
       <!-- notifications -->
@@ -152,16 +152,16 @@
 
       if (punchedIn) {
         dot.classList.add('in');
-        document.getElementById('tLabel').textContent = 'Working since ' + checkInAt.toTimeString().slice(0, 5);
-        document.getElementById('tSub').textContent = 'Timer chal raha hai — check out karna mat bhulna';
+        document.getElementById('tLabel').textContent = 'Working Since ' + checkInAt.toTimeString().slice(0, 5);
+        document.getElementById('tSub').textContent = 'Timer Is Running — Don't Forget To Check Out';
         btn.className = 'btn btn-out';
         btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:19px">logout</span> Check Out';
         tick();
         tickTimer = setInterval(tick, 1000);
       } else {
         dot.classList.remove('in');
-        document.getElementById('tLabel').textContent = 'Not checked in yet';
-        document.getElementById('tSub').textContent = 'Ready to start your day?';
+        document.getElementById('tLabel').textContent = 'Not Checked In Yet';
+        document.getElementById('tSub').textContent = 'Ready To Start Your Day?';
         btn.className = 'btn btn-in';
         btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:19px">login</span> Check In';
       }
@@ -179,11 +179,11 @@
           // aaj ka din poora ho gaya
           const mins = att.work_mins || 0;
           document.getElementById('tTimer').textContent = fmt(Math.floor(mins / 60)) + ':' + fmt(mins % 60) + ':00';
-          document.getElementById('tLabel').textContent = 'Done for today';
-          document.getElementById('tSub').textContent = 'Checked out at ' + att.check_out.slice(11, 16);
+          document.getElementById('tLabel').textContent = 'Done For Today';
+          document.getElementById('tSub').textContent = 'Checked Out At ' + att.check_out.slice(11, 16);
           const btn = document.getElementById('punchBtn');
           btn.disabled = true;
-          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:19px">task_alt</span> Day complete';
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:19px">task_alt</span> Day Complete';
         } else {
           setPunchUI();
         }
@@ -208,7 +208,7 @@
           loadToday();   // done-for-today state yahi set karega
         }
       } catch (err) {
-        alert(err.message || 'Punch nahi hua');
+        alert(err.message || 'Could Not Punch');
       } finally { btn.disabled = false; }
     });
 
@@ -218,17 +218,17 @@
       try {
         const res = await API.get('leave_balances');
         const rows = (res.data && res.data.balances) || [];
-        if (!rows.length) { box.innerHTML = '<div class="q-sub">Koi leave type set nahi hai</div>'; return; }
+        if (!rows.length) { box.innerHTML = '<div class="q-sub">No Leave Types Set Yet</div>'; return; }
         box.innerHTML = rows.map(b => {
           const total = b.annual_quota != null ? parseFloat(b.annual_quota) : null;
           const used = parseFloat(b.used || 0);
           const left = total != null ? (total - used) : null;
           return `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px">
               <span>${b.name}</span>
-              <b>${left != null ? left + ' left' : 'No limit'}</b>
+              <b>${left != null ? left  + ' Left' : 'No Limit'}</b>
             </div>`;
         }).join('');
-      } catch (e) { box.innerHTML = '<div class="q-sub">Load nahi hua</div>'; }
+      } catch (e) { box.innerHTML = '<div class="q-sub">Could Not Load</div>'; }
     }
 
     // ---- notifications ----
@@ -240,15 +240,15 @@
         const items = d.items || [];
         const badge = document.getElementById('notifBadge');
         if (d.unread > 0) { badge.style.display = 'flex'; badge.textContent = d.unread; }
-        document.getElementById('qNotifCount').textContent = (d.unread || 0) + ' new';
+        document.getElementById('qNotifCount').textContent = (d.unread || 0) + ' New';
         document.getElementById('qNotifCount').className = 'chip ' + (d.unread > 0 ? 'green' : 'gray');
-        if (!items.length) { list.innerHTML = '<div class="q-sub">Sab clear hai 🎉</div>'; return; }
+        if (!items.length) { list.innerHTML = '<div class="q-sub">All Caught Up 🎉</div>'; return; }
         list.innerHTML = items.map(n =>
           `<div style="padding:5px 0; border-bottom:1px solid var(--border-light); ${n.read_at ? 'opacity:.55' : ''}">
              <div style="font-size:13px; font-weight:600">${n.title}</div>
              <div class="q-sub">${n.body || ''}</div>
            </div>`).join('');
-      } catch (e) { list.innerHTML = '<div class="q-sub">Load nahi hua</div>'; }
+      } catch (e) { list.innerHTML = '<div class="q-sub">Could Not Load</div>'; }
     }
 
     // bell dabao to sab read
