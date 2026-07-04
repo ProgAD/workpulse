@@ -36,11 +36,21 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
     $tempPassword = generate_temp_password();
 
     // optional fields - jo aaye wahi jayenge, baaki null
-    $dob    = !empty($in['dob']) ? $in['dob'] : null;
-    $gender = in_array($in['gender'] ?? '', ['male', 'female', 'other'], true) ? $in['gender'] : null;
-    $addr   = !empty($in['address']) ? trim($in['address']) : null;
+    $opt = fn($k) => !empty($in[$k]) ? trim($in[$k]) : null;
+
+    $dob     = $opt('dob');
+    $gender  = in_array($in['gender'] ?? '', ['male', 'female', 'other'], true) ? $in['gender'] : null;
+    $marital = in_array($in['marital_status'] ?? '', ['single', 'married'], true) ? $in['marital_status'] : null;
+    $addr    = $opt('address');
     $empType  = in_array($in['emp_type'] ?? '', ['full_time', 'part_time', 'contract', 'intern'], true) ? $in['emp_type'] : 'full_time';
     $workMode = in_array($in['work_mode'] ?? '', ['onsite', 'remote', 'hybrid'], true) ? $in['work_mode'] : 'onsite';
+
+    if (!empty($in['personal_email']) && !filter_var($in['personal_email'], FILTER_VALIDATE_EMAIL)) {
+        fail('Invalid personal email', 422);
+    }
+    if (!empty($in['emergency_phone']) && !preg_match('/^\d{10}$/', $in['emergency_phone'])) {
+        fail('Emergency phone 10 digit ka hona chahiye', 422);
+    }
 
     $pdo = db();
     $pdo->beginTransaction();
@@ -81,12 +91,21 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
 
         $pdo->prepare(
             "INSERT INTO employee_profiles
-                (user_id, first_name, last_name, phone, doj, dob, gender, current_address,
-                 department_id, designation_id, emp_type, work_mode)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                (user_id, first_name, last_name, phone, personal_email, nationality, doj, dob,
+                 gender, marital_status, blood_group, current_address, permanent_address,
+                 emergency_contact, emergency_phone,
+                 department_id, designation_id, emp_type, work_mode,
+                 bank_account, bank_name, bank_ifsc, pan, uan)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         )->execute([
-            $userId, $nameParts[0], $nameParts[1] ?? null, $in['phone'], $doj,
-            $dob, $gender, $addr, $deptId, $desigId, $empType, $workMode,
+            $userId, $nameParts[0], $nameParts[1] ?? null, $in['phone'],
+            $opt('personal_email'), $opt('nationality'), $doj, $dob,
+            $gender, $marital, $opt('blood_group'), $addr, $opt('permanent_address'),
+            $opt('emergency_contact'), $opt('emergency_phone'),
+            $deptId, $desigId, $empType, $workMode,
+            $opt('bank_account'), $opt('bank_name'),
+            $opt('bank_ifsc') ? strtoupper($opt('bank_ifsc')) : null,
+            $opt('pan') ? strtoupper($opt('pan')) : null, $opt('uan'),
         ]);
 
         $pdo->commit();
