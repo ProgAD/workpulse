@@ -128,13 +128,14 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 ) ENGINE=InnoDB;
 
--- email verification + password reset tokens. store sha256 hash, never the raw token
+-- password reset tokens. store sha256 hash, never the raw token
 CREATE TABLE user_tokens (
     id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id     BIGINT UNSIGNED NOT NULL,
     token_hash  CHAR(64) NOT NULL UNIQUE,
-    purpose     ENUM('email_verify','password_reset','invite') NOT NULL,
-    expires_at  TIMESTAMP NOT NULL,
+    purpose     ENUM('password_reset') NOT NULL DEFAULT 'password_reset',
+    -- datetime isliye, timestamp me mariadb khud on-update current_timestamp laga deta hai
+    expires_at  DATETIME NOT NULL,
     consumed_at TIMESTAMP NULL DEFAULT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     KEY idx_user_purpose (user_id, purpose),
@@ -203,6 +204,7 @@ CREATE TABLE employee_documents (
     uploaded_by BIGINT UNSIGNED NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     delete_flag  TINYINT(1) NOT NULL DEFAULT 0,
+
     KEY idx_user_docs (user_id, delete_flag),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
