@@ -917,6 +917,9 @@
         const photoInput = document.createElement('input');
         photoInput.type = 'file';
         photoInput.accept = 'image/*';
+        photoInput.id = 'pfPhotoInput';
+        photoInput.style.display = 'none';
+        document.body.appendChild(photoInput);
         document.querySelector('.edit-avatar-btn').addEventListener('click', () => photoInput.click());
         photoInput.addEventListener('change', async () => {
             const file = photoInput.files[0];
