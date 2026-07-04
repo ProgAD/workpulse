@@ -27,6 +27,28 @@
     .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: var(--md-text-2); }
     .switch-link a { color: var(--md-primary); font-weight: 500; text-decoration: none; }
     .switch-link a:hover { text-decoration: underline; }
+
+    /* company name ke bagal me chhota logo upload button, wireframe jaisa */
+    .company-row { display: flex; gap: 10px; align-items: flex-start; }
+    .company-row .md-field { flex: 1; }
+    .logo-upload {
+      width: 52px;
+      height: 52px;
+      border: 1px dashed var(--md-outline);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--md-primary);
+      background: var(--md-primary-light);
+      transition: border-color .15s;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .logo-upload:hover { border-color: var(--md-primary); }
+    .logo-upload img { width: 100%; height: 100%; object-fit: cover; }
+    .logo-upload input { display: none; }
   </style>
 </head>
 <body>
@@ -40,10 +62,17 @@
       <p class="tagline">Register your company</p>
 
       <form id="signupForm" novalidate>
-        <div class="md-field" id="companyField">
-          <input type="text" id="company" placeholder=" " required>
-          <label for="company">Company Name</label>
-          <div class="field-msg" id="companyMsg"></div>
+        <div class="company-row">
+          <div class="md-field" id="companyField">
+            <input type="text" id="company" placeholder=" " required>
+            <label for="company">Company Name</label>
+            <div class="field-msg" id="companyMsg"></div>
+          </div>
+          <!-- company logo optional hai -->
+          <label class="logo-upload" id="logoUpload" title="Upload company logo (optional)">
+            <span class="material-icons" id="logoIcon">upload</span>
+            <input type="file" id="logoFile" accept="image/*">
+          </label>
         </div>
 
         <div class="md-field" id="nameField">
@@ -58,17 +87,32 @@
           <div class="field-msg" id="emailMsg"></div>
         </div>
 
+        <div class="md-field" id="phoneField">
+          <input type="tel" id="phone" placeholder=" " autocomplete="tel" maxlength="10" required>
+          <label for="phone">Phone</label>
+          <div class="field-msg" id="phoneMsg"></div>
+        </div>
+
         <div class="md-field" id="passField">
           <input type="password" id="password" placeholder=" " autocomplete="new-password" required>
           <label for="password">Password</label>
-          <button type="button" class="toggle-eye" id="toggleEye" tabindex="-1" aria-label="Show password">
+          <button type="button" class="toggle-eye" data-for="password" tabindex="-1" aria-label="Show password">
             <span class="material-icons" style="font-size:20px">visibility</span>
           </button>
           <div class="field-msg" id="passMsg"></div>
         </div>
 
+        <div class="md-field" id="confirmPassField">
+          <input type="password" id="confirmPassword" placeholder=" " autocomplete="new-password" required>
+          <label for="confirmPassword">Confirm Password</label>
+          <button type="button" class="toggle-eye" data-for="confirmPassword" tabindex="-1" aria-label="Show password">
+            <span class="material-icons" style="font-size:20px">visibility</span>
+          </button>
+          <div class="field-msg" id="confirmPassMsg"></div>
+        </div>
+
         <button type="submit" class="md-btn md-btn-primary md-btn-block" id="signupBtn">
-          <span id="btnText">Create Account</span>
+          <span id="btnText">Sign Up</span>
         </button>
       </form>
 
@@ -86,12 +130,24 @@
     const btnText = document.getElementById('btnText');
     const snackbar = document.getElementById('snackbar');
 
-    document.getElementById('toggleEye').addEventListener('click', () => {
-      const pass = document.getElementById('password');
-      const icon = document.querySelector('#toggleEye .material-icons');
-      const show = pass.type === 'password';
-      pass.type = show ? 'text' : 'password';
-      icon.textContent = show ? 'visibility_off' : 'visibility';
+    // har eye button apna wala input toggle karta hai (data-for se)
+    document.querySelectorAll('.toggle-eye').forEach(el => {
+      el.addEventListener('click', () => {
+        const input = document.getElementById(el.dataset.for);
+        const icon = el.querySelector('.material-icons');
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        icon.textContent = show ? 'visibility_off' : 'visibility';
+      });
+    });
+
+    // logo choose karne pe preview dikha do
+    document.getElementById('logoFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const upload = document.getElementById('logoUpload');
+      upload.innerHTML = '<img src="' + URL.createObjectURL(file) + '" alt="logo">';
+      upload.appendChild(e.target);   // input wapas andar daalo warna dobara change nahi hoga
     });
 
     let snackTimer;
@@ -113,26 +169,44 @@
       const company = document.getElementById('company').value.trim();
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
       const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
 
       setFieldError('companyField', 'companyMsg', company ? '' : 'Company name required');
       setFieldError('nameField', 'nameMsg', name ? '' : 'Name required');
       setFieldError('emailField', 'emailMsg', email ? '' : 'Email required');
+      setFieldError('phoneField', 'phoneMsg',
+        !phone ? 'Phone required' : !/^\d{10}$/.test(phone) ? 'Enter 10 digit number' : '');
       setFieldError('passField', 'passMsg',
         !password ? 'Password required' : password.length < 6 ? 'Minimum 6 characters' : '');
-      if (!company || !name || !email || !password || password.length < 6) return;
+      setFieldError('confirmPassField', 'confirmPassMsg',
+        !confirmPassword ? 'Confirm your password' : confirmPassword !== password ? 'Passwords do not match' : '');
+
+      if (!company || !name || !email || !/^\d{10}$/.test(phone)
+          || !password || password.length < 6 || confirmPassword !== password) return;
 
       btn.disabled = true;
       btnText.innerHTML = '<span class="md-spinner"></span>';
 
+      // formdata isliye taaki logo file bhi saath ja sake
+      const fd = new FormData();
+      fd.append('company', company);
+      fd.append('name', name);
+      fd.append('email', email);
+      fd.append('phone', phone);
+      fd.append('password', password);
+      const logo = document.getElementById('logoFile').files[0];
+      if (logo) fd.append('logo', logo);
+
       try {
-        await API.post('signup', { company, name, email, password });
+        await API.post('signup', fd);
         // signup ke baad seedha admin dashboard, kyunki banane wala admin hota hai
         window.location.href = 'admin/dashboard.html';
       } catch (err) {
         toast(err.message || 'Signup failed');
         btn.disabled = false;
-        btnText.textContent = 'Create Account';
+        btnText.textContent = 'Sign Up';
       }
     });
   </script>
