@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>WorkPulse — Login</title>
+  <title>WorkPulse — Sign Up</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="assests/css/app.css">
   <style>
-    /* sirf login page ka layout, common cheeze app.css me hai */
+    /* login jaisa hi layout */
     .login-wrap {
       min-height: 100vh;
       display: flex;
@@ -18,29 +18,11 @@
       padding: 16px;
       background: linear-gradient(160deg, var(--md-primary) 0%, var(--md-primary-dark) 55%, #1a237e 100%);
     }
-    .login-card {
-      width: 100%;
-      max-width: 400px;
-      box-shadow: var(--md-shadow-3);
-    }
-    .logo-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 6px;
-    }
-    .logo-row .material-icons {
-      color: var(--md-primary);
-      font-size: 34px;
-    }
+    .login-card { width: 100%; max-width: 400px; box-shadow: var(--md-shadow-3); }
+    .logo-row { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 6px; }
+    .logo-row .material-icons { color: var(--md-primary); font-size: 34px; }
     .logo-row h1 { font-size: 24px; font-weight: 700; }
-    .tagline {
-      text-align: center;
-      color: var(--md-text-2);
-      font-size: 14px;
-      margin-bottom: 28px;
-    }
+    .tagline { text-align: center; color: var(--md-text-2); font-size: 14px; margin-bottom: 28px; }
     .switch-link { text-align: center; margin-top: 20px; font-size: 14px; color: var(--md-text-2); }
     .switch-link a { color: var(--md-primary); font-weight: 500; text-decoration: none; }
     .switch-link a:hover { text-decoration: underline; }
@@ -54,17 +36,29 @@
         <span class="material-icons">monitor_heart</span>
         <h1>WorkPulse</h1>
       </div>
-      <p class="tagline">Sign in to your HRMS account</p>
+      <p class="tagline">Register your company</p>
 
-      <form id="loginForm" novalidate>
+      <form id="signupForm" novalidate>
+        <div class="md-field" id="companyField">
+          <input type="text" id="company" placeholder=" " required>
+          <label for="company">Company Name</label>
+          <div class="field-msg" id="companyMsg"></div>
+        </div>
+
+        <div class="md-field" id="nameField">
+          <input type="text" id="name" placeholder=" " autocomplete="name" required>
+          <label for="name">Your Full Name</label>
+          <div class="field-msg" id="nameMsg"></div>
+        </div>
+
         <div class="md-field" id="emailField">
           <input type="email" id="email" placeholder=" " autocomplete="email" required>
-          <label for="email">Email</label>
+          <label for="email">Work Email</label>
           <div class="field-msg" id="emailMsg"></div>
         </div>
 
         <div class="md-field" id="passField">
-          <input type="password" id="password" placeholder=" " autocomplete="current-password" required>
+          <input type="password" id="password" placeholder=" " autocomplete="new-password" required>
           <label for="password">Password</label>
           <button type="button" class="toggle-eye" id="toggleEye" tabindex="-1" aria-label="Show password">
             <span class="material-icons" style="font-size:20px">visibility</span>
@@ -72,12 +66,12 @@
           <div class="field-msg" id="passMsg"></div>
         </div>
 
-        <button type="submit" class="md-btn md-btn-primary md-btn-block" id="loginBtn">
-          <span id="btnText">Sign In</span>
+        <button type="submit" class="md-btn md-btn-primary md-btn-block" id="signupBtn">
+          <span id="btnText">Create Account</span>
         </button>
       </form>
 
-      <p class="switch-link">Don't have an account? <a href="signup.html">Sign Up</a></p>
+      <p class="switch-link">Already have an account? <a href="index.html">Sign In</a></p>
     </div>
   </div>
 
@@ -85,13 +79,12 @@
 
   <script src="assests/js/api.js"></script>
   <script>
-    // login page logic
-    const form = document.getElementById('loginForm');
-    const btn = document.getElementById('loginBtn');
+    // signup - company + admin account ek saath banta hai
+    const form = document.getElementById('signupForm');
+    const btn = document.getElementById('signupBtn');
     const btnText = document.getElementById('btnText');
     const snackbar = document.getElementById('snackbar');
 
-    // password dikhao/chhupao
     document.getElementById('toggleEye').addEventListener('click', () => {
       const pass = document.getElementById('password');
       const icon = document.querySelector('#toggleEye .material-icons');
@@ -116,38 +109,31 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const company = document.getElementById('company').value.trim();
+      const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      // basic validation, server bhi check karega hi
+      setFieldError('companyField', 'companyMsg', company ? '' : 'Company name required');
+      setFieldError('nameField', 'nameMsg', name ? '' : 'Name required');
       setFieldError('emailField', 'emailMsg', email ? '' : 'Email required');
-      setFieldError('passField', 'passMsg', password ? '' : 'Password required');
-      if (!email || !password) return;
+      setFieldError('passField', 'passMsg',
+        !password ? 'Password required' : password.length < 6 ? 'Minimum 6 characters' : '');
+      if (!company || !name || !email || !password || password.length < 6) return;
 
       btn.disabled = true;
       btnText.innerHTML = '<span class="md-spinner"></span>';
 
       try {
-        const res = await API.post('login', { email, password });
-        // role ke hisab se dashboard pe bhejo
-        const role = res.data && res.data.role;
-        window.location.href = role === 'admin'
-          ? 'admin/dashboard.html'
-          : 'employee/dashboard.html';
+        await API.post('signup', { company, name, email, password });
+        // signup ke baad seedha admin dashboard, kyunki banane wala admin hota hai
+        window.location.href = 'admin/dashboard.html';
       } catch (err) {
-        toast(err.message || 'Login failed');
+        toast(err.message || 'Signup failed');
         btn.disabled = false;
-        btnText.textContent = 'Sign In';
+        btnText.textContent = 'Create Account';
       }
     });
-
-    // agar pehle se logged in hai to seedha dashboard
-    API.get('me').then(res => {
-      const role = res.data && res.data.role;
-      window.location.href = role === 'admin'
-        ? 'admin/dashboard.html'
-        : 'employee/dashboard.html';
-    }).catch(() => { /* logged in nahi hai, login form hi dikhao */ });
   </script>
 </body>
 </html>

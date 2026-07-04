@@ -13,6 +13,7 @@ const API = {
     'health':          'health.php',
 
     'login':           'auth.php?action=login',
+    'signup':          'auth.php?action=signup',
     'logout':          'auth.php?action=logout',
     'me':              'auth.php?action=me',
 
