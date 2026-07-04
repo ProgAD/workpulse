@@ -1,902 +1,427 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile - Workpulse</title>
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            /* Color Palette */
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --text-light: #94a3b8;
-            
-            --border-color: #e2e8f0;
-            --border-light: #f1f5f9;
-            
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --primary-light: #eff6ff;
-            
-            --header-bg: #0f172a;
-            --header-text: #ffffff;
-            
-            --warning-bg: #fef9c3;
-            --warning-text: #a16207;
-            
-            /* Sizing & Spacing */
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-full: 9999px;
-            
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-
-        /* Reset & Base */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            font-size: 14px;
-        }
-
-        button { background: none; border: none; cursor: pointer; font-family: inherit; }
-        a { text-decoration: none; color: inherit; }
-        input, textarea, select { font-family: inherit; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: var(--text-light); border-radius: var(--radius-sm); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-        /* Layout Utilities */
-        .container { max-width: 1024px; margin: 0 auto; width: 100%; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
-        .justify-center { justify-content: center; }
-        .gap-1 { gap: 4px; }
-        .gap-2 { gap: 8px; }
-        .gap-3 { gap: 12px; }
-        .gap-4 { gap: 16px; }
-        .gap-6 { gap: 24px; }
-        .hidden { display: none !important; }
-
-        /* Header */
-        .header {
-            background-color: var(--header-bg);
-            color: var(--header-text);
-            box-shadow: var(--shadow-md);
-            flex-shrink: 0;
-            z-index: 20;
-        }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 64px;
-            padding: 0 24px;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-        .logo-area { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .logo-icon {
-            width: 32px; height: 32px;
-            background-color: var(--primary);
-            border-radius: var(--radius-md);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 18px;
-        }
-        .logo-text { font-weight: 700; font-size: 18px; letter-spacing: 0.5px; }
-        
-        .main-nav { display: flex; gap: 4px; margin-left: 32px; }
-        .main-nav a {
-            color: #cbd5e1; padding: 8px 12px; border-radius: var(--radius-md);
-            font-weight: 500; font-size: 14px; transition: all 0.2s;
-        }
-        .main-nav a:hover { background-color: #334155; color: white; }
-        
-        .user-actions { display: flex; align-items: center; gap: 16px; }
-        .user-avatar {
-            width: 36px; height: 36px; border-radius: var(--radius-full);
-            border: 2px solid #334155; object-fit: cover;
-        }
-
-        /* Main Content Area */
-        .main-content {
-            flex: 1; overflow-y: auto; padding: 32px 16px;
-        }
-        .profile-container {
-            max-width: 1024px; margin: 0 auto;
-            display: flex; flex-direction: column; gap: 24px;
-        }
-
-        /* Cards */
-        .card {
-            background-color: var(--bg-card);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-        
-        /* Profile Summary Card */
-        .profile-summary {
-            display: flex; padding: 32px; gap: 32px; align-items: center;
-        }
-        .avatar-section { position: relative; flex-shrink: 0; }
-        .profile-pic {
-            width: 128px; height: 128px; border-radius: var(--radius-full);
-            border: 4px solid white; box-shadow: var(--shadow-md); object-fit: cover;
-        }
-        .edit-avatar-btn {
-            position: absolute; bottom: 0; right: 0;
-            background-color: var(--primary); color: white;
-            width: 32px; height: 32px; border-radius: var(--radius-full);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: var(--shadow-sm); transition: background 0.2s;
-        }
-        .edit-avatar-btn:hover { background-color: var(--primary-hover); }
-
-        .basic-info { flex: 1; min-width: 0; }
-        .profile-name-group { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-        .profile-name { font-size: 28px; font-weight: 700; color: var(--text-main); width: 100%; }
-        
-        .info-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px 32px; margin-top: 16px;
-        }
-        .info-item { display: flex; flex-direction: column; gap: 4px; }
-        .info-label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
-        .info-value { font-size: 14px; color: var(--text-main); }
-        .badge { background: var(--border-light); padding: 4px 8px; border-radius: var(--radius-sm); font-family: monospace; width: max-content; }
-
-        .work-details {
-            flex: 1; border-left: 1px solid var(--border-color); padding-left: 32px;
-            display: flex; flex-direction: column; gap: 16px;
-        }
-        .work-detail-row {
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-light); padding-bottom: 8px;
-        }
-        .work-detail-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .work-detail-label { color: var(--text-light); }
-        .work-detail-value { font-weight: 500; color: var(--text-main); }
-        .text-link { color: var(--primary); cursor: pointer; }
-        .text-link:hover { text-decoration: underline; }
-
-        /* Form Elements & Editing */
-        .editable-group:hover .edit-icon { opacity: 1; }
-        .edit-icon { opacity: 0; transition: opacity 0.2s; color: var(--text-light); cursor: pointer; }
-        .edit-icon:hover { color: var(--primary); }
-        
-        .ghost-input {
-            background: transparent; border: 1px solid transparent;
-            font-size: inherit; font-weight: inherit; color: inherit; width: 100%; padding: 2px 0; transition: all 0.2s;
-        }
-        .ghost-input:hover:not(:disabled):not([readonly]) { border-bottom: 1px solid var(--border-color); }
-        .ghost-input:focus { outline: none; border-bottom: 1px solid var(--primary); background: #f8fafc; }
-        
-        textarea.ghost-input { resize: none; line-height: 1.5; padding: 8px; }
-
-        /* Tabs Navigation */
-        .tabs-nav {
-            display: flex; gap: 24px; padding: 0 24px; overflow-x: auto;
-            border-bottom: 1px solid var(--border-color); background: var(--bg-card);
-            border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
-        }
-        .tab-btn {
-            padding: 16px 4px; font-weight: 500; color: var(--text-muted);
-            border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s;
-        }
-        .tab-btn:hover { color: var(--text-main); border-bottom-color: var(--border-color); }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Resume Grid */
-        .resume-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
-        .resume-section { display: flex; flex-direction: column; gap: 24px; }
-        
-        .panel { padding: 24px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .panel-title { font-size: 16px; font-weight: 600; color: var(--text-main); }
-        
-        .pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .pill {
-            padding: 4px 12px; background: var(--primary-light); color: var(--primary-hover);
-            border: 1px solid #bfdbfe; border-radius: var(--radius-full); font-size: 12px; font-weight: 500;
-        }
-        .add-btn {
-            width: 100%; padding: 12px; border-top: 1px solid var(--border-light);
-            color: var(--primary); font-weight: 500; text-align: center; margin-top: 16px; transition: background 0.2s;
-        }
-        .add-btn:hover { background: var(--bg-body); }
-
-        .cert-item { display: flex; gap: 12px; margin-top: 16px; }
-        .cert-icon { width: 32px; height: 32px; background: var(--warning-bg); color: var(--warning-text); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-        /* Salary Info specific */
-        .salary-summary-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
-            padding-bottom: 32px; margin-bottom: 32px; border-bottom: 1px solid var(--border-light);
-        }
-        .salary-stat { display: flex; align-items: baseline; gap: 16px; margin-bottom: 16px; }
-        .salary-stat-label { width: 120px; font-weight: 500; color: var(--text-muted); }
-        .salary-stat-val-group { flex: 1; display: flex; align-items: baseline; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
-        .salary-amount { font-family: monospace; font-size: 20px; font-weight: 700; width: 100%; border: none; background: transparent; }
-        
-        .salary-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-        .salary-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-main); margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--border-light); letter-spacing: 0.5px; }
-        
-        .salary-row { margin-bottom: 24px; }
-        .salary-row-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-        .salary-row-title { font-weight: 600; font-size: 14px; }
-        .salary-row-values { display: flex; gap: 16px; align-items: baseline; font-family: monospace; }
-        .salary-val-amt { border-bottom: 1px solid var(--border-color); padding-bottom: 2px; }
-        .salary-val-pct { border-bottom: 1px solid var(--border-color); padding-bottom: 2px; width: 64px; text-align: right; color: var(--text-muted); }
-        .salary-row-desc { font-size: 12px; color: var(--text-light); line-height: 1.5; padding-right: 48px; }
-
-        /* Toast */
-        .toast {
-            position: fixed; bottom: 16px; right: 16px; background: var(--header-bg); color: white;
-            padding: 8px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-md);
-            font-size: 14px; z-index: 50; transition: opacity 0.3s; opacity: 1;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .profile-summary { flex-direction: column; text-align: center; padding: 24px; }
-            .work-details { border-left: none; border-top: 1px solid var(--border-color); padding-left: 0; padding-top: 24px; width: 100%; }
-            .resume-grid { grid-template-columns: 1fr; }
-            .salary-summary-grid, .salary-details-grid { grid-template-columns: 1fr; }
-            .main-nav { display: none; }
-        }
-
-        /* private info tab ke form fields */
-        .private-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
-        @media (max-width: 768px) { .private-grid { grid-template-columns: 1fr; } }
-        .pi-field { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-        .pi-field label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--text-muted); font-weight: 500; }
-        .pi-input {
-            flex: 1;
-            border: none;
-            border-bottom: 1px solid var(--border-color);
-            padding: 6px 2px;
-            font-size: 13.5px;
-            outline: none;
-            background: transparent;
-            transition: border-color .15s;
-        }
-        .pi-input:focus { border-bottom-color: var(--primary); }
-        .pi-input[readonly] { color: var(--text-muted); cursor: default; }
-    </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Profile - Workpulse</title>
+<link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin.css?v=2"/>
 </head>
 <body>
+<div class="app">
 
-    <header class="header">
-        <div class="header-content">
-            <div class="flex items-center gap-6">
-                <div class="logo-area">
-                    <div class="logo-icon">W</div>
-                    <span class="logo-text">Workpulse</span>
-                </div>
-                <nav class="main-nav">
-                    <a href="dashboard.html" id="nav_employees">Employees</a>
-                    <a href="#">Attendance</a>
-                    <a href="#">Time Off</a>
-                </nav>
-            </div>
-            <div class="user-actions">
-                <span style="color: var(--text-light); font-size: 14px; display: none;" id="role-indicator">My Profile</span>
-                <button>
-                    <img class="user-avatar" src="https://ui-avatars.com/api/?name=W&background=0D8ABC&color=fff" alt="Avatar" id="nav_avatar">
-                </button>
-            </div>
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">
+      <img src="../assets/images/logo.svg" alt="" class="brand-logo"/>
+      <div><h1 class="brand-name">Workpulse</h1><p class="brand-sub">Management Portal</p></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a class="nav-link" href="employees.html"><span class="material-symbols-outlined">groups</span><span>Employees</span></a>
+      <a class="nav-link" href="attendance.html"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+      <a class="nav-link" href="leaves.html"><span class="material-symbols-outlined">event_busy</span><span>Leave</span></a>
+      <a class="nav-link" href="payroll.html"><span class="material-symbols-outlined">payments</span><span>Payroll</span></a>
+    </nav>
+    <div class="side-user">
+      <a href="profile.html" class="side-user-link">
+        <img id="sideAvatar" class="side-user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+        <div class="side-user-info"><p id="sideName" class="side-user-name">Admin</p><p class="side-user-role">Administrator</p></div>
+      </a>
+      <button onclick="logout()" class="side-logout" title="Log out"><span class="material-symbols-outlined">logout</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menuBtn" class="menu-btn"><span class="material-symbols-outlined">menu</span></button>
+        <h2 class="page-title hide-sm">My Profile</h2>
+      </div>
+      <div class="topbar-right">
+        <div class="notif-wrap">
+          <button id="bellBtn" class="icon-btn">
+            <span class="material-symbols-outlined">notifications</span>
+            <span id="notifDot" class="notif-dot hidden"></span>
+          </button>
+          <div id="notifPopup" class="notif-popup hidden">
+            <div class="notif-popup-head"><span class="ttl">Notifications</span><span id="notifPopupCount" class="count"></span></div>
+            <div id="notifPopupList" class="notif-popup-list"></div>
+            <a href="notifications.html" class="notif-popup-foot">View all notifications</a>
+          </div>
         </div>
+      </div>
     </header>
 
-    <main class="main-content">
-        <div class="profile-container">
-            
-            <!-- Profile Header Card -->
-            <div class="card profile-summary">
-                
-                <!-- Avatar Section -->
-                <div class="avatar-section">
-                    <img src="https://ui-avatars.com/api/?name=W&background=f1f5f9&color=334155&size=128" alt="Profile Picture" class="profile-pic" id="hdr_avatar">
-                    <button class="edit-avatar-btn" title="Edit Avatar">
-                        <i class="fa-solid fa-pencil" style="font-size: 12px;"></i>
-                    </button>
-                </div>
+    <div class="content custom-scrollbar">
 
-                <!-- Basic Info -->
-                <div class="basic-info">
-                    <div class="profile-name-group editable-group">
-                        <input type="text" value="" id="hdr_name" class="ghost-input profile-name" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);">
-                        <button class="edit-icon" onclick="this.previousElementSibling.removeAttribute('readonly'); this.previousElementSibling.focus();"><i class="fa-solid fa-pen-to-square"></i></button>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Login ID</span>
-                            <span class="badge" id="hdr_login">--</span>
-                        </div>
-                        <div class="info-item editable-group">
-                            <span class="info-label">Email <i class="fa-solid fa-pen edit-icon" style="font-size: 10px; margin-left: 4px;"></i></span>
-                            <input type="email" value="" id="hdr_email" class="ghost-input info-value" readonly>
-                        </div>
-                        <div class="info-item editable-group">
-                            <span class="info-label">Mobile <i class="fa-solid fa-pen edit-icon" style="font-size: 10px; margin-left: 4px;"></i></span>
-                            <input type="text" value="" id="hdr_mobile" class="ghost-input info-value" maxlength="10" inputmode="numeric">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Work Details (Right Side) -->
-                <div class="work-details">
-                    <div class="work-detail-row">
-                        <span class="work-detail-label">Company</span>
-                        <span class="work-detail-value" id="hdr_company">—</span>
-                    </div>
-                    <div class="work-detail-row">
-                        <span class="work-detail-label">Department</span>
-                        <span class="work-detail-value" id="hdr_dept">—</span>
-                    </div>
-                    <div class="work-detail-row">
-                        <span class="work-detail-label">Manager</span>
-                        <span class="work-detail-value" id="hdr_manager">—</span>
-                    </div>
-                    <div class="work-detail-row">
-                        <span class="work-detail-label">Location</span>
-                        <span class="work-detail-value" id="hdr_location">—</span>
-                    </div>
-                </div>
+      <!-- hero -->
+      <section class="card">
+        <div class="profile-hero">
+          <img id="proAvatar" class="pro-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff&size=128" alt=""/>
+          <div class="pro-h-info">
+            <h2 id="proName">--</h2>
+            <p id="proSub" class="pro-h-sub">--</p>
+            <div class="pro-h-badges">
+              <span class="badge badge-blue" id="proRole">--</span>
+              <span class="badge badge-grey" id="proLogin">--</span>
+              <span class="badge" id="proStatus">--</span>
             </div>
-
-            <!-- Tabs Navigation -->
-            <div class="tabs-nav">
-                <button onclick="switchTab('resume')" id="tab-resume" class="tab-btn active">Resume</button>
-                <button onclick="switchTab('private')" id="tab-private" class="tab-btn">Private Info</button>
-                <button onclick="switchTab('salary')" id="tab-salary" class="tab-btn hidden">
-                    Salary Info <i class="fa-solid fa-lock" style="font-size: 10px; margin-left: 4px; color: var(--text-light);"></i>
-                </button>
-                <button onclick="switchTab('security')" id="tab-security" class="tab-btn">Security</button>
-            </div>
-
-            <!-- TAB CONTENT: RESUME -->
-            <div id="content-resume" class="tab-content active">
-                <div class="resume-grid">
-                    
-                    <!-- Left Column (Text areas) -->
-                    <div class="resume-section">
-                        
-                        <!-- About -->
-                        <div class="panel editable-group">
-                            <div class="panel-header">
-                                <h3 class="panel-title">About</h3>
-                                <button class="edit-icon"><i class="fa-solid fa-pen"></i></button>
-                            </div>
-                            <textarea class="ghost-input" style="color: var(--text-muted);" rows="3" readonly>I am a passionate software engineer with 5 years of experience building scalable web applications. I thrive in collaborative environments and enjoy solving complex problems.</textarea>
-                        </div>
-
-                        <!-- What I love -->
-                        <div class="panel editable-group">
-                            <div class="panel-header">
-                                <h3 class="panel-title">What I love about my job</h3>
-                                <button class="edit-icon"><i class="fa-solid fa-pen"></i></button>
-                            </div>
-                            <textarea class="ghost-input" style="color: var(--text-muted);" rows="3" readonly>The constant opportunity to learn new technologies and the satisfaction of seeing my code positively impact our users' daily workflows.</textarea>
-                        </div>
-
-                        <!-- Hobbies -->
-                        <div class="panel editable-group">
-                            <div class="panel-header">
-                                <h3 class="panel-title">My interests and hobbies</h3>
-                                <button class="edit-icon"><i class="fa-solid fa-pen"></i></button>
-                            </div>
-                            <textarea class="ghost-input" style="color: var(--text-muted);" rows="2" readonly>Photography, hiking in the mountains, and playing the acoustic guitar.</textarea>
-                        </div>
-                    </div>
-
-                    <!-- Right Column (Lists) -->
-                    <div class="resume-section">
-                        
-                        <!-- Skills -->
-                        <div class="panel" style="padding: 0; display: flex; flex-direction: column;">
-                            <div class="panel-header" style="padding: 16px 24px; margin: 0; border-bottom: 1px solid var(--border-light);">
-                                <h3 class="panel-title">Skills</h3>
-                            </div>
-                            <div style="padding: 16px 24px;">
-                                <div class="pill-list">
-                                    <span class="pill">JavaScript</span>
-                                    <span class="pill">React.js</span>
-                                    <span class="pill">Node.js</span>
-                                    <span class="pill">CSS / HTML</span>
-                                    <span class="pill">PHP</span>
-                                </div>
-                            </div>
-                            <button class="add-btn"><i class="fa-solid fa-plus"></i> Add Skills</button>
-                        </div>
-
-                        <!-- Certifications -->
-                        <div class="panel" style="padding: 0; display: flex; flex-direction: column;">
-                            <div class="panel-header" style="padding: 16px 24px; margin: 0; border-bottom: 1px solid var(--border-light);">
-                                <h3 class="panel-title">Certification</h3>
-                            </div>
-                            <div style="padding: 16px 24px;">
-                                <div class="cert-item">
-                                    <div class="cert-icon"><i class="fa-solid fa-certificate"></i></div>
-                                    <div>
-                                        <p style="font-weight: 500;">AWS Certified Developer</p>
-                                        <p style="font-size: 12px; color: var(--text-light); margin-top: 2px;">Issued Jan 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="add-btn"><i class="fa-solid fa-plus"></i> Add Certification</button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT: PRIVATE INFO -->
-            <div id="content-private" class="tab-content">
-                <div class="panel" style="padding: 32px;">
-                    <div class="private-grid">
-                        <div>
-                            <h4 class="salary-section-title">Personal Details</h4>
-                            <div class="pi-field"><label>Date of Birth</label><input type="date" id="pi_dob" class="pi-input"></div>
-                            <div class="pi-field"><label>Residing Address</label><input type="text" id="pi_address" class="pi-input" placeholder="—"></div>
-                            <div class="pi-field"><label>Nationality</label><input type="text" id="pi_nationality" class="pi-input" placeholder="Indian"></div>
-                            <div class="pi-field"><label>Personal Email</label><input type="email" id="pi_personal_email" class="pi-input" placeholder="—"></div>
-                            <div class="pi-field"><label>Gender</label>
-                                <select id="pi_gender" class="pi-input">
-                                    <option value="">—</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="pi-field"><label>Marital Status</label>
-                                <select id="pi_marital" class="pi-input">
-                                    <option value="">—</option>
-                                    <option value="single">Single</option>
-                                    <option value="married">Married</option>
-                                </select>
-                            </div>
-                            <div class="pi-field"><label>Date of Joining</label><input type="date" id="pi_doj" class="pi-input" readonly></div>
-                        </div>
-                        <div>
-                            <h4 class="salary-section-title">Bank Details</h4>
-                            <div class="pi-field"><label>Account Number</label><input type="text" id="pi_account" class="pi-input" inputmode="numeric" placeholder="—"></div>
-                            <div class="pi-field"><label>Bank Name</label><input type="text" id="pi_bank" class="pi-input" placeholder="—"></div>
-                            <div class="pi-field"><label>IFSC Code</label><input type="text" id="pi_ifsc" class="pi-input" style="text-transform: uppercase;" maxlength="11" placeholder="—"></div>
-                            <div class="pi-field"><label>PAN No</label><input type="text" id="pi_pan" class="pi-input" style="text-transform: uppercase;" maxlength="10" placeholder="—"></div>
-                            <div class="pi-field"><label>UAN No</label><input type="text" id="pi_uan" class="pi-input" inputmode="numeric" maxlength="12" placeholder="—"></div>
-                            <div class="pi-field"><label>Emp Code / Login ID</label><input type="text" id="pi_emp_code" class="pi-input" readonly></div>
-                        </div>
-                    </div>
-                    <div style="display:flex; justify-content:flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-light);">
-                        <button id="piSaveBtn" style="background: var(--primary); color: #fff; padding: 9px 18px; border-radius: var(--radius-md); font-weight: 600; font-size: 13.5px;">Save Changes</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT: SECURITY -->
-            <div id="content-security" class="tab-content">
-                <div class="panel" style="padding: 32px; max-width: 480px;">
-                    <h4 class="salary-section-title">Change Password</h4>
-                    <div class="pi-field"><label>Current Password</label><input type="password" id="sec_old" class="pi-input" autocomplete="current-password"></div>
-                    <div class="pi-field"><label>New Password</label><input type="password" id="sec_new" class="pi-input" autocomplete="new-password"></div>
-                    <div class="pi-field"><label>Confirm New Password</label><input type="password" id="sec_confirm" class="pi-input" autocomplete="new-password"></div>
-                    <div style="display:flex; justify-content:flex-end; margin-top: 20px;">
-                        <button id="secSaveBtn" style="background: var(--primary); color: #fff; padding: 9px 18px; border-radius: var(--radius-md); font-weight: 600; font-size: 13.5px;">Update Password</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB CONTENT: SALARY INFO (Admin Only) -->
-            <div id="content-salary" class="tab-content">
-                <div class="panel" style="padding: 32px;">
-                    
-                    <!-- Top Summary Stats -->
-                    <div class="salary-summary-grid">
-                        <div>
-                            <div class="salary-stat">
-                                <span class="salary-stat-label">Month Wage</span>
-                                <div class="salary-stat-val-group">
-                                    <input type="text" value="50000" class="salary-amount" id="sal_wage" inputmode="numeric">
-                                    <span style="color: var(--text-light);">/ Month</span>
-                                </div>
-                            </div>
-                            <div class="salary-stat">
-                                <span class="salary-stat-label">Yearly Wage</span>
-                                <div class="salary-stat-val-group">
-                                    <input type="text" value="600000" class="salary-amount" id="sal_yearly" readonly>
-                                    <span style="color: var(--text-light);">/ Yearly</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="salary-stat">
-                                <span class="salary-stat-label" style="width: 160px; line-height: 1.2;">No of working days<br>in a week:</span>
-                                <div class="salary-stat-val-group">
-                                    <input type="text" value="5" class="salary-amount" style="text-align: right;" readonly>
-                                </div>
-                            </div>
-                            <div class="salary-stat">
-                                <span class="salary-stat-label" style="width: 160px;">Working hours:</span>
-                                <div class="salary-stat-val-group">
-                                    <input type="text" value="40" class="salary-amount" style="text-align: right;" readonly>
-                                    <span style="color: var(--text-light);">/ hrs</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Salary Details Grid -->
-                    <div class="salary-details-grid">
-                        
-                        <!-- Left Column: Components -->
-                        <div>
-                            <h4 class="salary-section-title">Salary Components</h4>
-                            
-                            <!-- Component Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Basic Salary</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_basic">25000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">50.00 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">Define Basic salary from company cost compute it based on monthly Wages.</p>
-                            </div>
-                            
-                            <!-- Component Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">House Rent Allowance</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_hra">12500.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">50.00 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">HRA provided to employees 50% of the basic salary.</p>
-                            </div>
-
-                            <!-- Component Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Standard Allowance</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_std">4167.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct" id="pct_std">16.67 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">A standard allowance is a predetermined, fixed amount provided to employee as part of their salary.</p>
-                            </div>
-
-                            <!-- Component Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Performance Bonus</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_perf">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">8.33 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">Variable amount paid during payroll. The value defined by the company and calculated as a % of the basic salary.</p>
-                            </div>
-
-                            <!-- Component Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Leave Travel Allowance</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_lta">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">8.33 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">LTA is paid by the company to employees to cover their travel expenses, and calculated as a % of the basic salary.</p>
-                            </div>
-
-                            <!-- Component Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Fixed Allowance</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_fixed">2918.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct" id="pct_fixed">11.67 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">Fixed allowance portion of wages is determined after calculating all salary components.</p>
-                            </div>
-                        </div>
-
-                        <!-- Right Column: PF & Tax -->
-                        <div>
-                            <h4 class="salary-section-title">Provident Fund (PF) Contribution</h4>
-                            
-                            <!-- PF Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Employee</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_pf_emp">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">12.00 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">PF is calculated based on the basic salary.</p>
-                            </div>
-                            
-                            <!-- PF Item -->
-                            <div class="salary-row" style="margin-bottom: 48px;">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Employer</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt" id="sal_pf_er">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">12.00 %</span>
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">PF is calculated based on the basic salary.</p>
-                            </div>
-
-                            <h4 class="salary-section-title">Tax Deductions</h4>
-                            
-                            <!-- Tax Item -->
-                            <div class="salary-row">
-                                <div class="salary-row-header">
-                                    <span class="salary-row-title">Professional Tax</span>
-                                    <div class="salary-row-values">
-                                        <span class="salary-val-amt">200.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct" style="border:none;"></span> <!-- Spacer -->
-                                    </div>
-                                </div>
-                                <p class="salary-row-desc">Professional Tax deducted from the Gross salary.</p>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
+          </div>
         </div>
-    </main>
+      </section>
 
-    <script src="../assets/js/api.js"></script>
-    <script>
-        let currentUser = null;
+      <!-- tabs -->
+      <div class="tabs" id="profileTabs">
+        <button class="tab active" data-tab="personal">Personal</button>
+        <button class="tab" data-tab="bank">Bank &amp; Statutory</button>
+        <button class="tab" data-tab="salary">Salary</button>
+        <button class="tab" data-tab="security">Security</button>
+      </div>
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            // login check + apna data bharo
-            try {
-                const res = await API.get('me');
-                currentUser = res.data;
-                if (Number(currentUser.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
-                fillProfile();
-                initPermissions();
-            } catch (e) { return; /* api.js 401 pe login bhej dega */ }
+      <!-- PERSONAL -->
+      <div id="tab-personal" class="tab-panel active">
+        <section class="card" style="padding:24px">
+          <h4 class="section-title">Personal Details</h4>
+          <div class="field-grid">
+            <div class="form-group"><label>First Name</label><input type="text" id="pf_first"></div>
+            <div class="form-group"><label>Last Name</label><input type="text" id="pf_last"></div>
+            <div class="form-group"><label>Phone</label><input type="tel" id="pf_phone" maxlength="10" inputmode="numeric"></div>
+            <div class="form-group"><label>Personal Email</label><input type="email" id="pf_personal_email" placeholder="you@example.com"></div>
+            <div class="form-group"><label>Date of Birth</label><input type="date" id="pf_dob"></div>
+            <div class="form-group"><label>Gender</label>
+              <select id="pf_gender"><option value="">—</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option></select>
+            </div>
+            <div class="form-group"><label>Marital Status</label>
+              <select id="pf_marital"><option value="">—</option><option value="single">Single</option><option value="married">Married</option></select>
+            </div>
+            <div class="form-group"><label>Nationality</label><input type="text" id="pf_nationality" placeholder="Indian"></div>
+            <div class="form-group"><label>Blood Group</label><input type="text" id="pf_blood" maxlength="5" placeholder="O+"></div>
+          </div>
+        </section>
 
-            initSalaryCalc();
+        <section class="card" style="padding:24px">
+          <h4 class="section-title">Address &amp; Emergency Contact</h4>
+          <div class="field-grid">
+            <div class="form-group full"><label>Current Address</label><textarea id="pf_current_address" rows="2"></textarea></div>
+            <div class="form-group full"><label>Permanent Address</label><textarea id="pf_permanent_address" rows="2"></textarea></div>
+            <div class="form-group"><label>Emergency Contact Name</label><input type="text" id="pf_emergency_contact"></div>
+            <div class="form-group"><label>Emergency Contact Phone</label><input type="tel" id="pf_emergency_phone" maxlength="10" inputmode="numeric"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--outline-variant)">
+            <button onclick="saveProfile(this)" class="btn btn-primary">Save Changes</button>
+          </div>
+        </section>
 
-            // textarea apne content ke hisab se badhta hai
-            document.querySelectorAll('textarea').forEach(ta => {
-                ta.style.height = 'auto';
-                ta.style.height = ta.scrollHeight + 'px';
-                ta.addEventListener('input', function () {
-                    this.style.height = 'auto';
-                    this.style.height = this.scrollHeight + 'px';
-                });
-            });
+        <section class="card" style="padding:24px">
+          <h4 class="section-title">Job Details <span style="text-transform:none;font-weight:500;color:var(--outline)">(managed by HR)</span></h4>
+          <div class="field-grid">
+            <div class="form-group"><label>Company</label><input type="text" id="pf_company" readonly></div>
+            <div class="form-group"><label>Login ID</label><input type="text" id="pf_emp_code" readonly></div>
+            <div class="form-group"><label>Work Email</label><input type="text" id="pf_email" readonly></div>
+            <div class="form-group"><label>Role</label><input type="text" id="pf_role" readonly></div>
+            <div class="form-group"><label>Department</label><input type="text" id="pf_department" readonly></div>
+            <div class="form-group"><label>Designation</label><input type="text" id="pf_designation" readonly></div>
+            <div class="form-group"><label>Date of Joining</label><input type="text" id="pf_doj" readonly></div>
+            <div class="form-group"><label>Employment Type</label><input type="text" id="pf_emp_type" readonly></div>
+            <div class="form-group"><label>Work Mode</label><input type="text" id="pf_work_mode" readonly></div>
+            <div class="form-group"><label>Status</label><input type="text" id="pf_status" readonly></div>
+          </div>
+        </section>
+      </div>
 
-            if (window.innerWidth > 768) {
-                document.getElementById('role-indicator').style.display = 'inline-block';
-            }
+      <!-- BANK -->
+      <div id="tab-bank" class="tab-panel">
+        <section class="card" style="padding:24px">
+          <h4 class="section-title">Bank &amp; Statutory Details</h4>
+          <div class="field-grid">
+            <div class="form-group"><label>Bank Name</label><input type="text" id="pf_bank_name"></div>
+            <div class="form-group"><label>Account Number</label><input type="text" id="pf_bank_account" inputmode="numeric"></div>
+            <div class="form-group"><label>IFSC Code</label><input type="text" id="pf_bank_ifsc" maxlength="11" style="text-transform:uppercase"></div>
+            <div class="form-group"><label>PAN Number</label><input type="text" id="pf_pan" maxlength="10" style="text-transform:uppercase"></div>
+            <div class="form-group"><label>UAN Number</label><input type="text" id="pf_uan" maxlength="12" inputmode="numeric"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--outline-variant)">
+            <button onclick="saveProfile(this)" class="btn btn-primary">Save Changes</button>
+          </div>
+        </section>
+      </div>
 
-            // mobile me sirf digits
-            document.getElementById('hdr_mobile').addEventListener('input', (e) => {
-                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+      <!-- SALARY -->
+      <div id="tab-salary" class="tab-panel">
+        <section class="card" style="padding:24px">
+          <h4 class="section-title">Salary Structure</h4>
+          <div id="salaryContent">
+            <div class="state-box"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading...</p></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- SECURITY -->
+      <div id="tab-security" class="tab-panel">
+        <section class="card" style="padding:24px;max-width:520px">
+          <h4 class="section-title">Change Password</h4>
+          <div class="field-grid" style="grid-template-columns:1fr">
+            <div class="form-group"><label>Current Password</label><input type="password" id="sec_old" autocomplete="current-password"></div>
+            <div class="form-group"><label>New Password</label><input type="password" id="sec_new" autocomplete="new-password" placeholder="At least 6 characters"></div>
+            <div class="form-group"><label>Confirm New Password</label><input type="password" id="sec_confirm" autocomplete="new-password"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:20px">
+            <button onclick="changePassword(this)" class="btn btn-primary">Update Password</button>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script>
+    let profile = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        initSidebar();
+        initNotifBell();
+        setupTabs();
+        setupNumericInputs();
+
+        try {
+            const meRes = await API.get('me');
+            if (Number(meRes.data.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+        } catch (e) { return; /* api.js 401 pe login bhej dega */ }
+
+        loadProfile();
+        loadSalary();
+    });
+
+    function initSidebar() {
+        const sb = document.getElementById('sidebar'), bd = document.getElementById('sidebarBackdrop'), menu = document.getElementById('menuBtn');
+        menu.addEventListener('click', () => { sb.classList.add('open'); bd.classList.add('show'); });
+        bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
+    }
+    async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
+
+    // ---------- notification bell (shared) ----------
+    function initNotifBell() {
+        const btn = document.getElementById('bellBtn');
+        const pop = document.getElementById('notifPopup');
+        if (!btn) return;
+        btn.addEventListener('click', (e) => { e.stopPropagation(); pop.classList.toggle('hidden'); });
+        document.addEventListener('click', (e) => { if (!btn.contains(e.target) && !pop.contains(e.target)) pop.classList.add('hidden'); });
+        loadBellNotifications();
+    }
+    function bellTimeAgo(ts) {
+        if (!ts) return '';
+        const then = new Date(ts.replace(' ', 'T'));
+        const diff = (Date.now() - then.getTime()) / 1000;
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+        if (diff < 172800) return 'Yesterday';
+        return then.toLocaleDateString();
+    }
+    function bellIcon(type) {
+        if (type === 'leave') return { i: 'event_busy', c: '' };
+        if (type === 'regularization') return { i: 'edit_calendar', c: 'tert' };
+        if (type === 'payslip') return { i: 'payments', c: 'green' };
+        return { i: 'notifications', c: '' };
+    }
+    async function loadBellNotifications() {
+        try {
+            const res = await API.get('notifications', { limit: 10 });
+            const unread = ((res.data && res.data.items) || []).filter(n => !n.read_at);
+            document.getElementById('notifDot').classList.toggle('hidden', unread.length === 0);
+            document.getElementById('notifPopupCount').innerText = unread.length ? unread.length + ' unread' : '';
+            const list = document.getElementById('notifPopupList');
+            const rows = unread.slice(0, 6);
+            if (rows.length === 0) { list.innerHTML = '<div class="notif-popup-empty">You\'re all caught up 🎉</div>'; return; }
+            list.innerHTML = rows.map(n => {
+                const ic = bellIcon(n.type);
+                return `<div class="np-item"><div class="notif-icon ${ic.c}"><span class="material-symbols-outlined">${ic.i}</span></div><div class="np-main"><div class="np-title">${n.title || ''}</div>${n.body ? `<div class="np-text">${n.body}</div>` : ''}<div class="np-time">${bellTimeAgo(n.created_at)}</div></div></div>`;
+            }).join('');
+        } catch (e) {
+            const l = document.getElementById('notifPopupList');
+            if (l) l.innerHTML = '<div class="notif-popup-empty">No notifications</div>';
+        }
+    }
+
+    // ---------- tabs ----------
+    function setupTabs() {
+        document.querySelectorAll('#profileTabs .tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('#profileTabs .tab').forEach(x => x.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                t.classList.add('active');
+                document.getElementById('tab-' + t.dataset.tab).classList.add('active');
             });
         });
-
-        async function fillProfile() {
-            const u = currentUser;
-            document.getElementById('hdr_login').innerText = u.emp_code;
-            document.getElementById('hdr_email').value = u.email;
-            document.getElementById('pi_emp_code').value = u.emp_code;
-            setAvatars(u.email.split('@')[0]);
-
-            try {
-                const res = await API.get('me_profile');
-                const p = res.data;
-                const fullName = ((p.first_name || '') + ' ' + (p.last_name || '')).trim();
-                document.getElementById('hdr_name').value = fullName;
-                document.getElementById('hdr_mobile').value = p.phone || '';
-                if (p.company) document.getElementById('hdr_company').innerText = p.company;
-                if (p.department) document.getElementById('hdr_dept').innerText = p.department;
-                if (p.designation) document.getElementById('role-indicator').innerText = p.designation;
-                setAvatars(fullName || u.email.split('@')[0]);
-
-                // private info tab
-                const setV = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
-                setV('pi_dob', p.dob);
-                setV('pi_address', p.current_address);
-                setV('pi_nationality', p.nationality);
-                setV('pi_personal_email', p.personal_email);
-                setV('pi_gender', p.gender);
-                setV('pi_marital', p.marital_status);
-                setV('pi_doj', p.doj);
-                setV('pi_account', p.bank_account);
-                setV('pi_bank', p.bank_name);
-                setV('pi_ifsc', p.bank_ifsc);
-                setV('pi_pan', p.pan);
-                setV('pi_uan', p.uan);
-            } catch (e) { console.error(e); }
-        }
-
-        function setAvatars(name) {
-            const url = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
-            document.getElementById('nav_avatar').src = url;
-            document.getElementById('hdr_avatar').src = url.replace('0D8ABC&color=fff', 'f1f5f9&color=334155&size=128');
-        }
-
-        // salary tab sabko dikhta hai - admin edit kar sakta hai, employee sirf apni dekh sakta hai
-        function initPermissions() {
-            document.getElementById('tab-salary').classList.remove('hidden');
-            if (currentUser.role !== 'admin') {
-                const wageInp = document.getElementById('sal_wage');
-                if (wageInp) wageInp.setAttribute('readonly', true);
-            }
-            loadMySalary();
-        }
-
-        // apna saved structure db se - employee ke liye yehi source of truth hai
-        async function loadMySalary() {
-            try {
-                const res = await API.get('salary_structure');
-                if (res.data && res.data.month_wage) {
-                    document.getElementById('sal_wage').value = Math.round(res.data.month_wage);
-                    recalcSalary();
-                }
-            } catch (e) { /* structure abhi set nahi hua, calculator default dikhega */ }
-        }
-
-        function switchTab(tabName) {
-            const tabs = ['resume', 'private', 'salary', 'security'];
-
-            tabs.forEach(tab => {
-                const btn = document.getElementById(`tab-${tab}`);
-                const content = document.getElementById(`content-${tab}`);
-                if (!btn || !content) return;
-                btn.classList.toggle('active', tab === tabName);
-                content.classList.toggle('active', tab === tabName);
-            });
-        }
-
-        // wage badalte hi saare components recalc hote hai
-        // rules: basic 50% of wage, hra 50% of basic, std 8.33% of wage,
-        // perf + lta 8.33% of basic, fixed = wage - baaki sab, pf 12% of basic, ptax 200
-        function initSalaryCalc() {
-            const wageInp = document.getElementById('sal_wage');
-            if (!wageInp) return;
-
-            wageInp.addEventListener('input', () => {
-                wageInp.value = wageInp.value.replace(/\D/g, '');
-                recalcSalary();
-            });
-            recalcSalary();
-        }
-
-        function money(n) { return n.toFixed(2); }
-
-        function recalcSalary() {
-            const wage = parseFloat(document.getElementById('sal_wage').value) || 0;
-            const basic = wage * 0.50;
-            const hra = basic * 0.50;
-            const std = wage * 0.0833;
-            const perf = basic * 0.0833;
-            const lta = basic * 0.0833;
-            let fixed = wage - (basic + hra + std + perf + lta);
-            if (fixed < 0) fixed = 0;
-            const pf = basic * 0.12;
-
-            const set = (id, val) => {
-                const el = document.getElementById(id);
-                if (el) el.innerHTML = `${money(val)} ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span>`;
-            };
-            document.getElementById('sal_yearly').value = wage * 12;
-            set('sal_basic', basic);
-            set('sal_hra', hra);
-            set('sal_std', std);
-            set('sal_perf', perf);
-            set('sal_lta', lta);
-            set('sal_fixed', fixed);
-            set('sal_pf_emp', pf);
-            set('sal_pf_er', pf);
-            const pctStd = document.getElementById('pct_std');
-            if (pctStd) pctStd.innerText = '8.33 %';
-            const pctFixed = document.getElementById('pct_fixed');
-            if (pctFixed) pctFixed.innerText = wage ? (fixed / wage * 100).toFixed(2) + ' %' : '— %';
-        }
-
-        // private info + header wali details save
-        document.getElementById('piSaveBtn').addEventListener('click', async () => {
-            const v = id => document.getElementById(id).value.trim();
-
-            const phone = v('hdr_mobile');
-            if (phone && !/^\d{10}$/.test(phone)) return showToast('Phone 10 digit ka hona chahiye');
-
-            try {
-                await API.post('update_self', {
-                    name: v('hdr_name'),
-                    phone,
-                    dob: v('pi_dob'),
-                    current_address: v('pi_address'),
-                    nationality: v('pi_nationality'),
-                    personal_email: v('pi_personal_email'),
-                    gender: v('pi_gender'),
-                    marital_status: v('pi_marital'),
-                    bank_account: v('pi_account'),
-                    bank_name: v('pi_bank'),
-                    bank_ifsc: v('pi_ifsc').toUpperCase(),
-                    pan: v('pi_pan').toUpperCase(),
-                    uan: v('pi_uan'),
-                });
-                showToast('Profile saved ✔');
-            } catch (err) {
-                showToast(err.message || 'Save nahi hua');
-            }
+    }
+    function setupNumericInputs() {
+        ['pf_phone', 'pf_emergency_phone', 'pf_bank_account', 'pf_uan'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', () => { el.value = el.value.replace(/\D/g, ''); });
         });
+    }
 
-        // password change - ye wala live hai
-        document.getElementById('secSaveBtn').addEventListener('click', async () => {
-            const oldP = document.getElementById('sec_old').value;
-            const newP = document.getElementById('sec_new').value;
-            const conf = document.getElementById('sec_confirm').value;
+    function val(id) { const el = document.getElementById(id); return el ? (el.value || '') : ''; }
+    function setVal(id, v) { const el = document.getElementById(id); if (el) el.value = (v == null ? '' : v); }
 
-            if (!oldP || !newP) return showToast('Dono password bharo');
-            if (newP.length < 6) return showToast('New password kam se kam 6 characters');
-            if (newP !== conf) return showToast('Passwords match nahi kar rahe');
+    // ---------- load ----------
+    async function loadProfile() {
+        try {
+            const res = await API.get('me_profile');
+            const p = res.data || {};
+            profile = p;
 
-            try {
-                await API.post('change_password', { old_password: oldP, new_password: newP });
-                showToast('Password changed ✔');
-                ['sec_old', 'sec_new', 'sec_confirm'].forEach(id => document.getElementById(id).value = '');
-            } catch (err) {
-                showToast(err.message || 'Password change nahi hua');
-            }
-        });
+            const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.emp_code || 'User';
+            document.getElementById('proName').innerText = fullName;
+            document.getElementById('proSub').innerText = [p.designation, p.department].filter(Boolean).join(' · ') || (p.role === 'admin' ? 'Admin / HR' : 'Employee');
+            document.getElementById('proRole').innerText = p.role === 'admin' ? 'Admin / HR' : (p.role || 'Employee');
+            document.getElementById('proLogin').innerText = p.emp_code || '--';
+            const st = document.getElementById('proStatus');
+            st.innerText = p.status || '--';
+            st.className = 'badge ' + (p.status === 'active' ? 'badge-green' : 'badge-red');
 
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = message;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
+            const av = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(fullName);
+            document.getElementById('proAvatar').src = av + '&size=128';
+            document.getElementById('sideAvatar').src = av;
+            document.getElementById('sideName').innerText = fullName;
+
+            // editable personal
+            setVal('pf_first', p.first_name);
+            setVal('pf_last', p.last_name);
+            setVal('pf_phone', p.phone);
+            setVal('pf_personal_email', p.personal_email);
+            setVal('pf_dob', p.dob);
+            setVal('pf_gender', p.gender);
+            setVal('pf_marital', p.marital_status);
+            setVal('pf_nationality', p.nationality);
+            setVal('pf_blood', p.blood_group);
+            setVal('pf_current_address', p.current_address);
+            setVal('pf_permanent_address', p.permanent_address);
+            setVal('pf_emergency_contact', p.emergency_contact);
+            setVal('pf_emergency_phone', p.emergency_phone);
+
+            // bank
+            setVal('pf_bank_name', p.bank_name);
+            setVal('pf_bank_account', p.bank_account);
+            setVal('pf_bank_ifsc', p.bank_ifsc);
+            setVal('pf_pan', p.pan);
+            setVal('pf_uan', p.uan);
+
+            // read-only job details
+            setVal('pf_company', p.company);
+            setVal('pf_emp_code', p.emp_code);
+            setVal('pf_email', p.email);
+            setVal('pf_role', p.role === 'admin' ? 'Admin / HR' : (p.role || 'Employee'));
+            setVal('pf_department', p.department || '—');
+            setVal('pf_designation', p.designation || '—');
+            setVal('pf_doj', p.doj || '—');
+            setVal('pf_emp_type', p.emp_type || '—');
+            setVal('pf_work_mode', p.work_mode || '—');
+            setVal('pf_status', p.status || '—');
+        } catch (e) {
+            console.error('Profile load failed:', e.message);
+            showToast(e.message || 'Could not load profile');
         }
-    </script>
+    }
+
+    async function loadSalary() {
+        const box = document.getElementById('salaryContent');
+        try {
+            const res = await API.get('salary_structure');
+            const s = res.data;
+            if (!s || !s.month_wage) {
+                box.innerHTML = '<div class="state-box"><span class="material-symbols-outlined">account_balance_wallet</span><h3>No salary structure</h3><p>Your salary structure has not been set yet.</p></div>';
+                return;
+            }
+            const money = n => '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const rows = (s.items || []).map(it => `
+                <tr>
+                    <td><b style="color:var(--on-surface)">${it.name}</b></td>
+                    <td>${it.kind === 'deduction' ? '<span class="badge badge-red">Deduction</span>' : '<span class="badge badge-green">Earning</span>'}</td>
+                    <td class="t-right"><span class="money">${money(it.monthly_amt)}</span></td>
+                </tr>`).join('');
+            box.innerHTML = `
+                <div class="grid grid-4" style="margin-bottom:20px">
+                    <div class="stat-card"><p class="stat-label">Monthly Wage</p><h3 class="stat-value">${money(s.month_wage)}</h3></div>
+                    <div class="stat-card"><p class="stat-label">Annual CTC</p><h3 class="stat-value">${money(s.ctc_annual)}</h3></div>
+                    <div class="stat-card"><p class="stat-label">Effective From</p><h3 class="stat-value" style="font-size:16px">${s.effective_from || '—'}</h3></div>
+                </div>
+                <div class="table-wrap">
+                    <table class="data">
+                        <thead><tr><th>Component</th><th>Type</th><th class="t-right">Monthly Amount</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+                <p class="emp-sub" style="margin-top:12px">Salary is set by HR/Payroll. This is a read-only view.</p>`;
+        } catch (e) {
+            box.innerHTML = '<div class="state-box"><span class="material-symbols-outlined">lock</span><h3>Not available</h3><p>' + (e.message || 'Salary details unavailable') + '</p></div>';
+        }
+    }
+
+    // ---------- save personal / bank ----------
+    async function saveProfile(btn) {
+        const phone = val('pf_phone').trim();
+        if (phone && !/^\d{10}$/.test(phone)) return showToast('Phone must be exactly 10 digits');
+        const ephone = val('pf_emergency_phone').trim();
+        if (ephone && !/^\d{10}$/.test(ephone)) return showToast('Emergency phone must be 10 digits');
+
+        const payload = {
+            name: `${val('pf_first').trim()} ${val('pf_last').trim()}`.trim(),
+            phone,
+            personal_email: val('pf_personal_email').trim(),
+            dob: val('pf_dob'),
+            gender: val('pf_gender'),
+            marital_status: val('pf_marital'),
+            nationality: val('pf_nationality').trim(),
+            blood_group: val('pf_blood').trim(),
+            current_address: val('pf_current_address').trim(),
+            permanent_address: val('pf_permanent_address').trim(),
+            emergency_contact: val('pf_emergency_contact').trim(),
+            emergency_phone: ephone,
+            bank_name: val('pf_bank_name').trim(),
+            bank_account: val('pf_bank_account').trim(),
+            bank_ifsc: val('pf_bank_ifsc').trim().toUpperCase(),
+            pan: val('pf_pan').trim().toUpperCase(),
+            uan: val('pf_uan').trim(),
+        };
+        btn.disabled = true; btn.innerText = 'Saving...';
+        try {
+            await API.post('update_self', payload);
+            showToast('Profile saved ✔');
+            loadProfile();
+        } catch (e) {
+            showToast(e.message || 'Save failed');
+        } finally { btn.disabled = false; btn.innerText = 'Save Changes'; }
+    }
+
+    // ---------- change password ----------
+    async function changePassword(btn) {
+        const oldP = val('sec_old'), newP = val('sec_new'), conf = val('sec_confirm');
+        if (!oldP || !newP) return showToast('Fill both password fields');
+        if (newP.length < 6) return showToast('New password must be at least 6 characters');
+        if (newP !== conf) return showToast('Passwords do not match');
+        btn.disabled = true; btn.innerText = 'Updating...';
+        try {
+            await API.post('change_password', { old_password: oldP, new_password: newP });
+            showToast('Password changed ✔');
+            ['sec_old', 'sec_new', 'sec_confirm'].forEach(id => setVal(id, ''));
+        } catch (e) {
+            showToast(e.message || 'Password change failed');
+        } finally { btn.disabled = false; btn.innerText = 'Update Password'; }
+    }
+
+    function showToast(msg) {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2200);
+    }
+</script>
 </body>
 </html>

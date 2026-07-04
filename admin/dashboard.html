@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="../assets/css/admin.css"/>
+<link rel="stylesheet" href="../assets/css/admin.css?v=2"/>
 </head>
 <body>
 <div class="app">
@@ -25,13 +25,18 @@
       <a class="nav-link active" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
       <a class="nav-link" href="employees.html"><span class="material-symbols-outlined">groups</span><span>Employees</span></a>
       <a class="nav-link" href="attendance.html"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+      <a class="nav-link" href="leaves.html"><span class="material-symbols-outlined">event_busy</span><span>Leave</span></a>
+      <a class="nav-link" href="payroll.html"><span class="material-symbols-outlined">payments</span><span>Payroll</span></a>
     </nav>
     <div class="side-user">
-      <img id="sideAvatar" class="side-user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
-      <div class="side-user-info">
-        <p id="sideName" class="side-user-name">Admin</p>
-        <p class="side-user-role">Administrator</p>
-      </div>
+      <a href="profile.html" class="side-user-link">
+        <img id="sideAvatar" class="side-user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+        <div class="side-user-info">
+          <p id="sideName" class="side-user-name">Admin</p>
+          <p class="side-user-role">Administrator</p>
+        </div>
+      </a>
+      <button onclick="logout()" class="side-logout" title="Log out"><span class="material-symbols-outlined">logout</span></button>
     </div>
   </aside>
 
@@ -50,23 +55,15 @@
           <span id="punchBtnText">Check In</span>
           <span id="punchSince" class="punch-since"></span>
         </button>
-        <button class="icon-btn">
-          <span class="material-symbols-outlined">notifications</span>
-          <span id="notifDot" class="notif-dot hidden"></span>
-        </button>
-        <div class="divider hide-sm"></div>
-        <div class="avatar-wrap">
-          <button id="avatarBtn" class="avatar-btn">
-            <img id="navAvatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
-            <span class="avatar-name">Administrator</span>
+        <div class="notif-wrap">
+          <button id="bellBtn" class="icon-btn">
+            <span class="material-symbols-outlined">notifications</span>
+            <span id="notifDot" class="notif-dot hidden"></span>
           </button>
-          <div id="userDropdown" class="dropdown hidden">
-            <div class="dd-head">
-              <div class="lbl">Signed in as</div>
-              <div id="ddEmail" class="val">--</div>
-            </div>
-            <a href="profile.html" class="dd-item"><span class="material-symbols-outlined">person</span> My Profile</a>
-            <button onclick="logout()" class="dd-item danger"><span class="material-symbols-outlined">logout</span> Log Out</button>
+          <div id="notifPopup" class="notif-popup hidden">
+            <div class="notif-popup-head"><span class="ttl">Notifications</span><span id="notifPopupCount" class="count"></span></div>
+            <div id="notifPopupList" class="notif-popup-list"></div>
+            <a href="notifications.html" class="notif-popup-foot">View all notifications</a>
           </div>
         </div>
       </div>
@@ -261,7 +258,8 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         initSidebar();
-        initDropdown();
+        initPunch();
+        initNotifBell();
         setupSearch();
         setupPhoneInputs();
 
@@ -271,11 +269,8 @@
             if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
             if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
             const name = u.email.split('@')[0];
-            document.getElementById('ddEmail').innerText = u.email;
             document.getElementById('sideName').innerText = name;
-            const av = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
-            document.getElementById('navAvatar').src = av;
-            document.getElementById('sideAvatar').src = av;
+            document.getElementById('sideAvatar').src = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
         } catch (e) {}
 
         loadEmployees();
@@ -290,6 +285,50 @@
         const menu = document.getElementById('menuBtn');
         menu.addEventListener('click', () => { sb.classList.add('open'); bd.classList.add('show'); });
         bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
+    }
+
+    // ---------- notification bell popup (shared) ----------
+    function initNotifBell() {
+        const btn = document.getElementById('bellBtn');
+        const pop = document.getElementById('notifPopup');
+        if (!btn) return;
+        btn.addEventListener('click', (e) => { e.stopPropagation(); pop.classList.toggle('hidden'); });
+        document.addEventListener('click', (e) => { if (!btn.contains(e.target) && !pop.contains(e.target)) pop.classList.add('hidden'); });
+        loadBellNotifications();
+    }
+    function bellTimeAgo(ts) {
+        if (!ts) return '';
+        const then = new Date(ts.replace(' ', 'T'));
+        const diff = (Date.now() - then.getTime()) / 1000;
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+        if (diff < 172800) return 'Yesterday';
+        return then.toLocaleDateString();
+    }
+    function bellIcon(type) {
+        if (type === 'leave') return { i: 'event_busy', c: '' };
+        if (type === 'regularization') return { i: 'edit_calendar', c: 'tert' };
+        if (type === 'payslip') return { i: 'payments', c: 'green' };
+        return { i: 'notifications', c: '' };
+    }
+    async function loadBellNotifications() {
+        try {
+            const res = await API.get('notifications', { limit: 10 });
+            const unread = ((res.data && res.data.items) || []).filter(n => !n.read_at);
+            document.getElementById('notifDot').classList.toggle('hidden', unread.length === 0);
+            document.getElementById('notifPopupCount').innerText = unread.length ? unread.length + ' unread' : '';
+            const list = document.getElementById('notifPopupList');
+            const rows = unread.slice(0, 6);
+            if (rows.length === 0) { list.innerHTML = '<div class="notif-popup-empty">You\'re all caught up 🎉</div>'; return; }
+            list.innerHTML = rows.map(n => {
+                const ic = bellIcon(n.type);
+                return `<div class="np-item"><div class="notif-icon ${ic.c}"><span class="material-symbols-outlined">${ic.i}</span></div><div class="np-main"><div class="np-title">${n.title || ''}</div>${n.body ? `<div class="np-text">${n.body}</div>` : ''}<div class="np-time">${bellTimeAgo(n.created_at)}</div></div></div>`;
+            }).join('');
+        } catch (e) {
+            const l = document.getElementById('notifPopupList');
+            if (l) l.innerHTML = '<div class="notif-popup-empty">No notifications</div>';
+        }
     }
 
     // ---------- punch ----------
@@ -319,14 +358,8 @@
         }
     }
 
-    function initDropdown() {
-        const btn = document.getElementById('avatarBtn');
-        const menu = document.getElementById('userDropdown');
+    function initPunch() {
         const punchBtn = document.getElementById('punchBtn');
-
-        btn.addEventListener('click', (e) => { e.stopPropagation(); menu.classList.toggle('hidden'); });
-        document.addEventListener('click', (e) => { if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.add('hidden'); });
-
         punchBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const txt = document.getElementById('punchBtnText');
@@ -515,7 +548,6 @@
             const res = await API.get('notifications', { limit: 6 });
             const data = res.data || {};
             const items = data.items || [];
-            document.getElementById('notifDot').classList.toggle('hidden', !(data.unread > 0));
             if (items.length === 0) { list.innerHTML = '<p class="emp-sub">No recent activity</p>'; return; }
             list.innerHTML = items.map((n, i) => `
                 <div class="activity-item">

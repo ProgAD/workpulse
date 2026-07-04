@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Payroll - Workpulse</title>
+<link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin.css?v=2"/>
+</head>
+<body>
+<div class="app">
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">
+      <img src="../assets/images/logo.svg" alt="" class="brand-logo"/>
+      <div><h1 class="brand-name">Workpulse</h1><p class="brand-sub">Management Portal</p></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a class="nav-link" href="employees.html"><span class="material-symbols-outlined">groups</span><span>Employees</span></a>
+      <a class="nav-link" href="attendance.html"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+      <a class="nav-link" href="leaves.html"><span class="material-symbols-outlined">event_busy</span><span>Leave</span></a>
+      <a class="nav-link active" href="payroll.html"><span class="material-symbols-outlined">payments</span><span>Payroll</span></a>
+    </nav>
+    <div class="side-user">
+      <a href="profile.html" class="side-user-link">
+        <img id="sideAvatar" class="side-user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+        <div class="side-user-info"><p id="sideName" class="side-user-name">Admin</p><p class="side-user-role">Administrator</p></div>
+      </a>
+      <button onclick="logout()" class="side-logout" title="Log out"><span class="material-symbols-outlined">logout</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menuBtn" class="menu-btn"><span class="material-symbols-outlined">menu</span></button>
+        <h2 class="page-title hide-sm">Payroll</h2>
+      </div>
+      <div class="topbar-right">
+        <div class="notif-wrap">
+          <button id="bellBtn" class="icon-btn">
+            <span class="material-symbols-outlined">notifications</span>
+            <span id="notifDot" class="notif-dot hidden"></span>
+          </button>
+          <div id="notifPopup" class="notif-popup hidden">
+            <div class="notif-popup-head"><span class="ttl">Notifications</span><span id="notifPopupCount" class="count"></span></div>
+            <div id="notifPopupList" class="notif-popup-list"></div>
+            <a href="notifications.html" class="notif-popup-foot">View all notifications</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content custom-scrollbar">
+
+      <!-- runs -->
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h4>Payroll Runs</h4>
+            <p class="sub">Create and finalize monthly payroll</p>
+          </div>
+          <button onclick="openCreateModal()" class="btn btn-primary"><span class="material-symbols-outlined">add</span> New Run</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data min">
+            <thead>
+              <tr><th>Period</th><th>Status</th><th>Payslips</th><th>Total Net</th><th class="t-right">Action</th></tr>
+            </thead>
+            <tbody id="runsTableBody"></tbody>
+          </table>
+        </div>
+        <div id="runsLoading" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading runs...</p></div>
+        <div id="runsEmpty" class="state-box hidden"><span class="material-symbols-outlined">receipt_long</span><h3>No payroll runs</h3><p>Create a run to generate payslips.</p></div>
+      </section>
+
+      <!-- payslips of selected run -->
+      <section id="payslipSection" class="card hidden">
+        <div class="card-head">
+          <div>
+            <h4 id="ps_title">Payslips</h4>
+            <p id="ps_sub" class="sub">—</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button id="generateBtn" onclick="generatePayslips()" class="btn btn-primary hidden"><span class="material-symbols-outlined">bolt</span> Generate Payslips</button>
+            <button onclick="closePayslips()" class="btn btn-outline">Close</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data min">
+            <thead>
+              <tr><th>Employee</th><th>Work Days</th><th>Present</th><th>Paid Leave</th><th>LOP</th><th>Gross</th><th>Deductions</th><th>Net Pay</th></tr>
+            </thead>
+            <tbody id="payslipTableBody"></tbody>
+          </table>
+        </div>
+        <div id="psLoading" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading payslips...</p></div>
+        <div id="psEmpty" class="state-box hidden"><span class="material-symbols-outlined">payments</span><h3>No payslips yet</h3><p>This run is still a draft. Click “Generate Payslips”.</p></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- create run modal -->
+<div id="modalOverlay" class="overlay hidden">
+  <div id="createModal" class="modal sm">
+    <div class="modal-head"><h3>New Payroll Run</h3><button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button></div>
+    <div class="modal-body">
+      <form id="createForm" onsubmit="handleCreateRun(event)" style="display:flex;flex-direction:column;gap:16px">
+        <div class="form-row">
+          <div class="form-group"><label>Month <span class="req">*</span></label>
+            <select id="run_month">
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+              <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Year <span class="req">*</span></label><input type="number" id="run_year" min="2000" max="2100" value="2026"></div>
+        </div>
+        <p class="emp-sub">Ek mahine ka ek hi run banega. Run banane ke baad usme payslips generate karni hoti hai.</p>
+        <div class="modal-foot">
+          <button type="button" onclick="closeModals()" class="btn btn-outline">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Run</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script>
+    Object.assign(API._endpointMap, {
+        'payroll_runs':   'payroll/index.php?action=runs',
+        'payroll_create': 'payroll/index.php?action=create_run',
+        'run_payslips':   'payroll/index.php?action=run_payslips',
+        'notifications':  'notifications/index.php',
+    });
+
+    const MONTHS = ['', 'January','February','March','April','May','June','July','August','September','October','November','December'];
+    let runs = [];
+    let selectedRun = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        initSidebar();
+        initNotifBell();
+        document.getElementById('run_month').value = new Date().getMonth() + 1;
+        document.getElementById('run_year').value = new Date().getFullYear();
+        try {
+            const res = await API.get('me');
+            const u = res.data;
+            if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+            if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
+            const name = u.email.split('@')[0];
+            document.getElementById('sideName').innerText = name;
+            document.getElementById('sideAvatar').src = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
+        } catch (e) {}
+        loadRuns();
+    });
+
+    function initSidebar() {
+        const sb = document.getElementById('sidebar'), bd = document.getElementById('sidebarBackdrop'), menu = document.getElementById('menuBtn');
+        menu.addEventListener('click', () => { sb.classList.add('open'); bd.classList.add('show'); });
+        bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
+    }
+    function initNotifBell() {
+        const btn = document.getElementById('bellBtn');
+        const pop = document.getElementById('notifPopup');
+        if (!btn) return;
+        btn.addEventListener('click', (e) => { e.stopPropagation(); pop.classList.toggle('hidden'); });
+        document.addEventListener('click', (e) => { if (!btn.contains(e.target) && !pop.contains(e.target)) pop.classList.add('hidden'); });
+        loadBellNotifications();
+    }
+    function bellTimeAgo(ts) {
+        if (!ts) return '';
+        const then = new Date(ts.replace(' ', 'T'));
+        const diff = (Date.now() - then.getTime()) / 1000;
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+        if (diff < 172800) return 'Yesterday';
+        return then.toLocaleDateString();
+    }
+    function bellIcon(type) {
+        if (type === 'leave') return { i: 'event_busy', c: '' };
+        if (type === 'regularization') return { i: 'edit_calendar', c: 'tert' };
+        if (type === 'payslip') return { i: 'payments', c: 'green' };
+        return { i: 'notifications', c: '' };
+    }
+    async function loadBellNotifications() {
+        try {
+            const res = await API.get('notifications', { limit: 10 });
+            const unread = ((res.data && res.data.items) || []).filter(n => !n.read_at);
+            document.getElementById('notifDot').classList.toggle('hidden', unread.length === 0);
+            document.getElementById('notifPopupCount').innerText = unread.length ? unread.length + ' unread' : '';
+            const list = document.getElementById('notifPopupList');
+            const rows = unread.slice(0, 6);
+            if (rows.length === 0) { list.innerHTML = '<div class="notif-popup-empty">You\'re all caught up 🎉</div>'; return; }
+            list.innerHTML = rows.map(n => {
+                const ic = bellIcon(n.type);
+                return `<div class="np-item"><div class="notif-icon ${ic.c}"><span class="material-symbols-outlined">${ic.i}</span></div><div class="np-main"><div class="np-title">${n.title || ''}</div>${n.body ? `<div class="np-text">${n.body}</div>` : ''}<div class="np-time">${bellTimeAgo(n.created_at)}</div></div></div>`;
+            }).join('');
+        } catch (e) {
+            const l = document.getElementById('notifPopupList');
+            if (l) l.innerHTML = '<div class="notif-popup-empty">No notifications</div>';
+        }
+    }
+    async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
+
+    function money(n) { return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function initials(r) {
+        const a = (r.first_name || '').trim(), b = (r.last_name || '').trim();
+        return ((a[0] || '') + (b[0] || (a[1] || ''))).toUpperCase() || '?';
+    }
+    function runStatusBadge(s) {
+        if (s === 'finalized') return '<span class="badge badge-blue">Finalized</span>';
+        if (s === 'paid') return '<span class="badge badge-green">Paid</span>';
+        return '<span class="badge badge-orange">Draft</span>';
+    }
+
+    async function loadRuns() {
+        const loader = document.getElementById('runsLoading');
+        document.getElementById('runsTableBody').innerHTML = '';
+        document.getElementById('runsEmpty').classList.add('hidden');
+        loader.classList.remove('hidden');
+        try {
+            const res = await API.get('payroll_runs');
+            runs = (res.success && res.data) ? res.data : [];
+            renderRuns();
+        } catch (err) {
+            console.error('Runs load failed:', err.message);
+            runs = []; renderRuns();
+        } finally { loader.classList.add('hidden'); }
+    }
+
+    function renderRuns() {
+        const body = document.getElementById('runsTableBody');
+        const empty = document.getElementById('runsEmpty');
+        body.innerHTML = '';
+        if (runs.length === 0) { empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+        runs.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.style.cursor = 'pointer';
+            tr.onclick = () => openPayslips(r.id);
+            tr.innerHTML = `
+                <td><b style="color:var(--on-surface)">${MONTHS[r.month]} ${r.year}</b></td>
+                <td>${runStatusBadge(r.status)}</td>
+                <td>${r.payslip_count || 0}</td>
+                <td><span class="money">${money(r.total_net)}</span></td>
+                <td class="t-right"><button class="btn btn-outline" onclick="event.stopPropagation(); openPayslips(${r.id})">View</button></td>`;
+            body.appendChild(tr);
+        });
+    }
+
+    // ---- payslips ----
+    async function openPayslips(runId) {
+        selectedRun = runs.find(r => r.id === runId);
+        if (!selectedRun) return;
+        const section = document.getElementById('payslipSection');
+        section.classList.remove('hidden');
+        document.getElementById('ps_title').innerText = `Payslips — ${MONTHS[selectedRun.month]} ${selectedRun.year}`;
+        document.getElementById('ps_sub').innerText = `Status: ${selectedRun.status}`;
+        // draft run me generate button dikhao
+        document.getElementById('generateBtn').classList.toggle('hidden', !(selectedRun.status === 'draft'));
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        const loader = document.getElementById('psLoading');
+        const empty = document.getElementById('psEmpty');
+        document.getElementById('payslipTableBody').innerHTML = '';
+        empty.classList.add('hidden');
+        loader.classList.remove('hidden');
+        try {
+            const res = await API.get('run_payslips', { run_id: runId });
+            const rows = (res.success && res.data) ? res.data : [];
+            renderPayslips(rows);
+        } catch (err) {
+            console.error('Payslips load failed:', err.message);
+            renderPayslips([]);
+        } finally { loader.classList.add('hidden'); }
+    }
+
+    function renderPayslips(rows) {
+        const body = document.getElementById('payslipTableBody');
+        const empty = document.getElementById('psEmpty');
+        body.innerHTML = '';
+        if (rows.length === 0) { empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+        rows.forEach(p => {
+            const name = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.emp_code;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><div class="emp-cell"><div class="emp-avatar">${initials(p)}</div><div class="emp-meta"><div class="emp-name">${name}</div><div class="emp-sub">${p.emp_code}</div></div></div></td>
+                <td>${p.working_days}</td>
+                <td>${p.present_days}</td>
+                <td>${p.paid_leaves}</td>
+                <td>${p.lop_days}</td>
+                <td><span class="money">${money(p.gross)}</span></td>
+                <td><span class="money">${money(p.deductions)}</span></td>
+                <td><span class="money net">${money(p.net_pay)}</span></td>`;
+            body.appendChild(tr);
+        });
+    }
+
+    function closePayslips() { document.getElementById('payslipSection').classList.add('hidden'); selectedRun = null; }
+
+    async function generatePayslips() {
+        if (!selectedRun) return;
+        if (!confirm(`${MONTHS[selectedRun.month]} ${selectedRun.year} ki payslips generate karein? Ye run finalize ho jayega.`)) return;
+        const btn = document.getElementById('generateBtn');
+        btn.disabled = true; btn.innerText = 'Generating...';
+        try {
+            const res = await API.post('run_payslips', { run_id: selectedRun.id });
+            alert(res.message || 'Payslips generated');
+            await loadRuns();
+            openPayslips(selectedRun.id);
+        } catch (e) {
+            alert(e.message || 'Could not generate payslips');
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined">bolt</span> Generate Payslips';
+        }
+    }
+
+    // ---- create run ----
+    const overlay = document.getElementById('modalOverlay');
+    function openCreateModal() { overlay.classList.remove('hidden'); }
+    function closeModals() { overlay.classList.add('hidden'); document.getElementById('createForm').reset(); }
+
+    async function handleCreateRun(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const payload = { month: Number(document.getElementById('run_month').value), year: Number(document.getElementById('run_year').value) };
+        btn.disabled = true; btn.innerText = 'Creating...';
+        try {
+            await API.post('payroll_create', payload);
+            closeModals();
+            loadRuns();
+        } catch (err) {
+            alert(err.message || 'Run create nahi hua');
+        } finally { btn.disabled = false; btn.innerText = 'Create Run'; }
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals(); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModals(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Leave Management - Workpulse</title>
+<link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/css/admin.css?v=2"/>
+</head>
+<body>
+<div class="app">
+
+  <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+  <aside id="sidebar" class="sidebar">
+    <div class="brand">
+      <img src="../assets/images/logo.svg" alt="" class="brand-logo"/>
+      <div><h1 class="brand-name">Workpulse</h1><p class="brand-sub">Management Portal</p></div>
+    </div>
+    <nav class="nav">
+      <a class="nav-link" href="dashboard.html"><span class="material-symbols-outlined">dashboard</span><span>Dashboard</span></a>
+      <a class="nav-link" href="employees.html"><span class="material-symbols-outlined">groups</span><span>Employees</span></a>
+      <a class="nav-link" href="attendance.html"><span class="material-symbols-outlined">calendar_month</span><span>Attendance</span></a>
+      <a class="nav-link active" href="leaves.html"><span class="material-symbols-outlined">event_busy</span><span>Leave</span></a>
+      <a class="nav-link" href="payroll.html"><span class="material-symbols-outlined">payments</span><span>Payroll</span></a>
+    </nav>
+    <div class="side-user">
+      <a href="profile.html" class="side-user-link">
+        <img id="sideAvatar" class="side-user-avatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+        <div class="side-user-info"><p id="sideName" class="side-user-name">Admin</p><p class="side-user-role">Administrator</p></div>
+      </a>
+      <button onclick="logout()" class="side-logout" title="Log out"><span class="material-symbols-outlined">logout</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button id="menuBtn" class="menu-btn"><span class="material-symbols-outlined">menu</span></button>
+        <h2 class="page-title hide-sm">Leave Management</h2>
+      </div>
+      <div class="topbar-right">
+        <div class="notif-wrap">
+          <button id="bellBtn" class="icon-btn">
+            <span class="material-symbols-outlined">notifications</span>
+            <span id="notifDot" class="notif-dot hidden"></span>
+          </button>
+          <div id="notifPopup" class="notif-popup hidden">
+            <div class="notif-popup-head"><span class="ttl">Notifications</span><span id="notifPopupCount" class="count"></span></div>
+            <div id="notifPopupList" class="notif-popup-list"></div>
+            <a href="notifications.html" class="notif-popup-foot">View all notifications</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content custom-scrollbar">
+
+      <section class="grid grid-4">
+        <div class="stat-card"><p class="stat-label">Pending</p><h3 id="stat_pending" class="stat-value tert">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Approved</p><h3 id="stat_approved" class="stat-value green">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Rejected</p><h3 id="stat_rejected" class="stat-value red">—</h3></div>
+        <div class="stat-card"><p class="stat-label">Total Requests</p><h3 id="stat_total" class="stat-value">—</h3></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="tabs" id="statusTabs">
+            <button class="tab active" data-status="pending">Pending</button>
+            <button class="tab" data-status="">All</button>
+            <button class="tab" data-status="approved">Approved</button>
+            <button class="tab" data-status="rejected">Rejected</button>
+            <button class="tab" data-status="cancelled">Cancelled</button>
+          </div>
+          <div class="search">
+            <span class="material-symbols-outlined">search</span>
+            <input id="searchInput" type="text" placeholder="Search name / ID / req no...">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data min">
+            <thead>
+              <tr><th>Employee</th><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th class="t-right">Action</th></tr>
+            </thead>
+            <tbody id="leaveTableBody"></tbody>
+          </table>
+        </div>
+        <div id="loadingState" class="state-box hidden"><span class="material-symbols-outlined spin">progress_activity</span><p>Loading requests...</p></div>
+        <div id="emptyState" class="state-box hidden"><span class="material-symbols-outlined">event_available</span><h3>No leave requests</h3><p>Nothing matches this filter.</p></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- review modal -->
+<div id="modalOverlay" class="overlay hidden">
+  <div id="reviewModal" class="modal md">
+    <div class="modal-head">
+      <h3>Leave Request</h3>
+      <button onclick="closeModals()" class="modal-x"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="emp-cell">
+        <div id="rv_avatar" class="emp-avatar lg">--</div>
+        <div class="emp-meta">
+          <div id="rv_name" class="emp-name">--</div>
+          <div id="rv_code" class="emp-sub">--</div>
+        </div>
+        <div style="margin-left:auto"><span id="rv_status" class="badge">--</span></div>
+      </div>
+
+      <div>
+        <div class="detail-row"><span class="dk">Request No</span><span id="rv_reqno" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">Leave Type</span><span id="rv_type" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">From</span><span id="rv_from" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">To</span><span id="rv_to" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">Total Days</span><span id="rv_days" class="dv">--</span></div>
+        <div class="detail-row"><span class="dk">Reason</span><span id="rv_reason" class="dv">--</span></div>
+        <div class="detail-row" id="rv_doc_row" style="display:none"><span class="dk">Document</span><span class="dv"><a id="rv_doc" href="#" target="_blank" style="color:var(--primary)">View file</a></span></div>
+      </div>
+
+      <div id="rv_review_block">
+        <div class="form-group"><label>Comment (optional)</label><textarea id="rv_comment" class="textarea" placeholder="Add a note for the employee..."></textarea></div>
+        <div class="modal-foot between">
+          <button onclick="closeModals()" class="btn btn-outline">Cancel</button>
+          <div class="grp">
+            <button id="rv_reject_btn" onclick="submitReview('reject')" class="btn btn-soft">Reject</button>
+            <button id="rv_approve_btn" onclick="submitReview('approve')" class="btn btn-primary">Approve</button>
+          </div>
+        </div>
+      </div>
+      <div id="rv_done_block" class="hidden">
+        <div class="modal-foot" style="border-top:none;padding-top:0"><button onclick="closeModals()" class="btn btn-primary">Close</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/api.js"></script>
+<script>
+    Object.assign(API._endpointMap, {
+        'leaves':       'leaves/index.php',
+        'leave_review': 'leaves/index.php?action=review',
+        'notifications':'notifications/index.php',
+    });
+
+    let allLeaves = [];
+    let filtered = [];
+    let activeStatus = 'pending';
+    let currentLeave = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        initSidebar();
+        initNotifBell();
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.querySelectorAll('#statusTabs .tab').forEach(t => {
+            t.addEventListener('click', () => {
+                document.querySelectorAll('#statusTabs .tab').forEach(x => x.classList.remove('active'));
+                t.classList.add('active');
+                activeStatus = t.dataset.status;
+                applyFilters();
+            });
+        });
+        try {
+            const res = await API.get('me');
+            const u = res.data;
+            if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+            if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
+            const name = u.email.split('@')[0];
+            document.getElementById('sideName').innerText = name;
+            document.getElementById('sideAvatar').src = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
+        } catch (e) {}
+        loadLeaves();
+    });
+
+    function initSidebar() {
+        const sb = document.getElementById('sidebar'), bd = document.getElementById('sidebarBackdrop'), menu = document.getElementById('menuBtn');
+        menu.addEventListener('click', () => { sb.classList.add('open'); bd.classList.add('show'); });
+        bd.addEventListener('click', () => { sb.classList.remove('open'); bd.classList.remove('show'); });
+    }
+    function initNotifBell() {
+        const btn = document.getElementById('bellBtn');
+        const pop = document.getElementById('notifPopup');
+        if (!btn) return;
+        btn.addEventListener('click', (e) => { e.stopPropagation(); pop.classList.toggle('hidden'); });
+        document.addEventListener('click', (e) => { if (!btn.contains(e.target) && !pop.contains(e.target)) pop.classList.add('hidden'); });
+        loadBellNotifications();
+    }
+    function bellTimeAgo(ts) {
+        if (!ts) return '';
+        const then = new Date(ts.replace(' ', 'T'));
+        const diff = (Date.now() - then.getTime()) / 1000;
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+        if (diff < 172800) return 'Yesterday';
+        return then.toLocaleDateString();
+    }
+    function bellIcon(type) {
+        if (type === 'leave') return { i: 'event_busy', c: '' };
+        if (type === 'regularization') return { i: 'edit_calendar', c: 'tert' };
+        if (type === 'payslip') return { i: 'payments', c: 'green' };
+        return { i: 'notifications', c: '' };
+    }
+    async function loadBellNotifications() {
+        try {
+            const res = await API.get('notifications', { limit: 10 });
+            const unread = ((res.data && res.data.items) || []).filter(n => !n.read_at);
+            document.getElementById('notifDot').classList.toggle('hidden', unread.length === 0);
+            document.getElementById('notifPopupCount').innerText = unread.length ? unread.length + ' unread' : '';
+            const list = document.getElementById('notifPopupList');
+            const rows = unread.slice(0, 6);
+            if (rows.length === 0) { list.innerHTML = '<div class="notif-popup-empty">You\'re all caught up 🎉</div>'; return; }
+            list.innerHTML = rows.map(n => {
+                const ic = bellIcon(n.type);
+                return `<div class="np-item"><div class="notif-icon ${ic.c}"><span class="material-symbols-outlined">${ic.i}</span></div><div class="np-main"><div class="np-title">${n.title || ''}</div>${n.body ? `<div class="np-text">${n.body}</div>` : ''}<div class="np-time">${bellTimeAgo(n.created_at)}</div></div></div>`;
+            }).join('');
+        } catch (e) {
+            const l = document.getElementById('notifPopupList');
+            if (l) l.innerHTML = '<div class="notif-popup-empty">No notifications</div>';
+        }
+    }
+    async function logout() { try { await API.post('logout'); } catch (e) {} window.location.href = '../index.html'; }
+
+    function initials(r) {
+        const a = (r.first_name || '').trim(), b = (r.last_name || '').trim();
+        return ((a[0] || '') + (b[0] || (a[1] || ''))).toUpperCase() || '?';
+    }
+    function fullName(r) { return `${r.first_name || ''} ${r.last_name || ''}`.trim() || r.emp_code; }
+    function statusBadge(status) {
+        if (status === 'approved') return '<span class="badge badge-green">Approved</span>';
+        if (status === 'rejected') return '<span class="badge badge-red">Rejected</span>';
+        if (status === 'cancelled') return '<span class="badge badge-grey">Cancelled</span>';
+        return '<span class="badge badge-orange">Pending</span>';
+    }
+
+    async function loadLeaves() {
+        const loader = document.getElementById('loadingState');
+        document.getElementById('leaveTableBody').innerHTML = '';
+        document.getElementById('emptyState').classList.add('hidden');
+        loader.classList.remove('hidden');
+        try {
+            const res = await API.get('leaves');   // saari requests, filter client-side
+            allLeaves = (res.success && res.data) ? res.data : [];
+            renderStats();
+            applyFilters();
+        } catch (err) {
+            console.error('Leaves load failed:', err.message);
+            allLeaves = []; renderStats(); applyFilters();
+        } finally { loader.classList.add('hidden'); }
+    }
+
+    function renderStats() {
+        const c = { pending: 0, approved: 0, rejected: 0 };
+        allLeaves.forEach(l => { if (c[l.status] !== undefined) c[l.status]++; });
+        document.getElementById('stat_pending').innerText = c.pending;
+        document.getElementById('stat_approved').innerText = c.approved;
+        document.getElementById('stat_rejected').innerText = c.rejected;
+        document.getElementById('stat_total').innerText = allLeaves.length;
+    }
+
+    function applyFilters() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        filtered = allLeaves.filter(l => {
+            const matchStatus = !activeStatus || l.status === activeStatus;
+            const matchTerm = fullName(l).toLowerCase().includes(term)
+                || (l.emp_code || '').toLowerCase().includes(term)
+                || (l.req_no || '').toLowerCase().includes(term);
+            return matchStatus && matchTerm;
+        });
+        renderTable();
+    }
+
+    function renderTable() {
+        const body = document.getElementById('leaveTableBody');
+        const empty = document.getElementById('emptyState');
+        body.innerHTML = '';
+        if (filtered.length === 0) { empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+        filtered.forEach(l => {
+            const tr = document.createElement('tr');
+            tr.style.cursor = 'pointer';
+            tr.onclick = () => openReview(l.id);
+            const action = l.status === 'pending'
+                ? `<button class="btn btn-primary" onclick="event.stopPropagation(); openReview(${l.id})">Review</button>`
+                : `<button class="act-btn" onclick="event.stopPropagation(); openReview(${l.id})"><span class="material-symbols-outlined">visibility</span></button>`;
+            tr.innerHTML = `
+                <td><div class="emp-cell"><div class="emp-avatar">${initials(l)}</div><div class="emp-meta"><div class="emp-name">${fullName(l)}</div><div class="emp-sub">${l.emp_code}</div></div></div></td>
+                <td>${l.leave_type || '—'}</td>
+                <td>${l.from_date} <span style="color:var(--outline)">→</span> ${l.to_date}</td>
+                <td>${l.total_days}</td>
+                <td>${statusBadge(l.status)}</td>
+                <td class="t-right">${action}</td>`;
+            body.appendChild(tr);
+        });
+    }
+
+    // ---- review modal ----
+    const overlay = document.getElementById('modalOverlay');
+    function closeModals() { overlay.classList.add('hidden'); }
+    function openReview(id) {
+        const l = allLeaves.find(x => x.id === id);
+        if (!l) return;
+        currentLeave = l;
+        document.getElementById('rv_avatar').innerText = initials(l);
+        document.getElementById('rv_name').innerText = fullName(l);
+        document.getElementById('rv_code').innerText = l.emp_code;
+        const stMap = { approved: ['badge badge-green', 'Approved'], rejected: ['badge badge-red', 'Rejected'], cancelled: ['badge badge-grey', 'Cancelled'], pending: ['badge badge-orange', 'Pending'] };
+        const stm = stMap[l.status] || stMap.pending;
+        const stEl = document.getElementById('rv_status'); stEl.className = stm[0]; stEl.innerText = stm[1];
+        document.getElementById('rv_reqno').innerText = l.req_no || '—';
+        document.getElementById('rv_type').innerText = l.leave_type || '—';
+        document.getElementById('rv_from').innerText = l.from_date + (Number(l.half_day_start) ? ' (half)' : '');
+        document.getElementById('rv_to').innerText = l.to_date + (Number(l.half_day_end) ? ' (half)' : '');
+        document.getElementById('rv_days').innerText = l.total_days + ' day(s)';
+        document.getElementById('rv_reason').innerText = l.reason || '—';
+        const docRow = document.getElementById('rv_doc_row');
+        if (l.document_url) { docRow.style.display = ''; document.getElementById('rv_doc').href = l.document_url; }
+        else docRow.style.display = 'none';
+
+        document.getElementById('rv_comment').value = '';
+        // sirf pending par approve/reject dikhao
+        const canReview = l.status === 'pending';
+        document.getElementById('rv_review_block').classList.toggle('hidden', !canReview);
+        document.getElementById('rv_done_block').classList.toggle('hidden', canReview);
+
+        overlay.classList.remove('hidden');
+    }
+
+    async function submitReview(action) {
+        if (!currentLeave) return;
+        const comment = document.getElementById('rv_comment').value.trim();
+        const btnA = document.getElementById('rv_approve_btn'), btnR = document.getElementById('rv_reject_btn');
+        btnA.disabled = true; btnR.disabled = true;
+        (action === 'approve' ? btnA : btnR).innerText = 'Saving...';
+        try {
+            await API.post('leave_review', { id: currentLeave.id, action, comment });
+            closeModals();
+            loadLeaves();
+        } catch (e) {
+            alert(e.message || 'Could not update leave');
+        } finally {
+            btnA.disabled = false; btnR.disabled = false;
+            btnA.innerText = 'Approve'; btnR.innerText = 'Reject';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals(); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModals(); });
+</script>
+</body>
+</html>
