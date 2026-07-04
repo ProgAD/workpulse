@@ -14,7 +14,7 @@ if ($ACTION === 'login' && $METHOD === 'POST') {
     $stmt = db()->prepare(
         "SELECT id, email, password, status, failed_logins, locked_until
          FROM users
-         WHERE (email = ? OR emp_code = ?) AND deleted_at IS NULL"
+         WHERE (email = ? OR emp_code = ?) AND delete_flag IS NULL"
     );
     $stmt->execute([strtolower($identifier), strtoupper($identifier)]);
     $user = $stmt->fetch();
@@ -64,7 +64,7 @@ if ($ACTION === 'signup' && $METHOD === 'POST') {
     if (strlen($in['password']) < 6) fail('Password must be at least 6 characters', 422);
     if (!preg_match('/^\d{10}$/', $in['phone'])) fail('Enter a valid 10 digit phone', 422);
 
-    $stmt = db()->prepare("SELECT id FROM users WHERE email = ? AND deleted_at IS NULL");
+    $stmt = db()->prepare("SELECT id FROM users WHERE email = ? AND delete_flag IS NULL");
     $stmt->execute([$email]);
     if ($stmt->fetch()) fail('Email already registered. Try logging in.', 409);
 
