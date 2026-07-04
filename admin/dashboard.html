@@ -486,13 +486,65 @@
                         <label>Email Address <span class="req">*</span></label>
                         <input type="email" id="add_email" required placeholder="employee@workpulse.test">
                     </div>
-                    <div class="f-group">
-                        <label>Phone <span class="req">*</span></label>
-                        <input type="tel" id="add_phone" required maxlength="10" inputmode="numeric" placeholder="10 digit number">
+                    <div class="f-row">
+                        <div class="f-group">
+                            <label>Phone <span class="req">*</span></label>
+                            <input type="tel" id="add_phone" required maxlength="10" inputmode="numeric" placeholder="10 digit number">
+                        </div>
+                        <div class="f-group">
+                            <label>Date of Birth</label>
+                            <input type="date" id="add_dob">
+                        </div>
+                    </div>
+                    <div class="f-row">
+                        <div class="f-group">
+                            <label>Gender</label>
+                            <select id="add_gender">
+                                <option value="">Select</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="f-group">
+                            <label>Date of Joining</label>
+                            <input type="date" id="add_doj">
+                        </div>
+                    </div>
+                    <div class="f-row">
+                        <div class="f-group">
+                            <label>Department</label>
+                            <input type="text" id="add_department" placeholder="e.g. Engineering" list="deptList">
+                            <datalist id="deptList"></datalist>
+                        </div>
+                        <div class="f-group">
+                            <label>Designation</label>
+                            <input type="text" id="add_designation" placeholder="e.g. Software Engineer" list="desigList">
+                            <datalist id="desigList"></datalist>
+                        </div>
+                    </div>
+                    <div class="f-row">
+                        <div class="f-group">
+                            <label>Employment Type</label>
+                            <select id="add_emp_type">
+                                <option value="full_time">Full Time</option>
+                                <option value="part_time">Part Time</option>
+                                <option value="contract">Contract</option>
+                                <option value="intern">Intern</option>
+                            </select>
+                        </div>
+                        <div class="f-group">
+                            <label>Work Mode</label>
+                            <select id="add_work_mode">
+                                <option value="onsite">Onsite</option>
+                                <option value="remote">Remote</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="f-group">
-                        <label>Date of Joining</label>
-                        <input type="date" id="add_doj">
+                        <label>Current Address</label>
+                        <input type="text" id="add_address" placeholder="City, State">
                     </div>
                     <div class="modal-foot">
                         <button type="button" class="btn btn-ghost" onclick="closeModals()">Cancel</button>
@@ -689,12 +741,21 @@
                 if (res.success) {
                     employeesData = res.data;
                     renderGrid(employeesData);
+                    fillSuggestions();
                 }
             } catch (err) {
                 console.error("Failed to fetch employees:", err);
             } finally {
                 loader.classList.add('hidden');
             }
+        }
+
+        // existing dept/designation datalist me suggest hote hai, typo se duplicate na bane
+        function fillSuggestions() {
+            const depts = [...new Set(employeesData.map(e => e.department).filter(Boolean))];
+            const desigs = [...new Set(employeesData.map(e => e.designation).filter(Boolean))];
+            document.getElementById('deptList').innerHTML = depts.map(d => `<option value="${d}">`).join('');
+            document.getElementById('desigList').innerHTML = desigs.map(d => `<option value="${d}">`).join('');
         }
 
         function renderGrid(data) {
@@ -814,7 +875,14 @@
                     + document.getElementById('add_last_name').value.trim()).trim(),
                 email: document.getElementById('add_email').value.trim(),
                 phone,
-                doj: document.getElementById('add_doj').value
+                doj: document.getElementById('add_doj').value,
+                dob: document.getElementById('add_dob').value,
+                gender: document.getElementById('add_gender').value,
+                department: document.getElementById('add_department').value.trim(),
+                designation: document.getElementById('add_designation').value.trim(),
+                emp_type: document.getElementById('add_emp_type').value,
+                work_mode: document.getElementById('add_work_mode').value,
+                address: document.getElementById('add_address').value.trim()
             };
 
             try {

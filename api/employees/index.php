@@ -35,9 +35,44 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
     $loginId = generate_login_id($me['company_id'], $companyName, $nameParts[0], $nameParts[1] ?? null, $joinYear);
     $tempPassword = generate_temp_password();
 
+    // optional fields - jo aaye wahi jayenge, baaki null
+    $dob    = !empty($in['dob']) ? $in['dob'] : null;
+    $gender = in_array($in['gender'] ?? '', ['male', 'female', 'other'], true) ? $in['gender'] : null;
+    $addr   = !empty($in['address']) ? trim($in['address']) : null;
+    $empType  = in_array($in['emp_type'] ?? '', ['full_time', 'part_time', 'contract', 'intern'], true) ? $in['emp_type'] : 'full_time';
+    $workMode = in_array($in['work_mode'] ?? '', ['onsite', 'remote', 'hybrid'], true) ? $in['work_mode'] : 'onsite';
+
     $pdo = db();
     $pdo->beginTransaction();
     try {
+        // department/designation naam se aate hai, na ho to ban jate hai
+        $deptId = null;
+        if (!empty($in['department'])) {
+            $dname = trim($in['department']);
+            $stmt = $pdo->prepare("SELECT id FROM departments WHERE company_id = ? AND name = ? AND delete_flag = 0");
+            $stmt->execute([$me['company_id'], $dname]);
+            $deptId = $stmt->fetchColumn();
+            if (!$deptId) {
+                $code = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $dname), 0, 10)) ?: 'DEPT';
+                $pdo->prepare("INSERT INTO departments (company_id, name, code) VALUES (?, ?, ?)")
+                    ->execute([$me['company_id'], $dname, $code]);
+                $deptId = $pdo->lastInsertId();
+            }
+        }
+
+        $desigId = null;
+        if (!empty($in['designation'])) {
+            $tname = trim($in['designation']);
+            $stmt = $pdo->prepare("SELECT id FROM designations WHERE company_id = ? AND title = ? AND delete_flag = 0");
+            $stmt->execute([$me['company_id'], $tname]);
+            $desigId = $stmt->fetchColumn();
+            if (!$desigId) {
+                $pdo->prepare("INSERT INTO designations (company_id, title) VALUES (?, ?)")
+                    ->execute([$me['company_id'], $tname]);
+                $desigId = $pdo->lastInsertId();
+            }
+        }
+
         $pdo->prepare(
             "INSERT INTO users (company_id, emp_code, email, password, must_change_password, role_id, status)
              VALUES (?, ?, ?, ?, 1, ?, 'active')"
@@ -45,9 +80,14 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
         $userId = $pdo->lastInsertId();
 
         $pdo->prepare(
-            "INSERT INTO employee_profiles (user_id, first_name, last_name, phone, doj)
-             VALUES (?, ?, ?, ?, ?)"
-        )->execute([$userId, $nameParts[0], $nameParts[1] ?? null, $in['phone'], $doj]);
+            "INSERT INTO employee_profiles
+                (user_id, first_name, last_name, phone, doj, dob, gender, current_address,
+                 department_id, designation_id, emp_type, work_mode)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        )->execute([
+            $userId, $nameParts[0], $nameParts[1] ?? null, $in['phone'], $doj,
+            $dob, $gender, $addr, $deptId, $desigId, $empType, $workMode,
+        ]);
 
         $pdo->commit();
     } catch (Exception $e) {
@@ -113,10 +153,14 @@ if ($METHOD === 'GET') {
     $me = require_auth('employee.view_all');
 
     $base = "SELECT u.id, u.emp_code, u.email, u.status, u.must_change_password, r.name AS role,
-                    p.first_name, p.last_name, p.phone, p.doj
+                    p.first_name, p.last_name, p.phone, p.doj, p.dob, p.gender,
+                    p.current_address, p.emp_type, p.work_mode,
+                    d.name AS department, g.title AS designation
              FROM users u
              JOIN roles r ON r.id = u.role_id
              LEFT JOIN employee_profiles p ON p.user_id = u.id
+             LEFT JOIN departments d ON d.id = p.department_id
+             LEFT JOIN designations g ON g.id = p.designation_id
              WHERE u.company_id = ? AND u.delete_flag = 0";
 
     if (!empty($_GET['id'])) {
