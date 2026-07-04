@@ -250,12 +250,15 @@
 
     // ---------- tabs ----------
     function setupTabs() {
+        const scroller = document.querySelector('.content');
         document.querySelectorAll('#profileTabs .tab').forEach(t => {
             t.addEventListener('click', () => {
                 document.querySelectorAll('#profileTabs .tab').forEach(x => x.classList.remove('active'));
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 t.classList.add('active');
                 document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+                // naye tab pe upar se dikhao warna sticky header ke niche pehla card chhup jata hai
+                if (scroller) scroller.scrollTop = 0;
             });
         });
     }

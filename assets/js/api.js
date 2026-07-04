@@ -24,6 +24,11 @@ const API = {
     'employee_remove':  'employees/index.php?action=remove',
     'me_profile':       'employees/index.php?action=me_profile',
     'update_self':      'employees/index.php?action=update_self',
+    'upload_photo':     'employees/index.php?action=upload_photo',
+
+    'documents':        'documents/index.php',
+    'document_upload':  'documents/index.php?action=upload',
+    'document_remove':  'documents/index.php?action=remove',
 
     // niche wale abhi banne hai (php file ready hote hi kaam karenge)
 

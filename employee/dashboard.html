@@ -36,7 +36,13 @@
     .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
     .row:last-child { border: none; }
     .row .k { color: var(--md-text-2); }
-    .soon { text-align:center; color: var(--md-text-2); font-size: 14px; padding: 8px 0; }
+    .punch-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .punch-left { display: flex; align-items: center; gap: 14px; }
+    .pdot { width: 14px; height: 14px; border-radius: 50%; background: var(--md-error); }
+    .pdot.in { background: #34a853; }
+    .p-label { font-size: 13px; color: var(--md-text-2); }
+    .p-time { font-family: monospace; font-size: 18px; font-weight: 700; }
+    .md-btn.out { background: var(--md-error); }
   </style>
 </head>
 <body>
@@ -44,6 +50,7 @@
   <div class="appbar">
     <img src="../assets/images/logo.svg" alt="">
     <h1>WorkPulse</h1>
+    <button class="icon-btn" onclick="location.href='profile.html'" title="My Profile"><span class="material-icons">person</span></button>
     <button class="icon-btn" id="cpBtn" title="Change password"><span class="material-icons">key</span></button>
     <button class="icon-btn" id="logoutBtn" title="Logout"><span class="material-icons">logout</span></button>
   </div>
@@ -61,8 +68,15 @@
       <div class="row"><span class="k">Status</span><span id="pStatus">-</span></div>
     </div>
 
-    <div class="md-card">
-      <div class="soon">Attendance punch in/out yahan aayega — agla module 🚧</div>
+    <div class="md-card punch-card">
+      <div class="punch-left">
+        <span class="pdot" id="pDot"></span>
+        <div>
+          <div class="p-label" id="pLabel">Not punched in</div>
+          <div class="p-time" id="pTime">--:--</div>
+        </div>
+      </div>
+      <button class="md-btn md-btn-primary" id="punchBtn">Check IN →</button>
     </div>
   </div>
 
@@ -80,6 +94,46 @@
       document.getElementById('pRole').textContent = u.role;
       document.getElementById('pStatus').textContent = u.status;
     }).catch(() => {});
+
+    // punch in/out
+    let punchedIn = false;
+
+    function updatePunchUI(time) {
+      const dot = document.getElementById('pDot');
+      const btn = document.getElementById('punchBtn');
+      document.getElementById('pLabel').textContent = punchedIn ? 'Working since' : 'Not punched in';
+      document.getElementById('pTime').textContent = punchedIn ? time : '--:--';
+      dot.classList.toggle('in', punchedIn);
+      btn.textContent = punchedIn ? 'Check Out →' : 'Check IN →';
+      btn.classList.toggle('out', punchedIn);
+    }
+
+    API.get('att_today').then(res => {
+      const att = res.data && res.data.attendance;
+      if (att && att.check_in && !att.check_out) {
+        punchedIn = true;
+        updatePunchUI(att.check_in.slice(11, 16));
+      }
+    }).catch(() => {});
+
+    document.getElementById('punchBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('punchBtn');
+      btn.disabled = true;
+      try {
+        if (!punchedIn) {
+          const res = await API.post('punch_in');
+          punchedIn = true;
+          updatePunchUI((res.data && res.data.check_in) ? res.data.check_in.slice(11, 16)
+            : new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}));
+        } else {
+          await API.post('punch_out');
+          punchedIn = false;
+          updatePunchUI();
+        }
+      } catch (err) {
+        alert(err.message || 'Punch nahi hua');
+      } finally { btn.disabled = false; }
+    });
 
     document.getElementById('cpBtn').addEventListener('click', () => {
       window.location.href = '../change-password.html';

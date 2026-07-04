@@ -36,11 +36,21 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
     $tempPassword = generate_temp_password();
 
     // optional fields - jo aaye wahi jayenge, baaki null
-    $dob    = !empty($in['dob']) ? $in['dob'] : null;
-    $gender = in_array($in['gender'] ?? '', ['male', 'female', 'other'], true) ? $in['gender'] : null;
-    $addr   = !empty($in['address']) ? trim($in['address']) : null;
+    $opt = fn($k) => !empty($in[$k]) ? trim($in[$k]) : null;
+
+    $dob     = $opt('dob');
+    $gender  = in_array($in['gender'] ?? '', ['male', 'female', 'other'], true) ? $in['gender'] : null;
+    $marital = in_array($in['marital_status'] ?? '', ['single', 'married'], true) ? $in['marital_status'] : null;
+    $addr    = $opt('address');
     $empType  = in_array($in['emp_type'] ?? '', ['full_time', 'part_time', 'contract', 'intern'], true) ? $in['emp_type'] : 'full_time';
     $workMode = in_array($in['work_mode'] ?? '', ['onsite', 'remote', 'hybrid'], true) ? $in['work_mode'] : 'onsite';
+
+    if (!empty($in['personal_email']) && !filter_var($in['personal_email'], FILTER_VALIDATE_EMAIL)) {
+        fail('Invalid personal email', 422);
+    }
+    if (!empty($in['emergency_phone']) && !preg_match('/^\d{10}$/', $in['emergency_phone'])) {
+        fail('Emergency phone 10 digit ka hona chahiye', 422);
+    }
 
     $pdo = db();
     $pdo->beginTransaction();
@@ -81,12 +91,21 @@ if ($ACTION === 'create' && $METHOD === 'POST') {
 
         $pdo->prepare(
             "INSERT INTO employee_profiles
-                (user_id, first_name, last_name, phone, doj, dob, gender, current_address,
-                 department_id, designation_id, emp_type, work_mode)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                (user_id, first_name, last_name, phone, personal_email, nationality, doj, dob,
+                 gender, marital_status, blood_group, current_address, permanent_address,
+                 emergency_contact, emergency_phone,
+                 department_id, designation_id, emp_type, work_mode,
+                 bank_account, bank_name, bank_ifsc, pan, uan)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         )->execute([
-            $userId, $nameParts[0], $nameParts[1] ?? null, $in['phone'], $doj,
-            $dob, $gender, $addr, $deptId, $desigId, $empType, $workMode,
+            $userId, $nameParts[0], $nameParts[1] ?? null, $in['phone'],
+            $opt('personal_email'), $opt('nationality'), $doj, $dob,
+            $gender, $marital, $opt('blood_group'), $addr, $opt('permanent_address'),
+            $opt('emergency_contact'), $opt('emergency_phone'),
+            $deptId, $desigId, $empType, $workMode,
+            $opt('bank_account'), $opt('bank_name'),
+            $opt('bank_ifsc') ? strtoupper($opt('bank_ifsc')) : null,
+            $opt('pan') ? strtoupper($opt('pan')) : null, $opt('uan'),
         ]);
 
         $pdo->commit();
@@ -110,6 +129,7 @@ if ($ACTION === 'me_profile' && $METHOD === 'GET') {
     $me = require_auth();
     $stmt = db()->prepare(
         "SELECT u.id, u.emp_code, u.email, u.status, r.name AS role,
+                p.photo_url,
                 p.first_name, p.last_name, p.phone, p.personal_email, p.nationality,
                 p.dob, p.gender, p.marital_status, p.blood_group,
                 p.current_address, p.permanent_address,
@@ -129,8 +149,8 @@ if ($ACTION === 'me_profile' && $METHOD === 'GET') {
     ok($stmt->fetch());
 }
 
-// employee apni personal details khud update karta hai
-// job wali cheeze (dept, designation, doj...) sirf admin update se badalti hai
+// employee khud SIRF ye badal sakta hai: phone, marital status, address (+ photo alag action se)
+// baaki sab (naam, dob, bank, job info...) admin ke through hi badalta hai
 if ($ACTION === 'update_self' && $METHOD === 'POST') {
     $me = require_auth('employee.edit_self');
     $in = body();
@@ -138,23 +158,12 @@ if ($ACTION === 'update_self' && $METHOD === 'POST') {
     if (!empty($in['phone']) && !preg_match('/^\d{10}$/', $in['phone'])) {
         fail('Enter a valid 10 digit phone', 422);
     }
-    if (!empty($in['personal_email']) && !filter_var($in['personal_email'], FILTER_VALIDATE_EMAIL)) {
-        fail('Invalid personal email', 422);
+    if (isset($in['marital_status']) && $in['marital_status'] !== ''
+        && !in_array($in['marital_status'], ['single', 'married'], true)) {
+        fail('Invalid marital status', 422);
     }
 
-    // naam alag se, kyunki wo do columns me todna padta hai
-    if (!empty($in['name'])) {
-        $nameParts = preg_split('/\s+/', trim($in['name']), 2);
-        db()->prepare("UPDATE employee_profiles SET first_name = ?, last_name = ? WHERE user_id = ?")
-            ->execute([$nameParts[0], $nameParts[1] ?? null, $me['id']]);
-    }
-
-    $allowed = [
-        'phone', 'personal_email', 'nationality', 'dob', 'gender', 'marital_status',
-        'blood_group', 'current_address', 'permanent_address',
-        'emergency_contact', 'emergency_phone',
-        'bank_name', 'bank_ifsc', 'bank_account', 'pan', 'uan',
-    ];
+    $allowed = ['phone', 'marital_status', 'current_address', 'permanent_address'];
     $sets = [];
     $vals = [];
     foreach ($allowed as $f) {
@@ -171,6 +180,33 @@ if ($ACTION === 'update_self' && $METHOD === 'POST') {
 
     audit('update', 'employee_profile', (int)$me['id']);
     ok(null, 'Profile updated');
+}
+
+// apni profile photo (multipart: photo)
+if ($ACTION === 'upload_photo' && $METHOD === 'POST') {
+    $me = require_auth('employee.edit_self');
+
+    if (empty($_FILES['photo']) || $_FILES['photo']['error'] !== UPLOAD_ERR_OK) {
+        fail('Photo select karo', 422);
+    }
+    if ($_FILES['photo']['size'] > MAX_UPLOAD_BYTES) fail('Photo 5MB se badi hai', 422);
+
+    $mime = mime_content_type($_FILES['photo']['tmp_name']);
+    $extMap = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp'];
+    if (!isset($extMap[$mime])) fail('Sirf jpg/png/webp chalega', 422);
+
+    $fname = 'pic_' . bin2hex(random_bytes(8)) . '.' . $extMap[$mime];
+    if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0777, true);
+    if (!move_uploaded_file($_FILES['photo']['tmp_name'], UPLOAD_DIR . '/' . $fname)) {
+        fail('Photo save nahi hui, uploads folder ki permission dekho', 500);
+    }
+
+    $url = UPLOAD_URL . '/' . $fname;
+    db()->prepare("UPDATE employee_profiles SET photo_url = ? WHERE user_id = ?")
+        ->execute([$url, $me['id']]);
+
+    audit('update', 'employee_photo', (int)$me['id']);
+    ok(['photo_url' => $url], 'Photo updated');
 }
 
 if ($ACTION === 'update' && $METHOD === 'POST') {
