@@ -1,20 +1,13 @@
-/* =====================================================
-   WorkPulse — API Layer
-
-   Frontend JS -> api.js -> PHP Backend -> MySQL
-   ===================================================== */
+// api layer - frontend js -> api.js -> php backend -> mysql
+// saari api calls isi file se, pages me direct fetch mat likhna
 
 const API = {
-
-  // ═══════════════════════════════════════════════════
-  // CONFIGURATION
-  // ═══════════════════════════════════════════════════
 
   BASE_URL: '/workpulse/api',
 
   LOGIN_PAGE: '/workpulse/index.html',   // 401 aane pe yahan bhejte hai
 
-  // ─── Endpoint -> PHP file mapping ──────────────────
+  // endpoint -> php file mapping
   // naya backend file banao to yahan entry karna mat bhulna
   _endpointMap: {
     'health':          'health.php',
@@ -54,11 +47,7 @@ const API = {
   },
 
 
-  // ═══════════════════════════════════════════════════
-  // CORE REQUEST METHOD
-  // ═══════════════════════════════════════════════════
-  // session cookie (wp_session) har request ke saath
-  // apne aap jati hai, token ka jhanjhat nahi
+  // core request method - session cookie har request ke saath jati hai
 
   async request(endpoint, method = 'GET', data = null) {
     // offline hai to server tak jane ka matlab hi nahi
@@ -122,8 +111,7 @@ const API = {
     }
   },
 
-  // ─── URL Builder ────────────────────────────────────
-  // 'employees/5' jaisa endpoint do to id=5 query me lag jayegi
+  // url builder - 'employees/5' jaisa endpoint do to id=5 query me lag jayegi
   _buildURL(endpoint, method, data) {
     const parts = endpoint.split('/');
     const resource = parts[0];
@@ -155,10 +143,7 @@ const API = {
   },
 
 
-  // ═══════════════════════════════════════════════════
-  // SHORTCUT METHODS
-  // ═══════════════════════════════════════════════════
-  // usage:
+  // shortcuts, usage:
   //   await API.post('login', { email, password })
   //   await API.get('att_mine', { month: 7, year: 2026 })
   //   await API.get('employees/5')
