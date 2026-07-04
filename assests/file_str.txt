@@ -35,7 +35,9 @@ workpulse/
 |   |-- leaves/
 |   |   |-- index.php       -> types, balances, apply, mine, cancel, review     [DONE]
 |   |-- payroll/
-|   |   |-- index.php       -> my_payslips, runs, create_run                    [DONE]
+|   |   |-- index.php       -> my_payslips, runs, create_run, run_payslips      [DONE]
+|   |-- salary/
+|   |   |-- index.php       -> structure (GET), save (wage do, components auto) [DONE]
 |   |-- notifications/
 |   |   |-- index.php       -> list, mark_read                                  [DONE]
 |   |-- helpers/

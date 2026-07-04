@@ -110,6 +110,14 @@ if ($ACTION === 'signup' && $METHOD === 'POST') {
         $pdo->prepare("INSERT INTO employee_profiles (user_id, first_name, last_name, phone) VALUES (?, ?, ?, ?)")
             ->execute([$userId, $nameParts[0], $nameParts[1] ?? null, $in['phone']]);
 
+        // har nayi company ko default leave types mil jate hai
+        $pdo->prepare(
+            "INSERT INTO leave_types (company_id, name, code, is_paid, annual_quota) VALUES
+             (?, 'Paid Leave', 'PL', 1, 12),
+             (?, 'Sick Leave', 'SL', 1, 6),
+             (?, 'Leave Without Pay', 'LWP', 0, NULL)"
+        )->execute([$companyId, $companyId, $companyId]);
+
         $pdo->commit();
     } catch (Exception $e) {
         $pdo->rollBack();
