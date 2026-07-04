@@ -4,344 +4,534 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Workpulse</title>
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="../assests/images/logo.svg">
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
-        /* Custom scrollbar for a cleaner look */
+        /* same design tokens as profile.html, sab pages ek jaise dikhne chahiye */
+        :root {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --border-color: #e2e8f0;
+            --border-light: #f1f5f9;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --primary-light: #eff6ff;
+            --header-bg: #0f172a;
+            --header-text: #ffffff;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #facc15;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 25px -5px rgb(0 0 0 / 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-size: 14px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        button { background: none; border: none; cursor: pointer; font-family: inherit; }
+        a { text-decoration: none; color: inherit; }
+        input, select { font-family: inherit; }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* Dropdown transition */
-        .dropdown-enter { opacity: 0; transform: scale(0.95); }
-        .dropdown-enter-active { opacity: 1; transform: scale(1); transition: opacity 150ms ease-out, transform 150ms ease-out; }
-        .dropdown-exit { opacity: 1; transform: scale(1); }
-        .dropdown-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 100ms ease-in, transform 100ms ease-in; }
+
+        /* header */
+        .topnav {
+            background: var(--header-bg);
+            color: var(--header-text);
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        .topnav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; }
+        .brand img { width: 32px; height: 32px; }
+        .nav-links { display: flex; gap: 4px; margin-left: 24px; }
+        .nav-links a {
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            color: #cbd5e1;
+            transition: background .15s, color .15s;
+        }
+        .nav-links a:hover { background: #1e293b; color: #fff; }
+        .nav-links a.active { background: #1e293b; color: #fff; border-bottom: 2px solid var(--primary); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+        .nav-left { display: flex; align-items: center; }
+
+        /* avatar + dropdown */
+        .avatar-wrap { position: relative; }
+        .avatar-btn { position: relative; display: flex; border-radius: var(--radius-full); }
+        .avatar-btn img {
+            width: 38px; height: 38px;
+            border-radius: var(--radius-full);
+            border: 2px solid #334155;
+            object-fit: cover;
+        }
+        .status-dot {
+            position: absolute; top: -1px; right: -1px;
+            width: 12px; height: 12px;
+            border-radius: var(--radius-full);
+            background: var(--red);
+            border: 2px solid var(--header-bg);
+        }
+        .status-dot.in { background: var(--green); }
+
+        .dropdown {
+            position: absolute;
+            right: 0;
+            top: 48px;
+            width: 230px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: none;
+        }
+        .dropdown.open { display: block; }
+        .dropdown .dd-head { padding: 12px 16px; border-bottom: 1px solid var(--border-light); }
+        .dropdown .dd-head .lbl { font-size: 12px; color: var(--text-muted); }
+        .dropdown .dd-head .val { font-size: 13px; font-weight: 600; word-break: break-all; }
+        .dropdown a.dd-item, .dropdown button.dd-item {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 10px 16px;
+            font-size: 13.5px; color: var(--text-main);
+            transition: background .12s;
+            text-align: left;
+        }
+        .dropdown .dd-item:hover { background: var(--border-light); }
+        .dropdown .dd-item.danger { color: var(--red); }
+        .dropdown .dd-item i { width: 16px; color: var(--text-light); }
+        .dd-punch {
+            padding: 12px 16px;
+            background: var(--bg-body);
+            display: flex; align-items: center; justify-content: space-between;
+            border-top: 1px solid var(--border-light);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .dd-punch .pt { font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; }
+        .dd-punch .pt b { font-family: monospace; font-size: 13px; color: var(--text-main); }
+        .punch-btn {
+            background: var(--header-bg);
+            color: #fff;
+            font-size: 12px; font-weight: 600;
+            padding: 7px 12px;
+            border-radius: var(--radius-sm);
+            transition: background .15s;
+        }
+        .punch-btn:hover { background: #1e293b; }
+        .punch-btn.out { background: var(--red); }
+        .punch-btn.out:hover { background: #dc2626; }
+
+        /* content */
+        .main { flex: 1; padding: 32px 24px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .toolbar {
+            display: flex; flex-wrap: wrap;
+            justify-content: space-between; align-items: center;
+            gap: 16px; margin-bottom: 24px;
+        }
+        .toolbar h1 { font-size: 24px; font-weight: 700; }
+        .toolbar-right { display: flex; gap: 12px; align-items: center; flex: 1; max-width: 420px; justify-content: flex-end; }
+        .search-box { position: relative; flex: 1; max-width: 280px; }
+        .search-box i {
+            position: absolute; left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light); font-size: 13px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 9px 12px 9px 34px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            outline: none;
+            transition: border .15s, box-shadow .15s;
+            background: var(--bg-card);
+        }
+        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 16px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px; font-weight: 600;
+            transition: background .15s, box-shadow .15s;
+        }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: var(--shadow-sm); }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-ghost { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); }
+        .btn-ghost:hover { background: var(--bg-body); }
+
+        /* employee grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+        }
+        .emp-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 22px 18px 16px;
+            position: relative;
+            cursor: pointer;
+            transition: box-shadow .18s, transform .18s, border-color .18s;
+        }
+        .emp-card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: #93c5fd;
+            transform: translateY(-3px);
+        }
+        .emp-card .today {
+            position: absolute; top: 14px; right: 14px;
+            width: 12px; height: 12px;
+            border-radius: var(--radius-full);
+            border: 2px solid #fff;
+            box-shadow: var(--shadow-sm);
+        }
+        .emp-card .today.present { background: var(--green); }
+        .emp-card .today.absent { background: var(--yellow); }
+        .emp-card .today.on_leave { background: var(--primary); }
+        .emp-card .avatar {
+            width: 76px; height: 76px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            display: block;
+            margin: 0 auto 14px;
+        }
+        .emp-card h3 { font-size: 15px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .emp-card .desig { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .emp-card .foot {
+            margin-top: 16px; padding-top: 12px;
+            border-top: 1px solid var(--border-light);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .emp-card .dept { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; color: var(--text-light); }
+        .emp-card .code { font-size: 11px; font-family: monospace; color: var(--text-light); }
+
+        .state-box { text-align: center; padding: 48px 16px; color: var(--text-muted); }
+        .state-box .ico {
+            width: 48px; height: 48px;
+            border-radius: var(--radius-full);
+            background: var(--primary-light); color: var(--primary);
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 18px; margin-bottom: 12px;
+        }
+        .state-box h3 { color: var(--text-main); font-size: 16px; margin-bottom: 4px; }
+        .hidden { display: none !important; }
+
+        /* modals */
+        .overlay {
+            position: fixed; inset: 0;
+            background: rgb(15 23 42 / .5);
+            backdrop-filter: blur(2px);
+            z-index: 40;
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px;
+        }
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%; max-width: 480px;
+            max-height: 92vh; overflow-y: auto;
+        }
+        .modal-head {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-body);
+            display: flex; justify-content: space-between; align-items: center;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        .modal-head h3 { font-size: 16px; font-weight: 700; }
+        .modal-head .x { color: var(--text-light); font-size: 18px; padding: 4px; }
+        .modal-head .x:hover { color: var(--text-main); }
+        .modal-body { padding: 24px; }
+
+        .f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .f-group { margin-bottom: 16px; }
+        .f-group label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; color: var(--text-main); }
+        .f-group label .req { color: var(--red); }
+        .f-group input, .f-group select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            outline: none;
+            background: var(--bg-card);
+            transition: border .15s, box-shadow .15s;
+        }
+        .f-group input:focus, .f-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .modal-foot {
+            display: flex; justify-content: flex-end; gap: 10px;
+            padding-top: 16px; margin-top: 8px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* credentials box */
+        .cred-warn { font-size: 12px; color: var(--red); margin-bottom: 12px; }
+        .cred-box {
+            background: var(--primary-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            font-family: monospace; font-size: 14px;
+        }
+        .cred-box div { display: flex; justify-content: space-between; padding: 4px 0; }
+        .cred-box span { color: var(--text-muted); }
+
+        /* view modal */
+        .view-modal { max-width: 560px; padding: 0; overflow: hidden; }
+        .view-hero { height: 90px; background: linear-gradient(90deg, var(--primary), #4f46e5); position: relative; }
+        .view-hero .x {
+            position: absolute; top: 12px; right: 12px;
+            width: 30px; height: 30px;
+            border-radius: var(--radius-full);
+            background: rgb(0 0 0 / .2); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .view-top { padding: 0 28px 18px; display: flex; gap: 18px; align-items: flex-end; margin-top: -38px; border-bottom: 1px solid var(--border-light); }
+        .view-top img {
+            width: 86px; height: 86px;
+            border-radius: var(--radius-full);
+            border: 4px solid #fff;
+            box-shadow: var(--shadow-md);
+            background: #fff; object-fit: cover;
+        }
+        .view-top .vt-info { padding-bottom: 4px; }
+        .view-top h2 { font-size: 20px; font-weight: 700; display: inline; }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: var(--radius-full);
+            font-size: 11px; font-weight: 600;
+            border: 1px solid;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .badge.active { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .badge.inactive { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .view-top .desig { color: var(--text-muted); font-weight: 500; font-size: 13.5px; margin-top: 2px; }
+        .view-top .code { color: var(--text-light); font-size: 12px; margin-top: 2px; }
+        .view-body { padding: 24px 28px; background: var(--bg-body); display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .view-body h4 {
+            font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px; margin-bottom: 12px;
+        }
+        .kv { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
+        .kv i { color: var(--text-light); width: 16px; margin-top: 2px; font-size: 13px; }
+        .kv .k { font-size: 11px; color: var(--text-muted); }
+        .kv .v { font-size: 13px; font-weight: 600; }
+
+        @media (max-width: 640px) {
+            .nav-links { display: none; }
+            .view-body { grid-template-columns: 1fr; }
+            .f-row { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
+<body>
 
-    <!-- Top Navigation -->
-    <header class="bg-slate-900 text-white shadow-md z-20 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-
-              
-                <!-- Left side: Logo & Links -->
-                <div class="flex items-center space-x-8">
-                    <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer">
-                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold text-xl">W</div>
-                        <span class="font-bold text-xl tracking-wide">Workpulse</span>
-                    </div>
-                    <nav class="hidden md:flex space-x-1">
-                        <a href="#" class="bg-slate-800 text-white px-3 py-2 rounded-md text-sm font-medium border-b-2 border-blue-500">Employees</a>
-                        <a href="#" class="text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Attendance</a>
-                        <a href="#" class="text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Time Off</a>
-                        <a href="#" class="text-slate-300 hover:bg-slate-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Settings</a>
-                    </nav>
+    <!-- top nav -->
+    <header class="topnav">
+        <div class="topnav-inner">
+            <div class="nav-left">
+                <div class="brand">
+                    <img src="../assests/images/logo.svg" alt="">
+                    <span>Workpulse</span>
                 </div>
+                <nav class="nav-links">
+                    <a href="#" class="active">Employees</a>
+                    <a href="#">Attendance</a>
+                    <a href="#">Time Off</a>
+                    <a href="#">Settings</a>
+                </nav>
+            </div>
 
-                <!-- Right side: Avatar & Dropdown -->
-                <div class="flex items-center">
-                    <div class="relative">
-                        <!-- Avatar Button -->
-                        <button id="avatarBtn" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-slate-500 transition duration-150 ease-in-out relative">
-                            <img class="h-9 w-9 rounded-full object-cover border-2 border-slate-700" src="https://ui-avatars.com/api/?name=Admin+User&background=0D8ABC&color=fff" alt="User Avatar">
-                            <!-- Status Dot (Red = Not checked in, Green = Checked in) -->
-                            <span id="navStatusDot" class="absolute top-0 right-0 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-slate-900"></span>
-                        </button>
+            <div class="avatar-wrap">
+                <button class="avatar-btn" id="avatarBtn">
+                    <img id="navAvatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
+                    <span class="status-dot" id="navStatusDot"></span>
+                </button>
 
-                        <!-- Dropdown Menu -->
-                        <div id="userDropdown" class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu">
-                                <div class="px-4 py-3 border-b border-gray-100">
-                                    <p class="text-sm text-gray-500">Signed in as</p>
-                                    <p class="text-sm font-medium text-gray-900 truncate">admin@workpulse.test</p>
-                                </div>
-                                <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors" role="menuitem"><i class="fa-solid fa-user mr-2 text-gray-400"></i> My Profile</a>
-                                <div class="border-t border-gray-100"></div>
-                                
-                                <!-- Check In/Out Section -->
-                                <div class="px-4 py-3 bg-gray-50 flex justify-between items-center">
-                                    <div class="text-xs text-gray-500 flex flex-col">
-                                        <span id="punchTimeLabel">Not punched in</span>
-                                        <span id="punchTimeVal" class="font-mono font-medium text-gray-700">--:--</span>
-                                    </div>
-                                    <button id="punchBtn" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-1.5 px-3 rounded shadow transition-colors">
-                                        Check IN &rarr;
-                                    </button>
-                                </div>
-
-                                <div class="border-t border-gray-100"></div>
-                                <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors" role="menuitem"><i class="fa-solid fa-sign-out-alt mr-2"></i> Log Out</a>
-                            </div>
-                        </div>
+                <div class="dropdown" id="userDropdown">
+                    <div class="dd-head">
+                        <div class="lbl">Signed in as</div>
+                        <div class="val" id="ddEmail">--</div>
                     </div>
+                    <a href="profile.html" class="dd-item"><i class="fa-solid fa-user"></i> My Profile</a>
+                    <div class="dd-punch">
+                        <div class="pt">
+                            <span id="punchTimeLabel">Not punched in</span>
+                            <b id="punchTimeVal">--:--</b>
+                        </div>
+                        <button class="punch-btn" id="punchBtn">Check IN &rarr;</button>
+                    </div>
+                    <button class="dd-item danger" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Log Out</button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-6 md:p-8">
-        <div class="max-w-7xl mx-auto">
-            
-            <!-- Toolbar -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                <h1 class="text-2xl font-bold text-gray-900">Employees Directory</h1>
-                
-                <div class="flex items-center space-x-3 w-full sm:w-auto">
-                    <!-- Search -->
-                    <div class="relative w-full sm:w-64">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-search text-gray-400 text-sm"></i>
-                        </div>
-                        <input type="text" id="searchInput" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow" placeholder="Search employees...">
+    <!-- main -->
+    <main class="main">
+        <div class="container">
+            <div class="toolbar">
+                <h1>Employees Directory</h1>
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search employees...">
                     </div>
-                    <!-- New Button -->
-                    <button onclick="openAddModal()" class="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-sm shadow-sm transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> NEW
-                    </button>
+                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> NEW</button>
                 </div>
             </div>
 
-            <!-- Employee Grid -->
-            <div id="employeeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Cards will be injected here via JS -->
+            <div id="employeeGrid" class="grid"></div>
+
+            <div id="loadingState" class="state-box hidden">
+                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:26px; color:var(--primary); margin-bottom:12px"></i>
+                <p>Loading employees...</p>
             </div>
 
-            <!-- Loading State -->
-            <div id="loadingState" class="hidden text-center py-12">
-                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-blue-500 mb-4"></i>
-                <p class="text-gray-500">Loading employees...</p>
-            </div>
-            
-            <!-- Empty State -->
-            <div id="emptyState" class="hidden text-center py-12 bg-white rounded-lg border border-gray-200 border-dashed">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 text-blue-500 mb-4">
-                    <i class="fa-solid fa-users"></i>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900">No employees found</h3>
-                <p class="mt-1 text-sm text-gray-500">Try adjusting your search or add a new employee.</p>
+            <div id="emptyState" class="state-box hidden" style="background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-lg)">
+                <div class="ico"><i class="fa-solid fa-users"></i></div>
+                <h3>No employees found</h3>
+                <p style="font-size:13px">Try adjusting your search or add a new employee.</p>
             </div>
         </div>
     </main>
 
-    <!-- Modal Overlay -->
-    <div id="modalOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm z-40 transition-opacity flex items-center justify-center p-4">
-        
-        <!-- Add Employee Modal (Form) -->
-        <div id="addEmployeeModal" class="hidden bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden transform transition-all">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-900">Add New Employee</h3>
-                <button onclick="closeModals()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <!-- modals -->
+    <div id="modalOverlay" class="overlay hidden">
+
+        <!-- add employee -->
+        <div id="addEmployeeModal" class="modal hidden">
+            <div class="modal-head">
+                <h3>Add New Employee</h3>
+                <button class="x" onclick="closeModals()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="p-6">
+            <div class="modal-body">
                 <form id="addEmployeeForm" onsubmit="handleAddEmployee(event)">
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name <span class="text-red-500">*</span></label>
-                            <input type="text" id="add_first_name" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    <div class="f-row">
+                        <div class="f-group">
+                            <label>First Name <span class="req">*</span></label>
+                            <input type="text" id="add_first_name" required>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                            <input type="text" id="add_last_name" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address <span class="text-red-500">*</span></label>
-                        <input type="email" id="add_email" required class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="employee@workpulse.test">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone <span class="text-red-500">*</span></label>
-                        <input type="tel" id="add_phone" required maxlength="10" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="10 digit number">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                            <select id="add_department_id" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
-                                <option value="1">Engineering</option>
-                                <option value="2">Human Resources</option>
-                                <option value="3">Sales</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
-                            <select id="add_designation_id" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white">
-                                <option value="1">Software Engineer</option>
-                                <option value="2">HR Manager</option>
-                                <option value="3">Sales Executive</option>
-                            </select>
+                        <div class="f-group">
+                            <label>Last Name</label>
+                            <input type="text" id="add_last_name">
                         </div>
                     </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Joining</label>
-                        <input type="date" id="add_doj" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    <div class="f-group">
+                        <label>Email Address <span class="req">*</span></label>
+                        <input type="email" id="add_email" required placeholder="employee@workpulse.test">
                     </div>
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button type="button" onclick="closeModals()" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">Create Employee</button>
+                    <div class="f-group">
+                        <label>Phone <span class="req">*</span></label>
+                        <input type="tel" id="add_phone" required maxlength="10" inputmode="numeric" placeholder="10 digit number">
+                    </div>
+                    <div class="f-group">
+                        <label>Date of Joining</label>
+                        <input type="date" id="add_doj">
+                    </div>
+                    <div class="modal-foot">
+                        <button type="button" class="btn btn-ghost" onclick="closeModals()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Employee</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- Credentials Modal - create ke baad login id + password ek hi baar dikhta hai -->
-        <div id="credModal" class="hidden bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-900">Employee Created 🎉</h3>
+        <!-- credentials, create ke baad ek hi baar dikhta hai -->
+        <div id="credModal" class="modal hidden">
+            <div class="modal-head">
+                <h3>Employee Created 🎉</h3>
             </div>
-            <div class="p-6">
-                <p class="text-xs text-red-600 mb-3">Ye password dobara nahi dikhega — abhi copy karke employee ko de do.</p>
-                <div class="bg-blue-50 rounded-lg p-4 font-mono text-sm space-y-2">
-                    <div class="flex justify-between"><span class="text-gray-500">Login ID</span><b id="cred_login_id"></b></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Password</span><b id="cred_password"></b></div>
+            <div class="modal-body">
+                <p class="cred-warn">Ye password dobara nahi dikhega — abhi copy karke employee ko de do.</p>
+                <div class="cred-box">
+                    <div><span>Login ID</span> <b id="cred_login_id"></b></div>
+                    <div><span>Password</span> <b id="cred_password"></b></div>
                 </div>
-                <div class="flex justify-end gap-3 mt-5">
-                    <button onclick="copyCreds()" class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
-                    <button onclick="closeModals()" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">Done</button>
+                <div class="modal-foot">
+                    <button class="btn btn-ghost" onclick="copyCreds()"><i class="fa-regular fa-copy"></i> Copy</button>
+                    <button class="btn btn-primary" onclick="closeModals()">Done</button>
                 </div>
             </div>
         </div>
 
-        <!-- View Employee Modal (View-Only Profile) -->
-        <div id="viewEmployeeModal" class="hidden bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden transform transition-all relative">
-            <div class="h-32 bg-gradient-to-r from-blue-600 to-indigo-700 absolute top-0 w-full z-0"></div>
-            <div class="absolute top-4 right-4 z-10">
-                <button onclick="closeModals()" class="text-white hover:text-gray-200 bg-black bg-opacity-20 rounded-full w-8 h-8 flex items-center justify-center transition-colors"><i class="fa-solid fa-xmark"></i></button>
+        <!-- view employee -->
+        <div id="viewEmployeeModal" class="modal view-modal hidden">
+            <div class="view-hero">
+                <button class="x" onclick="closeModals()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            
-            <div class="px-8 pt-16 pb-6 relative z-10 flex flex-col sm:flex-row gap-6 items-start sm:items-end border-b border-gray-100 bg-white bg-opacity-95 mt-12 backdrop-blur-sm">
-                <img id="view_avatar" src="" alt="Profile" class="w-24 h-24 rounded-full border-4 border-white shadow-md bg-white object-cover">
-                <div class="flex-1 mb-2">
-                    <div class="flex items-center gap-3">
-                        <h2 id="view_name" class="text-2xl font-bold text-gray-900">--</h2>
-                        <span id="view_status_badge" class="px-2.5 py-0.5 rounded-full text-xs font-medium border">--</span>
-                    </div>
-                    <p id="view_designation" class="text-gray-600 font-medium">--</p>
-                    <p id="view_emp_code" class="text-sm text-gray-400 mt-1">Emp Code: --</p>
+            <div class="view-top">
+                <img id="view_avatar" src="" alt="Profile">
+                <div class="vt-info">
+                    <h2 id="view_name">--</h2><span id="view_status_badge" class="badge">--</span>
+                    <div class="desig" id="view_designation">--</div>
+                    <div class="code" id="view_emp_code">Login ID: --</div>
                 </div>
             </div>
-
-            <div class="p-8 bg-gray-50/50">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Contact Info -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Contact Information</h4>
-                        <div class="space-y-3">
-                            <div class="flex items-start gap-3">
-                                <i class="fa-regular fa-envelope text-gray-400 mt-1 w-4"></i>
-                                <div>
-                                    <p class="text-xs text-gray-500">Email Address</p>
-                                    <p id="view_email" class="text-sm font-medium text-gray-900">--</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-phone text-gray-400 mt-1 w-4"></i>
-                                <div>
-                                    <p class="text-xs text-gray-500">Phone Number</p>
-                                    <p id="view_phone" class="text-sm font-medium text-gray-900">--</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Work Info -->
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 border-b pb-2">Employment Details</h4>
-                        <div class="space-y-3">
-                            <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-building text-gray-400 mt-1 w-4"></i>
-                                <div>
-                                    <p class="text-xs text-gray-500">Department</p>
-                                    <p id="view_department" class="text-sm font-medium text-gray-900">--</p>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <i class="fa-solid fa-calendar-day text-gray-400 mt-1 w-4"></i>
-                                <div>
-                                    <p class="text-xs text-gray-500">Date of Joining</p>
-                                    <p id="view_doj" class="text-sm font-medium text-gray-900">--</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="view-body">
+                <div>
+                    <h4>Contact Information</h4>
+                    <div class="kv"><i class="fa-regular fa-envelope"></i><div><div class="k">Email Address</div><div class="v" id="view_email">--</div></div></div>
+                    <div class="kv"><i class="fa-solid fa-phone"></i><div><div class="k">Phone Number</div><div class="v" id="view_phone">--</div></div></div>
+                </div>
+                <div>
+                    <h4>Employment Details</h4>
+                    <div class="kv"><i class="fa-solid fa-building"></i><div><div class="k">Department</div><div class="v" id="view_department">--</div></div></div>
+                    <div class="kv"><i class="fa-solid fa-calendar-day"></i><div><div class="k">Date of Joining</div><div class="v" id="view_doj">--</div></div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- real api layer - stub niche sirf fallback ke liye hai -->
+    <!-- api layer -->
     <script src="../assests/js/api.js"></script>
 
-    <!-- Application Script -->
     <script>
-        /**
-         * ---------------------------------------------------------
-         * API STUB / WRAPPER
-         * ---------------------------------------------------------
-         * If standard assets/js/api.js is loaded, it will use that.
-         * Otherwise, this mock provides data conforming to the schema
-         * so the frontend is fully functional for demonstration.
-         */
-        window.API = window.API || (function() {
-            // Mock Database state based on schema
-            let mockEmployees = [
-                { id: 1, emp_code: 'WPIN2026001', first_name: 'John', last_name: 'Doe', email: 'john@workpulse.test', phone: '+91 9876543210', department: 'Engineering', designation: 'Software Engineer', doj: '2024-01-15', status: 'active', avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=random', today_status: 'present' },
-                { id: 2, emp_code: 'WPIN2026002', first_name: 'Sarah', last_name: 'Smith', email: 'sarah@workpulse.test', phone: '+91 9876543211', department: 'Human Resources', designation: 'HR Manager', doj: '2023-11-01', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Sarah+Smith&background=random', today_status: 'absent' },
-                { id: 3, emp_code: 'WPIN2026003', first_name: 'Mike', last_name: 'Johnson', email: 'mike@workpulse.test', phone: '+91 9876543212', department: 'Sales', designation: 'Sales Executive', doj: '2025-03-10', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Mike+Johnson&background=random', today_status: 'on_leave' },
-                { id: 4, emp_code: 'WPIN2026004', first_name: 'Emily', last_name: 'Davis', email: 'emily@workpulse.test', phone: '+91 9876543213', department: 'Engineering', designation: 'QA Tester', doj: '2025-06-20', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Emily+Davis&background=random', today_status: 'present' },
-                { id: 5, emp_code: 'WPIN2026005', first_name: 'Robert', last_name: 'Wilson', email: 'robert@workpulse.test', phone: '+91 9876543214', department: 'Marketing', designation: 'Content Strategist', doj: '2022-09-05', status: 'active', avatar: 'https://ui-avatars.com/api/?name=Robert+Wilson&background=random', today_status: 'absent' },
-            ];
-
-            const delay = (ms) => new Promise(res => setTimeout(res, ms));
-
-            return {
-                get: async (endpoint, params = {}) => {
-                    await delay(300); // Simulate network
-                    if (endpoint === 'employees') {
-                        return { success: true, data: mockEmployees };
-                    }
-                    if (endpoint === 'employees/view') {
-                        const emp = mockEmployees.find(e => e.id == params.id);
-                        return emp ? { success: true, data: emp } : { success: false, error: 'Not found' };
-                    }
-                    return { success: false, error: 'Endpoint not mocked' };
-                },
-                post: async (endpoint, data = {}) => {
-                    await delay(400);
-                    if (endpoint === 'employees/create') {
-                        const newEmp = {
-                            id: mockEmployees.length + 1,
-                            emp_code: 'WPIN202600' + (mockEmployees.length + 1),
-                            first_name: data.first_name,
-                            last_name: data.last_name || '',
-                            email: data.email,
-                            department: 'Engineering', // simplified for mock
-                            designation: 'New Hire',
-                            doj: data.doj || new Date().toISOString().split('T')[0],
-                            status: 'active',
-                            avatar: `https://ui-avatars.com/api/?name=${data.first_name}+${data.last_name || ''}&background=random`,
-                            today_status: 'absent'
-                        };
-                        mockEmployees.push(newEmp);
-                        return { success: true, data: newEmp };
-                    }
-                    if (endpoint === 'attendance/punch_in') return { success: true, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) };
-                    if (endpoint === 'attendance/punch_out') return { success: true };
-                    return { success: false };
-                }
-            };
-        })();
-
-        /**
-         * ---------------------------------------------------------
-         * STATE & INITIALIZATION
-         * ---------------------------------------------------------
-         */
         let employeesData = [];
         let isPunchedIn = false;
         let punchTime = null;
@@ -349,6 +539,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             initDropdown();
             setupSearch();
+            setupPhoneInputs();
 
             // auth guard - sirf admin ke liye
             try {
@@ -356,12 +547,22 @@
                 const u = res.data;
                 if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
                 if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
-                const emailEl = document.querySelector('#userDropdown .truncate');
-                if (emailEl) emailEl.innerText = u.email;
+                document.getElementById('ddEmail').innerText = u.email;
+                document.getElementById('navAvatar').src =
+                    'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(u.email.split('@')[0]);
             } catch (e) { /* api.js 401 pe khud login pe bhej dega */ }
 
             loadEmployees();
         });
+
+        // phone fields me sirf digits chalenge, max 10
+        function setupPhoneInputs() {
+            document.querySelectorAll('input[type="tel"]').forEach(inp => {
+                inp.addEventListener('input', () => {
+                    inp.value = inp.value.replace(/\D/g, '').slice(0, 10);
+                });
+            });
+        }
 
         // naam se avatar, jab tak photo upload nahi hai
         function avatarUrl(emp) {
@@ -369,35 +570,22 @@
                 + encodeURIComponent((emp.first_name || '') + ' ' + (emp.last_name || ''));
         }
 
-        /**
-         * ---------------------------------------------------------
-         * TOP NAV & DROPDOWN LOGIC
-         * ---------------------------------------------------------
-         */
         function initDropdown() {
             const btn = document.getElementById('avatarBtn');
             const menu = document.getElementById('userDropdown');
             const punchBtn = document.getElementById('punchBtn');
 
-            // Toggle dropdown
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                menu.classList.toggle('hidden');
+                menu.classList.toggle('open');
             });
-
-            // Close when clicking outside
             document.addEventListener('click', (e) => {
-                if (!btn.contains(e.target) && !menu.contains(e.target)) {
-                    menu.classList.add('hidden');
-                }
+                if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.remove('open');
             });
 
-            // Punch In / Out Logic
             punchBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
-                const btnIcon = isPunchedIn ? 'Check Out &rarr;' : 'Check IN &rarr;';
                 punchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
                 punchBtn.disabled = true;
 
@@ -407,22 +595,17 @@
                         if (res.success) {
                             isPunchedIn = true;
                             punchTime = res.time || new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-                            updatePunchUI();
                         }
                     } else {
                         const res = await API.post('punch_out');
-                        if (res.success) {
-                            isPunchedIn = false;
-                            punchTime = null;
-                            updatePunchUI();
-                        }
+                        if (res.success) { isPunchedIn = false; punchTime = null; }
                     }
                 } catch (error) {
                     // attendance api abhi ban raha hai
                     alert(error.message || 'Attendance API abhi ready nahi hai');
-                    updatePunchUI();
                 } finally {
                     punchBtn.disabled = false;
+                    updatePunchUI();
                 }
             });
         }
@@ -434,19 +617,15 @@
             const val = document.getElementById('punchTimeVal');
 
             if (isPunchedIn) {
-                dot.classList.remove('bg-red-500');
-                dot.classList.add('bg-green-500');
+                dot.classList.add('in');
                 btn.innerHTML = 'Check Out &rarr;';
-                btn.classList.remove('bg-slate-800', 'hover:bg-slate-700');
-                btn.classList.add('bg-red-500', 'hover:bg-red-600');
+                btn.classList.add('out');
                 label.innerText = 'Since';
                 val.innerText = punchTime;
             } else {
-                dot.classList.remove('bg-green-500');
-                dot.classList.add('bg-red-500');
+                dot.classList.remove('in');
                 btn.innerHTML = 'Check IN &rarr;';
-                btn.classList.remove('bg-red-500', 'hover:bg-red-600');
-                btn.classList.add('bg-slate-800', 'hover:bg-slate-700');
+                btn.classList.remove('out');
                 label.innerText = 'Not punched in';
                 val.innerText = '--:--';
             }
@@ -457,16 +636,11 @@
             window.location.href = '../index.html';
         }
 
-        /**
-         * ---------------------------------------------------------
-         * EMPLOYEE GRID & RENDERING
-         * ---------------------------------------------------------
-         */
         async function loadEmployees() {
             const grid = document.getElementById('employeeGrid');
             const loader = document.getElementById('loadingState');
             const empty = document.getElementById('emptyState');
-            
+
             grid.innerHTML = '';
             loader.classList.remove('hidden');
             empty.classList.add('hidden');
@@ -487,45 +661,26 @@
         function renderGrid(data) {
             const grid = document.getElementById('employeeGrid');
             const empty = document.getElementById('emptyState');
-            
+
             grid.innerHTML = '';
-            
-            if (data.length === 0) {
-                empty.classList.remove('hidden');
-                return;
-            }
-            
+            if (data.length === 0) { empty.classList.remove('hidden'); return; }
             empty.classList.add('hidden');
 
             data.forEach(emp => {
-                // Determine Status Icon
-                let statusIconHTML = '';
-                if (emp.today_status === 'present') {
-                    statusIconHTML = `<div class="w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white shadow-sm" title="Present"></div>`;
-                } else if (emp.today_status === 'on_leave') {
-                    statusIconHTML = `<div class="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px] shadow-sm border border-blue-200" title="On Leave"><i class="fa-solid fa-plane"></i></div>`;
-                } else {
-                    statusIconHTML = `<div class="w-3.5 h-3.5 bg-yellow-400 rounded-full border-2 border-white shadow-sm" title="Absent"></div>`;
-                }
+                const today = emp.today_status === 'present' ? 'present'
+                    : emp.today_status === 'on_leave' ? 'on_leave' : 'absent';
 
                 const card = document.createElement('div');
-                card.className = "bg-white border border-gray-200 rounded-xl p-5 relative cursor-pointer hover:shadow-lg hover:border-blue-300 transition-all group transform hover:-translate-y-1";
+                card.className = 'emp-card';
                 card.onclick = () => openViewModal(emp.id);
-
                 card.innerHTML = `
-                    <div class="absolute top-4 right-4 z-10">
-                        ${statusIconHTML}
-                    </div>
-                    <div class="flex flex-col items-center mt-2">
-                        <div class="relative mb-4">
-                            <img src="${avatarUrl(emp)}" alt="${emp.first_name}" class="w-20 h-20 rounded-full border border-gray-100 shadow-sm object-cover group-hover:ring-4 group-hover:ring-blue-50 transition-all">
-                        </div>
-                        <h3 class="font-bold text-gray-900 text-center truncate w-full">${emp.first_name} ${emp.last_name || ''}</h3>
-                        <p class="text-xs text-gray-500 mt-1 text-center truncate w-full">${emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee')}</p>
-                        <div class="mt-4 pt-4 border-t border-gray-50 w-full flex justify-between items-center">
-                            <span class="text-[10px] uppercase tracking-wider font-semibold text-gray-400">${emp.department || '—'}</span>
-                            <span class="text-xs text-gray-400 font-mono">${emp.emp_code}</span>
-                        </div>
+                    <span class="today ${today}" title="${today.replace('_', ' ')}"></span>
+                    <img class="avatar" src="${avatarUrl(emp)}" alt="">
+                    <h3>${emp.first_name} ${emp.last_name || ''}</h3>
+                    <div class="desig">${emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee')}</div>
+                    <div class="foot">
+                        <span class="dept">${emp.department || '—'}</span>
+                        <span class="code">${emp.emp_code}</span>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -533,8 +688,7 @@
         }
 
         function setupSearch() {
-            const input = document.getElementById('searchInput');
-            input.addEventListener('input', (e) => {
+            document.getElementById('searchInput').addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
                 const filtered = employeesData.filter(emp =>
                     (emp.first_name || '').toLowerCase().includes(term) ||
@@ -546,11 +700,7 @@
             });
         }
 
-        /**
-         * ---------------------------------------------------------
-         * MODAL MANAGEMENT
-         * ---------------------------------------------------------
-         */
+        /* modals */
         const overlay = document.getElementById('modalOverlay');
         const addModal = document.getElementById('addEmployeeModal');
         const viewModal = document.getElementById('viewEmployeeModal');
@@ -573,8 +723,6 @@
             overlay.classList.remove('hidden');
             addModal.classList.add('hidden');
             viewModal.classList.remove('hidden');
-
-            // Set loading state in modal (optional detail)
             document.getElementById('view_name').innerText = 'Loading...';
 
             try {
@@ -590,14 +738,13 @@
                     document.getElementById('view_department').innerText = emp.department || '—';
                     document.getElementById('view_doj').innerText = emp.doj || '—';
 
-                    // Status badge logic
                     const badge = document.getElementById('view_status_badge');
                     if (emp.status === 'active') {
-                        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-medium border bg-green-50 text-green-700 border-green-200';
+                        badge.className = 'badge active';
                         badge.innerText = 'Active';
                     } else {
-                        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-50 text-red-700 border-red-200';
-                        badge.innerText = 'Inactive';
+                        badge.className = 'badge inactive';
+                        badge.innerText = emp.status || 'Inactive';
                     }
                 }
             } catch (err) {
@@ -608,19 +755,19 @@
 
         async function handleAddEmployee(e) {
             e.preventDefault();
-            
+
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerText;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-            btn.disabled = true;
 
+            // 10 digit numeric hi chalega
             const phone = document.getElementById('add_phone').value.trim();
             if (!/^\d{10}$/.test(phone)) {
-                alert('10 digit phone number daalo');
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                alert('Phone number exactly 10 digits ka hona chahiye (sirf numbers)');
                 return;
             }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
 
             // backend name ek saath leta hai, first/last khud todta hai
             const payload = {
@@ -657,20 +804,12 @@
             navigator.clipboard.writeText(txt);
         }
 
-        // Close modal on Escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
-                closeModals();
-            }
+            if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals();
         });
-        
-        // Close modal when clicking on overlay background
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                closeModals();
-            }
+            if (e.target === overlay) closeModals();
         });
-
     </script>
 </body>
 </html>

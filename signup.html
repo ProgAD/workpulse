@@ -163,6 +163,11 @@
       document.getElementById(msgId).textContent = msg || '';
     }
 
+    // phone me sirf digits chalenge, max 10
+    document.getElementById('phone').addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    });
+
     // typing shuru karte hi error hata do
     document.querySelectorAll('.md-field input').forEach(inp => {
       inp.addEventListener('input', () => {
