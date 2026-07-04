@@ -270,6 +270,24 @@
             .salary-summary-grid, .salary-details-grid { grid-template-columns: 1fr; }
             .main-nav { display: none; }
         }
+
+        /* private info tab ke form fields */
+        .private-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        @media (max-width: 768px) { .private-grid { grid-template-columns: 1fr; } }
+        .pi-field { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .pi-field label { width: 140px; flex-shrink: 0; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        .pi-input {
+            flex: 1;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            padding: 6px 2px;
+            font-size: 13.5px;
+            outline: none;
+            background: transparent;
+            transition: border-color .15s;
+        }
+        .pi-input:focus { border-bottom-color: var(--primary); }
+        .pi-input[readonly] { color: var(--text-muted); cursor: default; }
     </style>
 </head>
 <body>
@@ -282,7 +300,7 @@
                     <span class="logo-text">Workpulse</span>
                 </div>
                 <nav class="main-nav">
-                    <a href="#">Employees</a>
+                    <a href="dashboard.html" id="nav_employees">Employees</a>
                     <a href="#">Attendance</a>
                     <a href="#">Time Off</a>
                 </nav>
@@ -290,7 +308,7 @@
             <div class="user-actions">
                 <span style="color: var(--text-light); font-size: 14px; display: none;" id="role-indicator">My Profile</span>
                 <button>
-                    <img class="user-avatar" src="https://ui-avatars.com/api/?name=John+Doe&background=0D8ABC&color=fff" alt="Avatar">
+                    <img class="user-avatar" src="https://ui-avatars.com/api/?name=W&background=0D8ABC&color=fff" alt="Avatar" id="nav_avatar">
                 </button>
             </div>
         </div>
@@ -304,7 +322,7 @@
                 
                 <!-- Avatar Section -->
                 <div class="avatar-section">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=f1f5f9&color=334155&size=128" alt="Profile Picture" class="profile-pic">
+                    <img src="https://ui-avatars.com/api/?name=W&background=f1f5f9&color=334155&size=128" alt="Profile Picture" class="profile-pic" id="hdr_avatar">
                     <button class="edit-avatar-btn" title="Edit Avatar">
                         <i class="fa-solid fa-pencil" style="font-size: 12px;"></i>
                     </button>
@@ -313,22 +331,22 @@
                 <!-- Basic Info -->
                 <div class="basic-info">
                     <div class="profile-name-group editable-group">
-                        <input type="text" value="John Doe" class="ghost-input profile-name" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);">
+                        <input type="text" value="" id="hdr_name" class="ghost-input profile-name" readonly ondblclick="this.removeAttribute('readonly'); this.focus();" onblur="this.setAttribute('readonly', true);">
                         <button class="edit-icon" onclick="this.previousElementSibling.removeAttribute('readonly'); this.previousElementSibling.focus();"><i class="fa-solid fa-pen-to-square"></i></button>
                     </div>
                     
                     <div class="info-grid">
                         <div class="info-item">
                             <span class="info-label">Login ID</span>
-                            <span class="badge">WPIN2026001</span>
+                            <span class="badge" id="hdr_login">--</span>
                         </div>
                         <div class="info-item editable-group">
                             <span class="info-label">Email <i class="fa-solid fa-pen edit-icon" style="font-size: 10px; margin-left: 4px;"></i></span>
-                            <input type="email" value="john.doe@workpulse.test" class="ghost-input info-value">
+                            <input type="email" value="" id="hdr_email" class="ghost-input info-value" readonly>
                         </div>
                         <div class="info-item editable-group">
                             <span class="info-label">Mobile <i class="fa-solid fa-pen edit-icon" style="font-size: 10px; margin-left: 4px;"></i></span>
-                            <input type="text" value="+91 98765 43210" class="ghost-input info-value">
+                            <input type="text" value="" id="hdr_mobile" class="ghost-input info-value" maxlength="10" inputmode="numeric">
                         </div>
                     </div>
                 </div>
@@ -337,19 +355,19 @@
                 <div class="work-details">
                     <div class="work-detail-row">
                         <span class="work-detail-label">Company</span>
-                        <span class="work-detail-value">Workpulse India</span>
+                        <span class="work-detail-value" id="hdr_company">—</span>
                     </div>
                     <div class="work-detail-row">
                         <span class="work-detail-label">Department</span>
-                        <span class="work-detail-value">Engineering</span>
+                        <span class="work-detail-value" id="hdr_dept">—</span>
                     </div>
                     <div class="work-detail-row">
                         <span class="work-detail-label">Manager</span>
-                        <span class="work-detail-value text-link">Sarah Smith</span>
+                        <span class="work-detail-value" id="hdr_manager">—</span>
                     </div>
                     <div class="work-detail-row">
                         <span class="work-detail-label">Location</span>
-                        <span class="work-detail-value">Bangalore, IN</span>
+                        <span class="work-detail-value" id="hdr_location">—</span>
                     </div>
                 </div>
             </div>
@@ -361,6 +379,7 @@
                 <button onclick="switchTab('salary')" id="tab-salary" class="tab-btn hidden">
                     Salary Info <i class="fa-solid fa-lock" style="font-size: 10px; margin-left: 4px; color: var(--text-light);"></i>
                 </button>
+                <button onclick="switchTab('security')" id="tab-security" class="tab-btn">Security</button>
             </div>
 
             <!-- TAB CONTENT: RESUME -->
@@ -441,13 +460,57 @@
 
             <!-- TAB CONTENT: PRIVATE INFO -->
             <div id="content-private" class="tab-content">
-                <div class="panel" style="text-align: center; padding: 48px 24px;">
-                    <div style="width: 64px; height: 64px; background: var(--border-light); color: var(--text-light); border-radius: var(--radius-full); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px;">
-                        <i class="fa-solid fa-shield-halved"></i>
+                <div class="panel" style="padding: 32px;">
+                    <div class="private-grid">
+                        <div>
+                            <h4 class="salary-section-title">Personal Details</h4>
+                            <div class="pi-field"><label>Date of Birth</label><input type="date" id="pi_dob" class="pi-input"></div>
+                            <div class="pi-field"><label>Residing Address</label><input type="text" id="pi_address" class="pi-input" placeholder="—"></div>
+                            <div class="pi-field"><label>Nationality</label><input type="text" id="pi_nationality" class="pi-input" placeholder="Indian"></div>
+                            <div class="pi-field"><label>Personal Email</label><input type="email" id="pi_personal_email" class="pi-input" placeholder="—"></div>
+                            <div class="pi-field"><label>Gender</label>
+                                <select id="pi_gender" class="pi-input">
+                                    <option value="">—</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="pi-field"><label>Marital Status</label>
+                                <select id="pi_marital" class="pi-input">
+                                    <option value="">—</option>
+                                    <option value="single">Single</option>
+                                    <option value="married">Married</option>
+                                </select>
+                            </div>
+                            <div class="pi-field"><label>Date of Joining</label><input type="date" id="pi_doj" class="pi-input" readonly></div>
+                        </div>
+                        <div>
+                            <h4 class="salary-section-title">Bank Details</h4>
+                            <div class="pi-field"><label>Account Number</label><input type="text" id="pi_account" class="pi-input" inputmode="numeric" placeholder="—"></div>
+                            <div class="pi-field"><label>Bank Name</label><input type="text" id="pi_bank" class="pi-input" placeholder="—"></div>
+                            <div class="pi-field"><label>IFSC Code</label><input type="text" id="pi_ifsc" class="pi-input" style="text-transform: uppercase;" maxlength="11" placeholder="—"></div>
+                            <div class="pi-field"><label>PAN No</label><input type="text" id="pi_pan" class="pi-input" style="text-transform: uppercase;" maxlength="10" placeholder="—"></div>
+                            <div class="pi-field"><label>UAN No</label><input type="text" id="pi_uan" class="pi-input" inputmode="numeric" maxlength="12" placeholder="—"></div>
+                            <div class="pi-field"><label>Emp Code / Login ID</label><input type="text" id="pi_emp_code" class="pi-input" readonly></div>
+                        </div>
                     </div>
-                    <h3 class="panel-title" style="font-size: 18px;">Private Information</h3>
-                    <p style="color: var(--text-muted); max-width: 400px; margin: 8px auto 24px;">This section contains sensitive personal information such as banking details, PAN, and Aadhaar numbers. Ensure you are in a private location before editing.</p>
-                    <button style="background: var(--header-bg); color: white; padding: 8px 16px; border-radius: var(--radius-md); font-weight: 500;">View Secure Details</button>
+                    <div style="display:flex; justify-content:flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-light);">
+                        <button id="piSaveBtn" style="background: var(--primary); color: #fff; padding: 9px 18px; border-radius: var(--radius-md); font-weight: 600; font-size: 13.5px;">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: SECURITY -->
+            <div id="content-security" class="tab-content">
+                <div class="panel" style="padding: 32px; max-width: 480px;">
+                    <h4 class="salary-section-title">Change Password</h4>
+                    <div class="pi-field"><label>Current Password</label><input type="password" id="sec_old" class="pi-input" autocomplete="current-password"></div>
+                    <div class="pi-field"><label>New Password</label><input type="password" id="sec_new" class="pi-input" autocomplete="new-password"></div>
+                    <div class="pi-field"><label>Confirm New Password</label><input type="password" id="sec_confirm" class="pi-input" autocomplete="new-password"></div>
+                    <div style="display:flex; justify-content:flex-end; margin-top: 20px;">
+                        <button id="secSaveBtn" style="background: var(--primary); color: #fff; padding: 9px 18px; border-radius: var(--radius-md); font-weight: 600; font-size: 13.5px;">Update Password</button>
+                    </div>
                 </div>
             </div>
 
@@ -461,14 +524,14 @@
                             <div class="salary-stat">
                                 <span class="salary-stat-label">Month Wage</span>
                                 <div class="salary-stat-val-group">
-                                    <input type="text" value="50000" class="salary-amount" readonly>
+                                    <input type="text" value="50000" class="salary-amount" id="sal_wage" inputmode="numeric">
                                     <span style="color: var(--text-light);">/ Month</span>
                                 </div>
                             </div>
                             <div class="salary-stat">
                                 <span class="salary-stat-label">Yearly Wage</span>
                                 <div class="salary-stat-val-group">
-                                    <input type="text" value="600000" class="salary-amount" readonly>
+                                    <input type="text" value="600000" class="salary-amount" id="sal_yearly" readonly>
                                     <span style="color: var(--text-light);">/ Yearly</span>
                                 </div>
                             </div>
@@ -502,7 +565,7 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">Basic Salary</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">25000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-amt" id="sal_basic">25000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
                                         <span class="salary-val-pct">50.00 %</span>
                                     </div>
                                 </div>
@@ -514,7 +577,7 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">House Rent Allowance</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">12500.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-amt" id="sal_hra">12500.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
                                         <span class="salary-val-pct">50.00 %</span>
                                     </div>
                                 </div>
@@ -526,8 +589,8 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">Standard Allowance</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">4167.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">16.67 %</span>
+                                        <span class="salary-val-amt" id="sal_std">4167.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct" id="pct_std">16.67 %</span>
                                     </div>
                                 </div>
                                 <p class="salary-row-desc">A standard allowance is a predetermined, fixed amount provided to employee as part of their salary.</p>
@@ -538,7 +601,7 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">Performance Bonus</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-amt" id="sal_perf">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
                                         <span class="salary-val-pct">8.33 %</span>
                                     </div>
                                 </div>
@@ -550,7 +613,7 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">Leave Travel Allowance</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-amt" id="sal_lta">2082.50 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
                                         <span class="salary-val-pct">8.33 %</span>
                                     </div>
                                 </div>
@@ -562,8 +625,8 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">Fixed Allowance</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">2918.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
-                                        <span class="salary-val-pct">11.67 %</span>
+                                        <span class="salary-val-amt" id="sal_fixed">2918.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-pct" id="pct_fixed">11.67 %</span>
                                     </div>
                                 </div>
                                 <p class="salary-row-desc">Fixed allowance portion of wages is determined after calculating all salary components.</p>
@@ -579,7 +642,7 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">Employee</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-amt" id="sal_pf_emp">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
                                         <span class="salary-val-pct">12.00 %</span>
                                     </div>
                                 </div>
@@ -591,7 +654,7 @@
                                 <div class="salary-row-header">
                                     <span class="salary-row-title">Employer</span>
                                     <div class="salary-row-values">
-                                        <span class="salary-val-amt">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
+                                        <span class="salary-val-amt" id="sal_pf_er">3000.00 ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span></span>
                                         <span class="salary-val-pct">12.00 %</span>
                                     </div>
                                 </div>
@@ -620,56 +683,87 @@
         </div>
     </main>
 
+    <script src="../assests/js/api.js"></script>
     <script>
-        /**
-         * Simulating Authentication & Roles based on requirements.
-         * Requirement: "Salary Info tab Should only be visible to Admin"
-         */
-        const currentUser = {
-            id: 1,
-            role: 'admin', // Change to 'employee' to test hiding the Salary tab
-            permissions: ['employee.edit_self', 'employee.view_all']
-        };
+        let currentUser = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initPermissions();
-            
-            // Auto-resize textareas to fit content
-            const textareas = document.querySelectorAll('textarea');
-            textareas.forEach(ta => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // login check + apna data bharo
+            try {
+                const res = await API.get('me');
+                currentUser = res.data;
+                if (Number(currentUser.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+                fillProfile();
+                initPermissions();
+            } catch (e) { return; /* api.js 401 pe login bhej dega */ }
+
+            initSalaryCalc();
+
+            // textarea apne content ke hisab se badhta hai
+            document.querySelectorAll('textarea').forEach(ta => {
                 ta.style.height = 'auto';
-                ta.style.height = (ta.scrollHeight) + 'px';
-                
-                // Adjust height on input
-                ta.addEventListener('input', function() {
+                ta.style.height = ta.scrollHeight + 'px';
+                ta.addEventListener('input', function () {
                     this.style.height = 'auto';
-                    this.style.height = (this.scrollHeight) + 'px';
+                    this.style.height = this.scrollHeight + 'px';
                 });
             });
 
-            // Show indicator on header for small screens if needed
             if (window.innerWidth > 768) {
                 document.getElementById('role-indicator').style.display = 'inline-block';
             }
+
+            // mobile me sirf digits
+            document.getElementById('hdr_mobile').addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            });
         });
 
+        async function fillProfile() {
+            const u = currentUser;
+            document.getElementById('hdr_login').innerText = u.emp_code;
+            document.getElementById('hdr_email').value = u.email;
+            document.getElementById('pi_emp_code').value = u.emp_code;
+            document.getElementById('ddOrRole')?.remove; // noop safeguard
+
+            const nameGuess = u.email.split('@')[0];
+            setAvatars(nameGuess);
+            document.getElementById('hdr_name').value = nameGuess;
+
+            // detail employees api se milti hai (admin ke paas hi view_all hai,
+            // employee ke liye self endpoint api wale banayenge)
+            try {
+                const res = await API.get('employees/' + u.id);
+                const p = res.data;
+                const fullName = (p.first_name + ' ' + (p.last_name || '')).trim();
+                document.getElementById('hdr_name').value = fullName;
+                document.getElementById('hdr_mobile').value = p.phone || '';
+                if (p.doj) document.getElementById('pi_doj').value = p.doj;
+                if (p.department) document.getElementById('hdr_dept').innerText = p.department;
+                setAvatars(fullName);
+            } catch (e) { /* employee role - self endpoint abhi nahi hai */ }
+        }
+
+        function setAvatars(name) {
+            const url = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
+            document.getElementById('nav_avatar').src = url;
+            document.getElementById('hdr_avatar').src = url.replace('0D8ABC&color=fff', 'f1f5f9&color=334155&size=128');
+        }
+
+        // salary tab sirf admin ko dikhta hai
         function initPermissions() {
             const salaryTabBtn = document.getElementById('tab-salary');
-            
-            if (currentUser.role === 'admin') {
-                // Make salary tab visible for Admin
+            if (currentUser && currentUser.role === 'admin') {
                 salaryTabBtn.classList.remove('hidden');
             } else {
-                // Ensure it's hidden
                 salaryTabBtn.classList.add('hidden');
             }
         }
 
         function switchTab(tabName) {
-            const tabs = ['resume', 'private', 'salary'];
-            
-            // Validation: Prevent non-admins from accessing salary via console
-            if (tabName === 'salary' && currentUser.role !== 'admin') {
+            const tabs = ['resume', 'private', 'salary', 'security'];
+
+            if (tabName === 'salary' && (!currentUser || currentUser.role !== 'admin')) {
                 console.warn('Unauthorized access to Salary Info blocked.');
                 return;
             }
@@ -677,25 +771,80 @@
             tabs.forEach(tab => {
                 const btn = document.getElementById(`tab-${tab}`);
                 const content = document.getElementById(`content-${tab}`);
-                
                 if (!btn || !content) return;
-
-                if (tab === tabName) {
-                    btn.classList.add('active');
-                    content.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                    content.classList.remove('active');
-                }
+                btn.classList.toggle('active', tab === tabName);
+                content.classList.toggle('active', tab === tabName);
             });
         }
-        
-        // Add minimal mock interaction for inputs to show they are "editable"
-        document.querySelectorAll('input:not([readonly])').forEach(input => {
-            input.addEventListener('change', (e) => {
-                console.log(`Updated field value to: ${e.target.value}`);
-                showToast('Changes saved locally.');
+
+        // wage badalte hi saare components recalc hote hai
+        // rules: basic 50% of wage, hra 50% of basic, std 8.33% of wage,
+        // perf + lta 8.33% of basic, fixed = wage - baaki sab, pf 12% of basic, ptax 200
+        function initSalaryCalc() {
+            const wageInp = document.getElementById('sal_wage');
+            if (!wageInp) return;
+
+            wageInp.addEventListener('input', () => {
+                wageInp.value = wageInp.value.replace(/\D/g, '');
+                recalcSalary();
             });
+            recalcSalary();
+        }
+
+        function money(n) { return n.toFixed(2); }
+
+        function recalcSalary() {
+            const wage = parseFloat(document.getElementById('sal_wage').value) || 0;
+            const basic = wage * 0.50;
+            const hra = basic * 0.50;
+            const std = wage * 0.0833;
+            const perf = basic * 0.0833;
+            const lta = basic * 0.0833;
+            let fixed = wage - (basic + hra + std + perf + lta);
+            if (fixed < 0) fixed = 0;
+            const pf = basic * 0.12;
+
+            const set = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = `${money(val)} ₹ <span style="font-size: 10px; color: var(--text-light);">/ month</span>`;
+            };
+            document.getElementById('sal_yearly').value = wage * 12;
+            set('sal_basic', basic);
+            set('sal_hra', hra);
+            set('sal_std', std);
+            set('sal_perf', perf);
+            set('sal_lta', lta);
+            set('sal_fixed', fixed);
+            set('sal_pf_emp', pf);
+            set('sal_pf_er', pf);
+            const pctStd = document.getElementById('pct_std');
+            if (pctStd) pctStd.innerText = '8.33 %';
+            const pctFixed = document.getElementById('pct_fixed');
+            if (pctFixed) pctFixed.innerText = wage ? (fixed / wage * 100).toFixed(2) + ' %' : '— %';
+        }
+
+        // private info save - update api aane pe wire hoga
+        document.getElementById('piSaveBtn').addEventListener('click', () => {
+            showToast('Save API abhi ban raha hai — fields ready hai');
+        });
+
+        // password change - ye wala live hai
+        document.getElementById('secSaveBtn').addEventListener('click', async () => {
+            const oldP = document.getElementById('sec_old').value;
+            const newP = document.getElementById('sec_new').value;
+            const conf = document.getElementById('sec_confirm').value;
+
+            if (!oldP || !newP) return showToast('Dono password bharo');
+            if (newP.length < 6) return showToast('New password kam se kam 6 characters');
+            if (newP !== conf) return showToast('Passwords match nahi kar rahe');
+
+            try {
+                await API.post('change_password', { old_password: oldP, new_password: newP });
+                showToast('Password changed ✔');
+                ['sec_old', 'sec_new', 'sec_confirm'].forEach(id => document.getElementById(id).value = '');
+            } catch (err) {
+                showToast(err.message || 'Password change nahi hua');
+            }
         });
 
         function showToast(message) {
@@ -703,7 +852,6 @@
             toast.className = 'toast';
             toast.innerText = message;
             document.body.appendChild(toast);
-            
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
