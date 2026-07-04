@@ -1,854 +1,852 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="light" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Workpulse</title>
-    <link rel="icon" type="image/svg+xml" href="../assests/images/logo.svg">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        /* same design tokens as profile.html, sab pages ek jaise dikhne chahiye */
-        :root {
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --text-light: #94a3b8;
-            --border-color: #e2e8f0;
-            --border-light: #f1f5f9;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --primary-light: #eff6ff;
-            --header-bg: #0f172a;
-            --header-text: #ffffff;
-            --green: #22c55e;
-            --red: #ef4444;
-            --yellow: #facc15;
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-full: 9999px;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 25px -5px rgb(0 0 0 / 0.15);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            font-size: 14px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        button { background: none; border: none; cursor: pointer; font-family: inherit; }
-        a { text-decoration: none; color: inherit; }
-        input, select { font-family: inherit; }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-        /* header */
-        .topnav {
-            background: var(--header-bg);
-            color: var(--header-text);
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
-        .topnav-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-            height: 64px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; }
-        .brand img { width: 32px; height: 32px; }
-        .nav-links { display: flex; gap: 4px; margin-left: 24px; }
-        .nav-links a {
-            padding: 8px 12px;
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            font-weight: 500;
-            color: #cbd5e1;
-            transition: background .15s, color .15s;
-        }
-        .nav-links a:hover { background: #1e293b; color: #fff; }
-        .nav-links a.active { background: #1e293b; color: #fff; border-bottom: 2px solid var(--primary); border-radius: var(--radius-md) var(--radius-md) 0 0; }
-        .nav-left { display: flex; align-items: center; }
-
-        /* avatar + dropdown */
-        .avatar-wrap { position: relative; }
-        .avatar-btn { position: relative; display: flex; border-radius: var(--radius-full); }
-        .avatar-btn img {
-            width: 38px; height: 38px;
-            border-radius: var(--radius-full);
-            border: 2px solid #334155;
-            object-fit: cover;
-        }
-        /* check in/out systray - topbar me */
-        .systray {
-            display: flex; align-items: center; gap: 10px;
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: var(--radius-md);
-            padding: 6px 10px;
-        }
-        .status-dot-tray {
-            width: 10px; height: 10px;
-            border-radius: var(--radius-full);
-            background: var(--red);
-            flex-shrink: 0;
-        }
-        .status-dot-tray.in { background: var(--green); }
-        .tray-time { display: none; flex-direction: column; line-height: 1.2; }
-        .tray-time span { font-size: 10px; color: #94a3b8; }
-        .tray-time b { font-family: monospace; font-size: 12px; color: #fff; }
-        .systray.punched .tray-time { display: flex; }
-
-        .dropdown {
-            position: absolute;
-            right: 0;
-            top: 48px;
-            width: 230px;
-            background: var(--bg-card);
-            color: var(--text-main);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: none;
-        }
-        .dropdown.open { display: block; }
-        .dropdown .dd-head { padding: 12px 16px; border-bottom: 1px solid var(--border-light); }
-        .dropdown .dd-head .lbl { font-size: 12px; color: var(--text-muted); }
-        .dropdown .dd-head .val { font-size: 13px; font-weight: 600; word-break: break-all; }
-        .dropdown a.dd-item, .dropdown button.dd-item {
-            display: flex; align-items: center; gap: 10px;
-            width: 100%; padding: 10px 16px;
-            font-size: 13.5px; color: var(--text-main);
-            transition: background .12s;
-            text-align: left;
-        }
-        .dropdown .dd-item:hover { background: var(--border-light); }
-        .dropdown .dd-item.danger { color: var(--red); }
-        .dropdown .dd-item i { width: 16px; color: var(--text-light); }
-        .dd-punch {
-            padding: 12px 16px;
-            background: var(--bg-body);
-            display: flex; align-items: center; justify-content: space-between;
-            border-top: 1px solid var(--border-light);
-            border-bottom: 1px solid var(--border-light);
-        }
-        .dd-punch .pt { font-size: 11px; color: var(--text-muted); display: flex; flex-direction: column; }
-        .dd-punch .pt b { font-family: monospace; font-size: 13px; color: var(--text-main); }
-        .punch-btn {
-            background: var(--header-bg);
-            color: #fff;
-            font-size: 12px; font-weight: 600;
-            padding: 7px 12px;
-            border-radius: var(--radius-sm);
-            transition: background .15s;
-        }
-        .punch-btn:hover { background: #1e293b; }
-        .punch-btn.out { background: var(--red); }
-        .punch-btn.out:hover { background: #dc2626; }
-
-        /* content */
-        .main { flex: 1; padding: 32px 24px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .toolbar {
-            display: flex; flex-wrap: wrap;
-            justify-content: space-between; align-items: center;
-            gap: 16px; margin-bottom: 24px;
-        }
-        .toolbar h1 { font-size: 24px; font-weight: 700; }
-        .toolbar-right { display: flex; gap: 12px; align-items: center; flex: 1; max-width: 420px; justify-content: flex-end; }
-        .search-box { position: relative; flex: 1; max-width: 280px; }
-        .search-box i {
-            position: absolute; left: 12px; top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light); font-size: 13px;
-        }
-        .search-box input {
-            width: 100%;
-            padding: 9px 12px 9px 34px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 13.5px;
-            outline: none;
-            transition: border .15s, box-shadow .15s;
-            background: var(--bg-card);
-        }
-        .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-
-        .btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 9px 16px;
-            border-radius: var(--radius-md);
-            font-size: 13.5px; font-weight: 600;
-            transition: background .15s, box-shadow .15s;
-        }
-        .btn-primary { background: var(--primary); color: #fff; box-shadow: var(--shadow-sm); }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-ghost { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); }
-        .btn-ghost:hover { background: var(--bg-body); }
-
-        /* employee grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-            gap: 20px;
-        }
-        .emp-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 22px 18px 16px;
-            position: relative;
-            cursor: pointer;
-            transition: box-shadow .18s, transform .18s, border-color .18s;
-        }
-        .emp-card:hover {
-            box-shadow: var(--shadow-lg);
-            border-color: #93c5fd;
-            transform: translateY(-3px);
-        }
-        .emp-card .today {
-            position: absolute; top: 14px; right: 14px;
-            width: 12px; height: 12px;
-            border-radius: var(--radius-full);
-            border: 2px solid #fff;
-            box-shadow: var(--shadow-sm);
-        }
-        .emp-card .today.present { background: var(--green); }
-        .emp-card .today.absent { background: var(--yellow); }
-        .emp-card .today.on_leave { background: var(--primary); }
-        .emp-card .avatar {
-            width: 76px; height: 76px;
-            border-radius: var(--radius-full);
-            object-fit: cover;
-            border: 1px solid var(--border-light);
-            box-shadow: var(--shadow-sm);
-            display: block;
-            margin: 0 auto 14px;
-        }
-        .emp-card h3 { font-size: 15px; font-weight: 700; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .emp-card .desig { font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .emp-card .foot {
-            margin-top: 16px; padding-top: 12px;
-            border-top: 1px solid var(--border-light);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .emp-card .dept { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; color: var(--text-light); }
-        .emp-card .code { font-size: 11px; font-family: monospace; color: var(--text-light); }
-
-        .state-box { text-align: center; padding: 48px 16px; color: var(--text-muted); }
-        .state-box .ico {
-            width: 48px; height: 48px;
-            border-radius: var(--radius-full);
-            background: var(--primary-light); color: var(--primary);
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 18px; margin-bottom: 12px;
-        }
-        .state-box h3 { color: var(--text-main); font-size: 16px; margin-bottom: 4px; }
-        .hidden { display: none !important; }
-
-        /* modals */
-        .overlay {
-            position: fixed; inset: 0;
-            background: rgb(15 23 42 / .5);
-            backdrop-filter: blur(2px);
-            z-index: 40;
-            display: flex; align-items: center; justify-content: center;
-            padding: 16px;
-        }
-        .modal {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            width: 100%; max-width: 480px;
-            max-height: 92vh; overflow-y: auto;
-        }
-        .modal-head {
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-light);
-            background: var(--bg-body);
-            display: flex; justify-content: space-between; align-items: center;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-        }
-        .modal-head h3 { font-size: 16px; font-weight: 700; }
-        .modal-head .x { color: var(--text-light); font-size: 18px; padding: 4px; }
-        .modal-head .x:hover { color: var(--text-main); }
-        .modal-body { padding: 24px; }
-
-        .f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .f-group { margin-bottom: 16px; }
-        .f-group label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 5px; color: var(--text-main); }
-        .f-group label .req { color: var(--red); }
-        .f-group input, .f-group select {
-            width: 100%;
-            padding: 9px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 13.5px;
-            outline: none;
-            background: var(--bg-card);
-            transition: border .15s, box-shadow .15s;
-        }
-        .f-group input:focus, .f-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .modal-foot {
-            display: flex; justify-content: flex-end; gap: 10px;
-            padding-top: 16px; margin-top: 8px;
-            border-top: 1px solid var(--border-light);
-        }
-
-        /* credentials box */
-        .cred-warn { font-size: 12px; color: var(--red); margin-bottom: 12px; }
-        .cred-box {
-            background: var(--primary-light);
-            border-radius: var(--radius-md);
-            padding: 16px;
-            font-family: monospace; font-size: 14px;
-        }
-        .cred-box div { display: flex; justify-content: space-between; padding: 4px 0; }
-        .cred-box span { color: var(--text-muted); }
-
-        /* view modal */
-        .view-modal { max-width: 560px; padding: 0; overflow: hidden; }
-        .view-hero { height: 90px; background: linear-gradient(90deg, var(--primary), #4f46e5); position: relative; }
-        .view-hero .x {
-            position: absolute; top: 12px; right: 12px;
-            width: 30px; height: 30px;
-            border-radius: var(--radius-full);
-            background: rgb(0 0 0 / .2); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .view-top { padding: 28px 28px 18px; display: flex; gap: 3px; align-items: flex-end; border-bottom: 1px solid var(--border-light); }
-        /* sirf avatar hero pe overlap karta hai, text niche hi rehta hai */
-        .view-top img {
-            width: 86px; height: 86px;
-            border-radius: var(--radius-full);
-            border: 4px solid #fff;
-            box-shadow: var(--shadow-md);
-            background: #fff; object-fit: cover;
-            margin-top: -43px;
-            flex-shrink: 0;
-        }
-        .view-top .vt-info { padding-top: 10px; }
-        .view-top .vt-info { padding-bottom: 4px; }
-        .view-top h2 { font-size: 20px; font-weight: 700; display: inline; }
-        .badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: var(--radius-full);
-            font-size: 11px; font-weight: 600;
-            border: 1px solid;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-        .badge.active { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
-        .badge.inactive { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-        .view-top .desig { color: var(--text-muted); font-weight: 500; font-size: 13.5px; margin-top: 2px; }
-        .view-top .code { color: var(--text-light); font-size: 12px; margin-top: 2px; }
-        .view-body { padding: 24px 28px; background: var(--bg-body); display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .view-body h4 {
-            font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
-            color: var(--text-light);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 6px; margin-bottom: 12px;
-        }
-        .kv { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-start; }
-        .kv i { color: var(--text-light); width: 16px; margin-top: 2px; font-size: 13px; }
-        .kv .k { font-size: 11px; color: var(--text-muted); }
-        .kv .v { font-size: 13px; font-weight: 600; }
-
-        @media (max-width: 640px) {
-            .nav-links { display: none; }
-            .view-body { grid-template-columns: 1fr; }
-            .f-row { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Dashboard - Workpulse</title>
+<link rel="icon" type="image/svg+xml" href="../assests/images/logo.svg">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "surface": "#f8f9fb",
+                  "on-secondary-container": "#576377",
+                  "on-surface-variant": "#434654",
+                  "error-container": "#ffdad6",
+                  "on-surface": "#191c1e",
+                  "primary-container": "#0052cc",
+                  "secondary": "#535f73",
+                  "on-secondary": "#ffffff",
+                  "primary": "#003d9b",
+                  "inverse-on-surface": "#f0f1f3",
+                  "tertiary": "#7b2600",
+                  "tertiary-container": "#a33500",
+                  "surface-tint": "#0c56d0",
+                  "outline": "#737685",
+                  "inverse-primary": "#b2c5ff",
+                  "secondary-fixed-dim": "#bbc7de",
+                  "primary-fixed-dim": "#b2c5ff",
+                  "on-error": "#ffffff",
+                  "on-tertiary-container": "#ffc6b2",
+                  "surface-container": "#edeef0",
+                  "on-primary": "#ffffff",
+                  "surface-container-low": "#f3f4f6",
+                  "inverse-surface": "#2e3132",
+                  "surface-container-high": "#e7e8ea",
+                  "on-primary-container": "#c4d2ff",
+                  "surface-container-highest": "#e1e2e4",
+                  "background": "#f8f9fb",
+                  "surface-variant": "#e1e2e4",
+                  "error": "#ba1a1a",
+                  "tertiary-fixed": "#ffdbcf",
+                  "on-background": "#191c1e",
+                  "primary-fixed": "#dae2ff",
+                  "outline-variant": "#c3c6d6",
+                  "surface-bright": "#f8f9fb",
+                  "surface-container-lowest": "#ffffff",
+                  "tertiary-fixed-dim": "#ffb59b",
+                  "secondary-container": "#d4e0f8",
+                  "on-error-container": "#93000a",
+                  "surface-dim": "#d9dadc",
+                  "on-tertiary": "#ffffff"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "gutter": "24px",
+                  "xxl": "48px",
+                  "xs": "4px",
+                  "unit": "4px",
+                  "md": "16px",
+                  "xl": "32px",
+                  "lg": "24px",
+                  "sm": "8px"
+          },
+          "fontFamily": {
+                  "label-sm": ["Inter"],
+                  "body-lg": ["Inter"],
+                  "title-lg": ["Inter"],
+                  "label-md": ["Inter"],
+                  "headline-sm": ["Inter"],
+                  "body-md": ["Inter"],
+                  "display-lg": ["Inter"],
+                  "display-md": ["Inter"]
+          },
+          "fontSize": {
+                  "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                  "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                  "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                  "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                  "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                  "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                  "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "display-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+          }
+        },
+      },
+    }
+</script>
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8f9fb; }
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #c3c6d6; border-radius: 10px; }
+    .hidden { display: none !important; }
+</style>
 </head>
-<body>
+<body class="text-on-surface">
+<div class="flex h-screen overflow-hidden">
 
-    <!-- top nav -->
-    <header class="topnav">
-        <div class="topnav-inner">
-            <div class="nav-left">
-                <div class="brand">
-                    <img src="../assests/images/logo.svg" alt="">
-                    <span>Workpulse</span>
-                </div>
-                <nav class="nav-links">
-                    <a href="#" class="active">Employees</a>
-                    <a href="#">Attendance</a>
-                    <a href="#">Time Off</a>
-                    <a href="#">Settings</a>
-                </nav>
-            </div>
+  <!-- SideNav -->
+  <aside class="hidden md:flex flex-col h-screen p-md overflow-y-auto bg-surface-container-lowest border-r border-outline-variant w-64 flex-shrink-0">
+    <div class="mb-xxl px-sm flex items-center gap-3">
+      <img src="../assests/images/logo.svg" alt="" class="w-9 h-9"/>
+      <div>
+        <h1 class="text-title-lg font-bold text-primary leading-tight">Workpulse</h1>
+        <p class="font-label-sm text-on-secondary-container">Management Portal</p>
+      </div>
+    </div>
+    <nav class="flex-1 space-y-2">
+      <a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg transition-colors" href="#">
+        <span class="material-symbols-outlined">dashboard</span><span class="font-body-md">Dashboard</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+        <span class="material-symbols-outlined">calendar_month</span><span class="font-body-md">Attendance</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+        <span class="material-symbols-outlined">event_busy</span><span class="font-body-md">Leave</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+        <span class="material-symbols-outlined">payments</span><span class="font-body-md">Payroll</span>
+      </a>
+      <a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container hover:bg-surface-container-high transition-colors rounded-lg" href="profile.html">
+        <span class="material-symbols-outlined">person</span><span class="font-body-md">Profile</span>
+      </a>
+    </nav>
+    <div class="mt-auto p-3 flex items-center gap-3 border-t border-outline-variant">
+      <img id="sideAvatar" class="w-10 h-10 rounded-full object-cover" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+      <div class="min-w-0">
+        <p id="sideName" class="font-label-md text-on-surface font-bold truncate">Admin</p>
+        <p class="font-label-sm text-outline">Administrator</p>
+      </div>
+    </div>
+  </aside>
 
-            <div style="display:flex; align-items:center; gap:14px;">
-                <!-- check in/out systray - hamesha topbar me dikhta hai -->
-                <div class="systray" id="punchTray">
-                    <span class="status-dot-tray" id="navStatusDot"></span>
-                    <div class="tray-time" id="trayTime">
-                        <span id="punchTimeLabel">Not punched in</span>
-                        <b id="punchTimeVal">--:--</b>
-                    </div>
-                    <button class="punch-btn" id="punchBtn">Check IN &rarr;</button>
-                </div>
+  <!-- Main -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-                <div class="avatar-wrap">
-                    <button class="avatar-btn" id="avatarBtn">
-                        <img id="navAvatar" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt="User">
-                    </button>
-
-                    <!-- dropdown me sirf profile aur logout -->
-                    <div class="dropdown" id="userDropdown">
-                        <div class="dd-head">
-                            <div class="lbl">Signed in as</div>
-                            <div class="val" id="ddEmail">--</div>
-                        </div>
-                        <a href="profile.html" class="dd-item"><i class="fa-solid fa-user"></i> My Profile</a>
-                        <button class="dd-item danger" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Log Out</button>
-                    </div>
-                </div>
-            </div>
+    <!-- TopNav -->
+    <header class="flex justify-between items-center h-16 px-lg w-full sticky top-0 z-40 bg-surface border-b border-outline-variant">
+      <div class="flex items-center gap-md flex-1">
+        <div class="relative w-full max-w-md">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+          <input id="searchInput" class="w-full bg-surface-container-low border-none rounded-full pl-10 py-2 font-body-md focus:ring-2 focus:ring-primary-container outline-none transition-all" placeholder="Search employees..." type="text"/>
         </div>
+      </div>
+      <div class="flex items-center gap-lg">
+        <!-- Check in / out -->
+        <button id="punchBtn" class="flex items-center gap-2 px-4 py-2 rounded-full font-label-md bg-primary text-on-primary hover:opacity-90 transition-opacity">
+          <span id="navStatusDot" class="w-2 h-2 rounded-full bg-white/70"></span>
+          <span id="punchBtnText">Check In</span>
+          <span id="punchSince" class="opacity-80"></span>
+        </button>
+        <div class="flex items-center gap-2">
+          <button class="relative p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-opacity opacity-80">
+            <span class="material-symbols-outlined">notifications</span>
+            <span id="notifDot" class="hidden absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+          </button>
+        </div>
+        <div class="h-8 w-[1px] bg-outline-variant"></div>
+        <!-- avatar + dropdown -->
+        <div class="relative">
+          <button id="avatarBtn" class="flex items-center gap-2">
+            <img id="navAvatar" class="w-8 h-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff" alt=""/>
+            <span class="font-label-md text-on-surface hidden sm:inline">Administrator</span>
+          </button>
+          <div id="userDropdown" class="hidden absolute right-0 top-11 w-56 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant overflow-hidden z-50">
+            <div class="px-4 py-3 border-b border-outline-variant">
+              <p class="font-label-sm text-outline">Signed in as</p>
+              <p id="ddEmail" class="font-label-md text-on-surface font-bold truncate">--</p>
+            </div>
+            <a href="profile.html" class="flex items-center gap-3 px-4 py-3 font-body-md hover:bg-surface-container-low transition-colors">
+              <span class="material-symbols-outlined text-outline text-[20px]">person</span> My Profile
+            </a>
+            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 font-body-md text-error hover:bg-surface-container-low transition-colors text-left">
+              <span class="material-symbols-outlined text-error text-[20px]">logout</span> Log Out
+            </button>
+          </div>
+        </div>
+      </div>
     </header>
 
-    <!-- main -->
-    <main class="main">
-        <div class="container">
-            <div class="toolbar">
-                <h1>Employees Directory</h1>
-                <div class="toolbar-right">
-                    <div class="search-box">
-                        <i class="fa-solid fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="Search employees...">
-                    </div>
-                    <button class="btn btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> NEW</button>
-                </div>
-            </div>
+    <!-- Canvas -->
+    <div class="flex-1 overflow-y-auto p-lg lg:p-xl custom-scrollbar space-y-xl">
 
-            <div id="employeeGrid" class="grid"></div>
-
-            <div id="loadingState" class="state-box hidden">
-                <i class="fa-solid fa-circle-notch fa-spin" style="font-size:26px; color:var(--primary); margin-bottom:12px"></i>
-                <p>Loading employees...</p>
+      <!-- Stats -->
+      <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-lg">
+        <div class="col-span-1 md:col-span-2 bg-primary-container text-on-primary rounded-xl p-lg flex flex-col justify-between min-h-[160px] relative overflow-hidden">
+          <div class="z-10">
+            <p class="font-label-md uppercase tracking-wider opacity-80">Welcome Back</p>
+            <h2 class="text-display-md mt-sm">HR Dashboard</h2>
+          </div>
+          <div class="flex items-end justify-between z-10">
+            <div class="flex items-center gap-2 bg-white/20 px-3 py-1 rounded-full backdrop-blur-md">
+              <span class="material-symbols-outlined text-[20px]">group</span>
+              <span id="welcomeStat" class="font-label-md">— active employees</span>
             </div>
-
-            <div id="emptyState" class="state-box hidden" style="background:var(--bg-card); border:1px dashed var(--border-color); border-radius:var(--radius-lg)">
-                <div class="ico"><i class="fa-solid fa-users"></i></div>
-                <h3>No employees found</h3>
-                <p style="font-size:13px">Try adjusting your search or add a new employee.</p>
-            </div>
+          </div>
         </div>
-    </main>
-
-    <!-- modals -->
-    <div id="modalOverlay" class="overlay hidden">
-
-        <!-- add employee -->
-        <div id="addEmployeeModal" class="modal hidden">
-            <div class="modal-head">
-                <h3>Add New Employee</h3>
-                <button class="x" onclick="closeModals()"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="modal-body">
-                <form id="addEmployeeForm" onsubmit="handleAddEmployee(event)">
-                    <div class="f-row">
-                        <div class="f-group">
-                            <label>First Name <span class="req">*</span></label>
-                            <input type="text" id="add_first_name" required>
-                        </div>
-                        <div class="f-group">
-                            <label>Last Name</label>
-                            <input type="text" id="add_last_name">
-                        </div>
-                    </div>
-                    <div class="f-group">
-                        <label>Email Address <span class="req">*</span></label>
-                        <input type="email" id="add_email" required placeholder="employee@workpulse.test">
-                    </div>
-                    <div class="f-group">
-                        <label>Phone <span class="req">*</span></label>
-                        <input type="tel" id="add_phone" required maxlength="10" inputmode="numeric" placeholder="10 digit number">
-                    </div>
-                    <div class="f-group">
-                        <label>Date of Joining</label>
-                        <input type="date" id="add_doj">
-                    </div>
-                    <div class="modal-foot">
-                        <button type="button" class="btn btn-ghost" onclick="closeModals()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Employee</button>
-                    </div>
-                </form>
-            </div>
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm flex flex-col justify-between">
+          <div class="p-2 bg-secondary-container rounded-lg text-primary self-start">
+            <span class="material-symbols-outlined">groups</span>
+          </div>
+          <div class="mt-md">
+            <p class="font-label-md text-on-secondary-container">Total Employees</p>
+            <h3 id="stat_total" class="text-display-md">—</h3>
+          </div>
         </div>
-
-        <!-- credentials, create ke baad ek hi baar dikhta hai -->
-        <div id="credModal" class="modal hidden">
-            <div class="modal-head">
-                <h3>Employee Created 🎉</h3>
-            </div>
-            <div class="modal-body">
-                <p class="cred-warn">Ye password dobara nahi dikhega — abhi copy karke employee ko de do.</p>
-                <div class="cred-box">
-                    <div><span>Login ID</span> <b id="cred_login_id"></b></div>
-                    <div><span>Password</span> <b id="cred_password"></b></div>
-                </div>
-                <div class="modal-foot">
-                    <button class="btn btn-ghost" onclick="copyCreds()"><i class="fa-regular fa-copy"></i> Copy</button>
-                    <button class="btn btn-primary" onclick="closeModals()">Done</button>
-                </div>
-            </div>
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-sm flex flex-col justify-between">
+          <div class="p-2 bg-tertiary-fixed rounded-lg text-tertiary self-start">
+            <span class="material-symbols-outlined">event_note</span>
+          </div>
+          <div class="mt-md">
+            <p class="font-label-md text-on-secondary-container">Pending Leave</p>
+            <h3 id="stat_pending_leave" class="text-display-md text-tertiary">—</h3>
+          </div>
         </div>
+      </section>
 
-        <!-- view employee -->
-        <div id="viewEmployeeModal" class="modal view-modal hidden">
-            <div class="view-hero">
-                <button class="x" onclick="closeModals()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-xl">
+
+        <!-- Left column: approvals + activity -->
+        <section class="lg:col-span-4 space-y-lg">
+          <div class="flex items-center justify-between">
+            <h4 class="text-title-lg text-on-surface">Pending Approvals</h4>
+            <span id="approvalsCount" class="font-label-md text-outline"></span>
+          </div>
+          <div id="approvalsList" class="space-y-md"></div>
+          <div id="approvalsEmpty" class="hidden bg-surface-container-low rounded-xl p-lg text-center">
+            <span class="material-symbols-outlined text-outline text-[28px]">task_alt</span>
+            <p class="font-label-md text-outline mt-1">No pending requests</p>
+          </div>
+
+          <div class="bg-surface-container-low rounded-xl p-lg space-y-md">
+            <h4 class="font-label-md uppercase tracking-wider text-outline font-bold">Recent Activity</h4>
+            <div id="activityList" class="space-y-md">
+              <p class="font-label-sm text-outline">Loading...</p>
             </div>
-            <div class="view-top">
-                <img id="view_avatar" src="" alt="Profile">
-                <div class="vt-info">
-                    <h2 id="view_name">--</h2><span id="view_status_badge" class="badge">--</span>
-                    <div class="desig" id="view_designation">--</div>
-                    <div class="code" id="view_emp_code">Login ID: --</div>
-                </div>
+          </div>
+        </section>
+
+        <!-- Right column: employee directory -->
+        <section class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+          <div class="p-lg border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-md">
+            <div>
+              <h4 class="text-title-lg text-on-surface">Employee Directory</h4>
+              <p class="font-label-sm text-outline">Manage and view all registered personnel</p>
             </div>
-            <div class="view-body">
-                <div>
-                    <h4>Contact Information</h4>
-                    <div class="kv"><i class="fa-regular fa-envelope"></i><div><div class="k">Email Address</div><div class="v" id="view_email">--</div></div></div>
-                    <div class="kv"><i class="fa-solid fa-phone"></i><div><div class="k">Phone Number</div><div class="v" id="view_phone">--</div></div></div>
-                </div>
-                <div>
-                    <h4>Employment Details</h4>
-                    <div class="kv"><i class="fa-solid fa-building"></i><div><div class="k">Department</div><div class="v" id="view_department">--</div></div></div>
-                    <div class="kv"><i class="fa-solid fa-calendar-day"></i><div><div class="k">Date of Joining</div><div class="v" id="view_doj">--</div></div></div>
-                </div>
+            <div class="flex items-center gap-sm">
+              <button onclick="openAddModal()" class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-[20px]">add</span> Add Employee
+              </button>
             </div>
-        </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-surface-container-low">
+                  <th class="px-lg py-3 font-label-sm text-outline uppercase tracking-wider">Employee</th>
+                  <th class="px-lg py-3 font-label-sm text-outline uppercase tracking-wider">ID</th>
+                  <th class="px-lg py-3 font-label-sm text-outline uppercase tracking-wider">Department</th>
+                  <th class="px-lg py-3 font-label-sm text-outline uppercase tracking-wider">Status</th>
+                  <th class="px-lg py-3 font-label-sm text-outline uppercase tracking-wider text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="employeeTableBody" class="divide-y divide-outline-variant"></tbody>
+            </table>
+          </div>
+
+          <div id="loadingState" class="hidden p-xl text-center text-outline">
+            <span class="material-symbols-outlined animate-spin text-primary">progress_activity</span>
+            <p class="font-label-md mt-1">Loading employees...</p>
+          </div>
+          <div id="emptyState" class="hidden p-xl text-center">
+            <span class="material-symbols-outlined text-outline text-[32px]">group_off</span>
+            <p class="font-title-lg text-on-surface mt-2">No employees found</p>
+            <p class="font-label-md text-outline">Try adjusting your search or add a new employee.</p>
+          </div>
+
+          <div class="p-lg flex items-center justify-between border-t border-outline-variant">
+            <span id="pageInfo" class="font-label-sm text-outline">—</span>
+            <div class="flex gap-2">
+              <button id="prevBtn" onclick="changePage(-1)" class="px-3 py-1 border border-outline-variant rounded-md font-label-md hover:bg-surface-container-low disabled:opacity-50" disabled>Previous</button>
+              <button id="nextBtn" onclick="changePage(1)" class="px-3 py-1 border border-outline-variant rounded-md font-label-md hover:bg-surface-container-low disabled:opacity-50" disabled>Next</button>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
+  </main>
+</div>
 
-    <!-- api layer -->
-    <script src="../assests/js/api.js"></script>
+<!-- FAB -->
+<button onclick="openAddModal()" class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-30">
+  <span class="material-symbols-outlined">add</span>
+</button>
 
-    <script>
-        let employeesData = [];
-        let isPunchedIn = false;
-        let punchTime = null;
+<!-- Modals -->
+<div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            initDropdown();
-            setupSearch();
-            setupPhoneInputs();
+  <!-- Add employee -->
+  <div id="addEmployeeModal" class="hidden bg-surface-container-lowest rounded-xl shadow-lg w-full max-w-lg max-h-[92vh] overflow-y-auto">
+    <div class="flex items-center justify-between px-lg py-4 border-b border-outline-variant">
+      <h3 class="text-title-lg">Add New Employee</h3>
+      <button onclick="closeModals()" class="text-outline hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="p-lg">
+      <form id="addEmployeeForm" onsubmit="handleAddEmployee(event)" class="space-y-md">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+          <div>
+            <label class="block font-label-md text-on-surface mb-1">First Name <span class="text-error">*</span></label>
+            <input type="text" id="add_first_name" required class="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-primary-container outline-none">
+          </div>
+          <div>
+            <label class="block font-label-md text-on-surface mb-1">Last Name</label>
+            <input type="text" id="add_last_name" class="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-primary-container outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block font-label-md text-on-surface mb-1">Email Address <span class="text-error">*</span></label>
+          <input type="email" id="add_email" required placeholder="employee@workpulse.test" class="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-primary-container outline-none">
+        </div>
+        <div>
+          <label class="block font-label-md text-on-surface mb-1">Phone <span class="text-error">*</span></label>
+          <input type="tel" id="add_phone" required maxlength="10" inputmode="numeric" placeholder="10 digit number" class="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-primary-container outline-none">
+        </div>
+        <div>
+          <label class="block font-label-md text-on-surface mb-1">Date of Joining</label>
+          <input type="date" id="add_doj" class="w-full border border-outline-variant rounded-lg px-3 py-2 font-body-md focus:ring-2 focus:ring-primary-container outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-outline-variant">
+          <button type="button" onclick="closeModals()" class="px-4 py-2 rounded-lg font-label-md border border-outline-variant hover:bg-surface-container-low">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-lg font-label-md bg-primary text-on-primary hover:opacity-90">Create Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-            // auth guard - sirf admin ke liye
-            try {
-                const res = await API.get('me');
-                const u = res.data;
-                if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
-                if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
-                document.getElementById('ddEmail').innerText = u.email;
-                document.getElementById('navAvatar').src =
-                    'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(u.email.split('@')[0]);
-            } catch (e) { /* api.js 401 pe khud login pe bhej dega */ }
+  <!-- Credentials -->
+  <div id="credModal" class="hidden bg-surface-container-lowest rounded-xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="px-lg py-4 border-b border-outline-variant">
+      <h3 class="text-title-lg">Employee Created 🎉</h3>
+    </div>
+    <div class="p-lg">
+      <p class="font-label-md text-error mb-3">Ye password dobara nahi dikhega — abhi copy karke employee ko de do.</p>
+      <div class="bg-secondary-container rounded-lg p-4 font-mono text-sm space-y-2">
+        <div class="flex justify-between"><span class="text-on-secondary-container">Login ID</span> <b id="cred_login_id"></b></div>
+        <div class="flex justify-between"><span class="text-on-secondary-container">Password</span> <b id="cred_password"></b></div>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button onclick="copyCreds()" class="px-4 py-2 rounded-lg font-label-md border border-outline-variant hover:bg-surface-container-low flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">content_copy</span> Copy</button>
+        <button onclick="closeModals()" class="px-4 py-2 rounded-lg font-label-md bg-primary text-on-primary hover:opacity-90">Done</button>
+      </div>
+    </div>
+  </div>
 
-            loadEmployees();
-            initPunchState();
+  <!-- View employee -->
+  <div id="viewEmployeeModal" class="hidden bg-surface-container-lowest rounded-xl shadow-lg w-full max-w-xl overflow-hidden">
+    <div class="h-24 bg-primary-container relative">
+      <button onclick="closeModals()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/20 text-white flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">close</span></button>
+    </div>
+    <div class="px-lg pb-4 flex items-end gap-4 border-b border-outline-variant">
+      <img id="view_avatar" src="" alt="" class="w-20 h-20 rounded-full border-4 border-surface-container-lowest object-cover -mt-10 bg-surface-container-lowest"/>
+      <div class="pb-1">
+        <h2 class="text-headline-sm inline"><span id="view_name">--</span></h2>
+        <span id="view_status_badge" class="ml-2 px-2 py-1 rounded-full font-label-sm align-middle">--</span>
+        <div id="view_designation" class="font-body-md text-on-secondary-container">--</div>
+        <div id="view_emp_code" class="font-label-sm text-outline">Login ID: --</div>
+      </div>
+    </div>
+    <div class="p-lg bg-surface-container-low grid grid-cols-1 sm:grid-cols-2 gap-lg">
+      <div>
+        <h4 class="font-label-sm uppercase tracking-wider text-outline border-b border-outline-variant pb-1 mb-3">Contact Information</h4>
+        <div class="flex gap-3 mb-3"><span class="material-symbols-outlined text-outline text-[20px]">mail</span><div><div class="font-label-sm text-outline">Email Address</div><div id="view_email" class="font-body-md font-bold">--</div></div></div>
+        <div class="flex gap-3"><span class="material-symbols-outlined text-outline text-[20px]">call</span><div><div class="font-label-sm text-outline">Phone Number</div><div id="view_phone" class="font-body-md font-bold">--</div></div></div>
+      </div>
+      <div>
+        <h4 class="font-label-sm uppercase tracking-wider text-outline border-b border-outline-variant pb-1 mb-3">Employment Details</h4>
+        <div class="flex gap-3 mb-3"><span class="material-symbols-outlined text-outline text-[20px]">apartment</span><div><div class="font-label-sm text-outline">Department</div><div id="view_department" class="font-body-md font-bold">--</div></div></div>
+        <div class="flex gap-3"><span class="material-symbols-outlined text-outline text-[20px]">event</span><div><div class="font-label-sm text-outline">Date of Joining</div><div id="view_doj" class="font-body-md font-bold">--</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../assests/js/api.js"></script>
+<script>
+    let employeesData = [];
+    let filteredData = [];
+    let isPunchedIn = false;
+    let punchTime = null;
+    let currentPage = 1;
+    const PAGE_SIZE = 8;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        initDropdown();
+        setupSearch();
+        setupPhoneInputs();
+
+        // auth guard - sirf admin ke liye
+        try {
+            const res = await API.get('me');
+            const u = res.data;
+            if (Number(u.must_change_password) === 1) { window.location.href = '../change-password.html'; return; }
+            if (u.role !== 'admin') { window.location.href = '../employee/dashboard.html'; return; }
+            const name = u.email.split('@')[0];
+            document.getElementById('ddEmail').innerText = u.email;
+            document.getElementById('sideName').innerText = name;
+            const av = 'https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=' + encodeURIComponent(name);
+            document.getElementById('navAvatar').src = av;
+            document.getElementById('sideAvatar').src = av;
+        } catch (e) { /* api.js 401 pe khud login pe bhej dega */ }
+
+        loadEmployees();
+        initPunchState();
+        loadApprovals();
+        loadActivity();
+    });
+
+    // ---------- punch ----------
+    async function initPunchState() {
+        try {
+            const res = await API.get('att_today');
+            const att = res.data && res.data.attendance;
+            if (att && att.check_in && !att.check_out) {
+                isPunchedIn = true;
+                punchTime = att.check_in.slice(11, 16);
+                updatePunchUI();
+            }
+        } catch (e) { /* attendance record nahi hai to check-in dikhega */ }
+    }
+
+    function updatePunchUI() {
+        const btn = document.getElementById('punchBtn');
+        const dot = document.getElementById('navStatusDot');
+        const txt = document.getElementById('punchBtnText');
+        const since = document.getElementById('punchSince');
+        if (isPunchedIn) {
+            btn.classList.remove('bg-primary');
+            btn.classList.add('bg-error');
+            dot.classList.remove('bg-white/70');
+            dot.classList.add('bg-white');
+            txt.innerText = 'Check Out';
+            since.innerText = punchTime ? '· ' + punchTime : '';
+        } else {
+            btn.classList.add('bg-primary');
+            btn.classList.remove('bg-error');
+            dot.classList.add('bg-white/70');
+            dot.classList.remove('bg-white');
+            txt.innerText = 'Check In';
+            since.innerText = '';
+        }
+    }
+
+    // ---------- dropdown + punch handler ----------
+    function initDropdown() {
+        const btn = document.getElementById('avatarBtn');
+        const menu = document.getElementById('userDropdown');
+        const punchBtn = document.getElementById('punchBtn');
+
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+            if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.add('hidden');
         });
 
-        // page khulte hi aaj ka punch status systray me dikhao
-        async function initPunchState() {
-            try {
-                const res = await API.get('att_today');
-                const att = res.data && res.data.attendance;
-                if (att && att.check_in && !att.check_out) {
-                    isPunchedIn = true;
-                    punchTime = att.check_in.slice(11, 16);
-                    updatePunchUI();
-                }
-            } catch (e) { /* attendance record nahi hai to red hi rahega */ }
-        }
-
-        // phone fields me sirf digits chalenge, max 10
-        function setupPhoneInputs() {
-            document.querySelectorAll('input[type="tel"]').forEach(inp => {
-                inp.addEventListener('input', () => {
-                    inp.value = inp.value.replace(/\D/g, '').slice(0, 10);
-                });
-            });
-        }
-
-        // naam se avatar, jab tak photo upload nahi hai
-        function avatarUrl(emp) {
-            return emp.avatar || 'https://ui-avatars.com/api/?background=random&name='
-                + encodeURIComponent((emp.first_name || '') + ' ' + (emp.last_name || ''));
-        }
-
-        function initDropdown() {
-            const btn = document.getElementById('avatarBtn');
-            const menu = document.getElementById('userDropdown');
-            const punchBtn = document.getElementById('punchBtn');
-
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                menu.classList.toggle('open');
-            });
-            document.addEventListener('click', (e) => {
-                if (!btn.contains(e.target) && !menu.contains(e.target)) menu.classList.remove('open');
-            });
-
-            punchBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                punchBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                punchBtn.disabled = true;
-
-                try {
-                    if (!isPunchedIn) {
-                        const res = await API.post('punch_in');
-                        if (res.success) {
-                            isPunchedIn = true;
-                            punchTime = (res.data && res.data.check_in)
-                                ? res.data.check_in.slice(11, 16)
-                                : new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-                        }
-                    } else {
-                        const res = await API.post('punch_out');
-                        if (res.success) { isPunchedIn = false; punchTime = null; }
-                    }
-                } catch (error) {
-                    // attendance api abhi ban raha hai
-                    alert(error.message || 'Attendance API abhi ready nahi hai');
-                } finally {
-                    punchBtn.disabled = false;
-                    updatePunchUI();
-                }
-            });
-        }
-
-        function updatePunchUI() {
-            const tray = document.getElementById('punchTray');
-            const dot = document.getElementById('navStatusDot');
-            const btn = document.getElementById('punchBtn');
-            const label = document.getElementById('punchTimeLabel');
-            const val = document.getElementById('punchTimeVal');
-
-            if (isPunchedIn) {
-                tray.classList.add('punched');
-                dot.classList.add('in');
-                btn.innerHTML = 'Check Out &rarr;';
-                btn.classList.add('out');
-                label.innerText = 'Since';
-                val.innerText = punchTime;
-            } else {
-                tray.classList.remove('punched');
-                dot.classList.remove('in');
-                btn.innerHTML = 'Check IN &rarr;';
-                btn.classList.remove('out');
-                label.innerText = 'Not punched in';
-                val.innerText = '--:--';
-            }
-        }
-
-        async function logout() {
-            try { await API.post('logout'); } catch (e) {}
-            window.location.href = '../index.html';
-        }
-
-        async function loadEmployees() {
-            const grid = document.getElementById('employeeGrid');
-            const loader = document.getElementById('loadingState');
-            const empty = document.getElementById('emptyState');
-
-            grid.innerHTML = '';
-            loader.classList.remove('hidden');
-            empty.classList.add('hidden');
-
-            try {
-                const res = await API.get('employees');
-                if (res.success) {
-                    employeesData = res.data;
-                    renderGrid(employeesData);
-                }
-            } catch (err) {
-                console.error("Failed to fetch employees:", err);
-            } finally {
-                loader.classList.add('hidden');
-            }
-        }
-
-        function renderGrid(data) {
-            const grid = document.getElementById('employeeGrid');
-            const empty = document.getElementById('emptyState');
-
-            grid.innerHTML = '';
-            if (data.length === 0) { empty.classList.remove('hidden'); return; }
-            empty.classList.add('hidden');
-
-            data.forEach(emp => {
-                const today = emp.today_status === 'present' ? 'present'
-                    : emp.today_status === 'on_leave' ? 'on_leave' : 'absent';
-
-                const card = document.createElement('div');
-                card.className = 'emp-card';
-                card.onclick = () => openViewModal(emp.id);
-                card.innerHTML = `
-                    <span class="today ${today}" title="${today.replace('_', ' ')}"></span>
-                    <img class="avatar" src="${avatarUrl(emp)}" alt="">
-                    <h3>${emp.first_name} ${emp.last_name || ''}</h3>
-                    <div class="desig">${emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee')}</div>
-                    <div class="foot">
-                        <span class="dept">${emp.department || '—'}</span>
-                        <span class="code">${emp.emp_code}</span>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function setupSearch() {
-            document.getElementById('searchInput').addEventListener('input', (e) => {
-                const term = e.target.value.toLowerCase();
-                const filtered = employeesData.filter(emp =>
-                    (emp.first_name || '').toLowerCase().includes(term) ||
-                    (emp.last_name || '').toLowerCase().includes(term) ||
-                    (emp.emp_code || '').toLowerCase().includes(term) ||
-                    (emp.designation || '').toLowerCase().includes(term)
-                );
-                renderGrid(filtered);
-            });
-        }
-
-        /* modals */
-        const overlay = document.getElementById('modalOverlay');
-        const addModal = document.getElementById('addEmployeeModal');
-        const viewModal = document.getElementById('viewEmployeeModal');
-
-        function closeModals() {
-            overlay.classList.add('hidden');
-            addModal.classList.add('hidden');
-            viewModal.classList.add('hidden');
-            document.getElementById('credModal').classList.add('hidden');
-            document.getElementById('addEmployeeForm').reset();
-        }
-
-        function openAddModal() {
-            overlay.classList.remove('hidden');
-            addModal.classList.remove('hidden');
-            viewModal.classList.add('hidden');
-        }
-
-        async function openViewModal(id) {
-            overlay.classList.remove('hidden');
-            addModal.classList.add('hidden');
-            viewModal.classList.remove('hidden');
-            document.getElementById('view_name').innerText = 'Loading...';
-
-            try {
-                const res = await API.get('employees/' + id);
-                if (res.success) {
-                    const emp = res.data;
-                    document.getElementById('view_avatar').src = avatarUrl(emp);
-                    document.getElementById('view_name').innerText = `${emp.first_name} ${emp.last_name || ''}`;
-                    document.getElementById('view_designation').innerText = emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee');
-                    document.getElementById('view_emp_code').innerText = `Login ID: ${emp.emp_code}`;
-                    document.getElementById('view_email').innerText = emp.email || 'Not provided';
-                    document.getElementById('view_phone').innerText = emp.phone || 'Not provided';
-                    document.getElementById('view_department').innerText = emp.department || '—';
-                    document.getElementById('view_doj').innerText = emp.doj || '—';
-
-                    const badge = document.getElementById('view_status_badge');
-                    if (emp.status === 'active') {
-                        badge.className = 'badge active';
-                        badge.innerText = 'Active';
-                    } else {
-                        badge.className = 'badge inactive';
-                        badge.innerText = emp.status || 'Inactive';
-                    }
-                }
-            } catch (err) {
-                console.error("Failed to fetch employee details:", err);
-                closeModals();
-            }
-        }
-
-        async function handleAddEmployee(e) {
+        punchBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerText;
-
-            // 10 digit numeric hi chalega
-            const phone = document.getElementById('add_phone').value.trim();
-            if (!/^\d{10}$/.test(phone)) {
-                alert('Phone number exactly 10 digits ka hona chahiye (sirf numbers)');
-                return;
-            }
-
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-            btn.disabled = true;
-
-            // backend name ek saath leta hai, first/last khud todta hai
-            const payload = {
-                name: (document.getElementById('add_first_name').value.trim() + ' '
-                    + document.getElementById('add_last_name').value.trim()).trim(),
-                email: document.getElementById('add_email').value.trim(),
-                phone,
-                doj: document.getElementById('add_doj').value
-            };
-
+            const txt = document.getElementById('punchBtnText');
+            const original = txt.innerText;
+            txt.innerText = '...';
+            punchBtn.disabled = true;
             try {
-                const res = await API.post('employee_create', payload);
-                if (res.success) {
-                    closeModals();
-                    // login id + temp password ek hi baar milta hai, yahi dikha do
-                    document.getElementById('cred_login_id').innerText = res.data.login_id;
-                    document.getElementById('cred_password').innerText = res.data.temp_password;
-                    overlay.classList.remove('hidden');
-                    document.getElementById('credModal').classList.remove('hidden');
-                    loadEmployees();
+                if (!isPunchedIn) {
+                    const res = await API.post('punch_in');
+                    if (res.success) {
+                        isPunchedIn = true;
+                        punchTime = (res.data && res.data.check_in)
+                            ? res.data.check_in.slice(11, 16)
+                            : new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                    }
+                } else {
+                    const res = await API.post('punch_out');
+                    if (res.success) { isPunchedIn = false; punchTime = null; }
                 }
             } catch (error) {
-                alert(error.message || 'Employee create nahi hua');
+                txt.innerText = original;
+                alert(error.message || 'Attendance API abhi ready nahi hai');
             } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                punchBtn.disabled = false;
+                updatePunchUI();
             }
+        });
+    }
+
+    async function logout() {
+        try { await API.post('logout'); } catch (e) {}
+        window.location.href = '../index.html';
+    }
+
+    // ---------- helpers ----------
+    function initials(emp) {
+        const a = (emp.first_name || '').trim();
+        const b = (emp.last_name || '').trim();
+        return ((a[0] || '') + (b[0] || (a[1] || ''))).toUpperCase() || '?';
+    }
+    function avatarUrl(emp) {
+        return emp.avatar || 'https://ui-avatars.com/api/?background=random&name='
+            + encodeURIComponent((emp.first_name || '') + ' ' + (emp.last_name || ''));
+    }
+    function timeAgo(ts) {
+        if (!ts) return '';
+        const then = new Date(ts.replace(' ', 'T'));
+        const diff = (Date.now() - then.getTime()) / 1000;
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+        if (diff < 172800) return 'Yesterday';
+        return then.toLocaleDateString();
+    }
+    function setupPhoneInputs() {
+        document.querySelectorAll('input[type="tel"]').forEach(inp => {
+            inp.addEventListener('input', () => {
+                inp.value = inp.value.replace(/\D/g, '').slice(0, 10);
+            });
+        });
+    }
+
+    // ---------- employees ----------
+    async function loadEmployees() {
+        const loader = document.getElementById('loadingState');
+        const empty = document.getElementById('emptyState');
+        document.getElementById('employeeTableBody').innerHTML = '';
+        loader.classList.remove('hidden');
+        empty.classList.add('hidden');
+        try {
+            const res = await API.get('employees');
+            if (res.success) {
+                employeesData = res.data;
+                filteredData = employeesData;
+                currentPage = 1;
+                renderTable();
+                renderStats();
+            }
+        } catch (err) {
+            console.error("Failed to fetch employees:", err);
+        } finally {
+            loader.classList.add('hidden');
+        }
+    }
+
+    function renderStats() {
+        const total = employeesData.length;
+        const active = employeesData.filter(e => e.status === 'active').length;
+        document.getElementById('stat_total').innerText = total;
+        document.getElementById('welcomeStat').innerText = active + ' active employees';
+    }
+
+    function statusBadge(status) {
+        if (status === 'active') return '<span class="px-2 py-1 rounded-full bg-green-100 text-green-700 font-label-sm">Active</span>';
+        if (status === 'suspended') return '<span class="px-2 py-1 rounded-full bg-orange-100 text-orange-700 font-label-sm">Suspended</span>';
+        if (status === 'exited') return '<span class="px-2 py-1 rounded-full bg-red-100 text-red-700 font-label-sm">Exited</span>';
+        return '<span class="px-2 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm">' + (status || '—') + '</span>';
+    }
+
+    function renderTable() {
+        const body = document.getElementById('employeeTableBody');
+        const empty = document.getElementById('emptyState');
+        body.innerHTML = '';
+
+        if (filteredData.length === 0) {
+            empty.classList.remove('hidden');
+            updatePager();
+            return;
+        }
+        empty.classList.add('hidden');
+
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageRows = filteredData.slice(start, start + PAGE_SIZE);
+
+        pageRows.forEach(emp => {
+            const name = `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.emp_code;
+            const desig = emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee');
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-surface-container-low transition-colors cursor-pointer';
+            tr.onclick = () => openViewModal(emp.id);
+            tr.innerHTML = `
+                <td class="px-lg py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs flex-shrink-0">${initials(emp)}</div>
+                        <div class="min-w-0">
+                            <div class="font-body-md font-bold text-on-surface truncate">${name}</div>
+                            <div class="font-label-sm text-outline truncate">${desig}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-lg py-4 font-body-md text-on-surface-variant">${emp.emp_code}</td>
+                <td class="px-lg py-4 font-body-md text-on-surface-variant">${emp.department || '—'}</td>
+                <td class="px-lg py-4">${statusBadge(emp.status)}</td>
+                <td class="px-lg py-4 text-right">
+                    <button class="p-1 hover:bg-surface-container-high rounded-md" onclick="event.stopPropagation(); openViewModal(${emp.id})">
+                        <span class="material-symbols-outlined text-outline text-[20px]">visibility</span>
+                    </button>
+                </td>
+            `;
+            body.appendChild(tr);
+        });
+        updatePager();
+    }
+
+    function updatePager() {
+        const total = filteredData.length;
+        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (currentPage > pages) currentPage = pages;
+        const start = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+        const end = Math.min(currentPage * PAGE_SIZE, total);
+        document.getElementById('pageInfo').innerText =
+            total === 0 ? 'No employees' : `Showing ${start}–${end} of ${total} employees`;
+        document.getElementById('prevBtn').disabled = currentPage <= 1;
+        document.getElementById('nextBtn').disabled = currentPage >= pages;
+    }
+
+    function changePage(delta) {
+        const pages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+        currentPage = Math.min(pages, Math.max(1, currentPage + delta));
+        renderTable();
+    }
+
+    function setupSearch() {
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            filteredData = employeesData.filter(emp =>
+                (emp.first_name || '').toLowerCase().includes(term) ||
+                (emp.last_name || '').toLowerCase().includes(term) ||
+                (emp.emp_code || '').toLowerCase().includes(term) ||
+                (emp.designation || '').toLowerCase().includes(term)
+            );
+            currentPage = 1;
+            renderTable();
+        });
+    }
+
+    // ---------- pending approvals (leaves) ----------
+    async function loadApprovals() {
+        const list = document.getElementById('approvalsList');
+        const empty = document.getElementById('approvalsEmpty');
+        try {
+            const res = await API.get('leaves', { status: 'pending' });
+            const rows = (res.success && res.data) ? res.data : [];
+            document.getElementById('stat_pending_leave').innerText = rows.length;
+            document.getElementById('approvalsCount').innerText = rows.length ? rows.length + ' waiting' : '';
+
+            list.innerHTML = '';
+            if (rows.length === 0) { empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+
+            rows.slice(0, 5).forEach(lr => {
+                const name = `${lr.first_name || ''} ${lr.last_name || ''}`.trim() || lr.emp_code;
+                const card = document.createElement('div');
+                card.className = 'bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm';
+                card.innerHTML = `
+                    <div class="flex items-start gap-md">
+                        <div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold flex-shrink-0">${initials(lr)}</div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-label-md text-on-surface font-bold truncate">${name}</p>
+                            <p class="font-label-sm text-outline truncate">${lr.leave_type} • ${lr.total_days} Day(s)</p>
+                            <p class="font-label-sm text-outline truncate">${lr.from_date} → ${lr.to_date}</p>
+                        </div>
+                    </div>
+                    <div class="mt-md flex items-center gap-sm">
+                        <button class="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-md hover:opacity-90" onclick="reviewLeave(${lr.id}, 'approve', this)">Approve</button>
+                        <button class="flex-1 bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-md hover:bg-surface-dim" onclick="reviewLeave(${lr.id}, 'reject', this)">Reject</button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        } catch (e) {
+            // permission nahi ya endpoint issue - section chhupa do
+            console.error('Approvals load failed:', e.message);
+            document.getElementById('stat_pending_leave').innerText = '0';
+            empty.classList.remove('hidden');
+        }
+    }
+
+    async function reviewLeave(id, action, btn) {
+        const card = btn.closest('.rounded-xl');
+        card.style.opacity = '0.5';
+        card.querySelectorAll('button').forEach(b => b.disabled = true);
+        try {
+            await API.post('leave_review', { id, action });
+            loadApprovals();
+            loadActivity();
+        } catch (e) {
+            card.style.opacity = '1';
+            card.querySelectorAll('button').forEach(b => b.disabled = false);
+            alert(e.message || 'Could not update leave');
+        }
+    }
+
+    // ---------- recent activity (notifications) ----------
+    async function loadActivity() {
+        const list = document.getElementById('activityList');
+        try {
+            const res = await API.get('notifications', { limit: 6 });
+            const data = res.data || {};
+            const items = data.items || [];
+            if (data.unread > 0) document.getElementById('notifDot').classList.remove('hidden');
+            else document.getElementById('notifDot').classList.add('hidden');
+
+            if (items.length === 0) {
+                list.innerHTML = '<p class="font-label-sm text-outline">No recent activity</p>';
+                return;
+            }
+            const dot = ['bg-primary', 'bg-tertiary', 'bg-outline'];
+            list.innerHTML = items.map((n, i) => `
+                <div class="flex gap-md">
+                    <div class="flex-shrink-0 w-2 h-2 mt-2 ${dot[i % dot.length]} rounded-full"></div>
+                    <div class="min-w-0">
+                        <p class="font-label-md text-on-surface">${n.title || ''}</p>
+                        <p class="font-label-sm text-outline">${timeAgo(n.created_at)}</p>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            list.innerHTML = '<p class="font-label-sm text-outline">No recent activity</p>';
+        }
+    }
+
+    // ---------- modals ----------
+    const overlay = document.getElementById('modalOverlay');
+    const addModal = document.getElementById('addEmployeeModal');
+    const viewModal = document.getElementById('viewEmployeeModal');
+
+    function closeModals() {
+        overlay.classList.add('hidden');
+        addModal.classList.add('hidden');
+        viewModal.classList.add('hidden');
+        document.getElementById('credModal').classList.add('hidden');
+        document.getElementById('addEmployeeForm').reset();
+    }
+    function openAddModal() {
+        overlay.classList.remove('hidden');
+        addModal.classList.remove('hidden');
+        viewModal.classList.add('hidden');
+        document.getElementById('credModal').classList.add('hidden');
+    }
+
+    async function openViewModal(id) {
+        overlay.classList.remove('hidden');
+        addModal.classList.add('hidden');
+        document.getElementById('credModal').classList.add('hidden');
+        viewModal.classList.remove('hidden');
+        document.getElementById('view_name').innerText = 'Loading...';
+        try {
+            const res = await API.get('employees/' + id);
+            if (res.success) {
+                const emp = res.data;
+                document.getElementById('view_avatar').src = avatarUrl(emp);
+                document.getElementById('view_name').innerText = `${emp.first_name} ${emp.last_name || ''}`;
+                document.getElementById('view_designation').innerText = emp.designation || (emp.role === 'admin' ? 'Admin / HR' : 'Employee');
+                document.getElementById('view_emp_code').innerText = `Login ID: ${emp.emp_code}`;
+                document.getElementById('view_email').innerText = emp.email || 'Not provided';
+                document.getElementById('view_phone').innerText = emp.phone || 'Not provided';
+                document.getElementById('view_department').innerText = emp.department || '—';
+                document.getElementById('view_doj').innerText = emp.doj || '—';
+
+                const badge = document.getElementById('view_status_badge');
+                if (emp.status === 'active') {
+                    badge.className = 'ml-2 px-2 py-1 rounded-full font-label-sm align-middle bg-green-100 text-green-700';
+                    badge.innerText = 'Active';
+                } else {
+                    badge.className = 'ml-2 px-2 py-1 rounded-full font-label-sm align-middle bg-red-100 text-red-700';
+                    badge.innerText = emp.status || 'Inactive';
+                }
+            }
+        } catch (err) {
+            console.error("Failed to fetch employee details:", err);
+            closeModals();
+        }
+    }
+
+    async function handleAddEmployee(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+
+        const phone = document.getElementById('add_phone').value.trim();
+        if (!/^\d{10}$/.test(phone)) {
+            alert('Phone number exactly 10 digits ka hona chahiye (sirf numbers)');
+            return;
         }
 
-        function copyCreds() {
-            const txt = 'Login ID: ' + document.getElementById('cred_login_id').innerText
-                + '\nPassword: ' + document.getElementById('cred_password').innerText
-                + '\nLogin: ' + location.origin + '/workpulse/';
-            navigator.clipboard.writeText(txt);
-        }
+        btn.innerText = 'Saving...';
+        btn.disabled = true;
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals();
-        });
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closeModals();
-        });
-    </script>
+        const payload = {
+            name: (document.getElementById('add_first_name').value.trim() + ' '
+                + document.getElementById('add_last_name').value.trim()).trim(),
+            email: document.getElementById('add_email').value.trim(),
+            phone,
+            doj: document.getElementById('add_doj').value
+        };
+
+        try {
+            const res = await API.post('employee_create', payload);
+            if (res.success) {
+                closeModals();
+                document.getElementById('cred_login_id').innerText = res.data.login_id;
+                document.getElementById('cred_password').innerText = res.data.temp_password;
+                overlay.classList.remove('hidden');
+                document.getElementById('credModal').classList.remove('hidden');
+                loadEmployees();
+            }
+        } catch (error) {
+            alert(error.message || 'Employee create nahi hua');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function copyCreds() {
+        const txt = 'Login ID: ' + document.getElementById('cred_login_id').innerText
+            + '\nPassword: ' + document.getElementById('cred_password').innerText
+            + '\nLogin: ' + location.origin + '/workpulse/';
+        navigator.clipboard.writeText(txt);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !overlay.classList.contains('hidden')) closeModals();
+    });
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closeModals();
+    });
+</script>
 </body>
 </html>
