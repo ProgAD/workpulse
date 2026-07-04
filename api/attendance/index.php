@@ -250,18 +250,28 @@ if ($METHOD === 'GET') {
     $me   = require_auth('attendance.view_all');
     $date = $_GET['date'] ?? date('Y-m-d');
 
-    // us din ki attendance sabki - jisne punch nahi kiya wo bhi dikhe (LEFT JOIN)
+    // us din ki attendance sabki - jisne punch nahi kiya wo bhi dikhe (LEFT JOIN).
+    // shift bhi join karte hai taaki extra hours full_day_hours ke hisab se nikle
+    // (a.shift_id = jis din ka actual shift, warna profile ka assigned shift)
     $stmt = db()->prepare(
         "SELECT u.id AS user_id, u.emp_code, p.first_name, p.last_name,
-                a.status, a.check_in, a.check_out, a.work_mins, a.is_late, a.is_regularized
+                a.status, a.check_in, a.check_out, a.work_mins, a.is_late, a.is_regularized,
+                s.full_day_hours, s.name AS shift_name
          FROM users u
          LEFT JOIN employee_profiles p ON p.user_id = u.id
          LEFT JOIN attendance a ON a.user_id = u.id AND a.att_date = ?
+         LEFT JOIN shifts s ON s.id = COALESCE(a.shift_id, p.shift_id)
          WHERE u.company_id = ? AND u.delete_flag = 0 AND u.status = 'active'
          ORDER BY u.emp_code"
     );
     $stmt->execute([$date, $me['company_id']]);
-    ok(['date' => $date, 'rows' => $stmt->fetchAll()]);
+    $rows = $stmt->fetchAll();
+
+    // company registration date - calendar me isse pehle back-date allow nahi
+    $since = db()->prepare("SELECT DATE(created_at) FROM companies WHERE id = ?");
+    $since->execute([$me['company_id']]);
+
+    ok(['date' => $date, 'company_since' => $since->fetchColumn(), 'rows' => $rows]);
 }
 
 fail('Unknown action: ' . $ACTION, 404);

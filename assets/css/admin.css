@@ -418,7 +418,8 @@ table.data tbody tr:hover { background: var(--surface-low); }
 .date-nav input { border: 1px solid var(--outline-variant); border-radius: var(--radius); padding: 9px 12px; background: var(--surface-lowest); outline: none; }
 .date-nav input:focus { box-shadow: 0 0 0 2px var(--primary-container); }
 .icon-square { padding: 8px; border: 1px solid var(--outline-variant); border-radius: var(--radius); }
-.icon-square:hover { background: var(--surface-low); }
+.icon-square:hover:not(:disabled) { background: var(--surface-low); }
+.icon-square:disabled { opacity: .4; cursor: default; }
 .date-label { font-size: 12px; font-weight: 600; color: var(--outline); }
 
 .reg-item { padding: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--outline-variant); }

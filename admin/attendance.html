@@ -59,9 +59,9 @@
 
       <section class="date-bar">
         <div class="date-nav">
-          <button onclick="shiftDay(-1)" class="icon-square"><span class="material-symbols-outlined" style="font-size:20px">chevron_left</span></button>
+          <button id="prevDay" onclick="shiftDay(-1)" class="icon-square"><span class="material-symbols-outlined" style="font-size:20px">chevron_left</span></button>
           <input id="datePicker" type="date">
-          <button onclick="shiftDay(1)" class="icon-square"><span class="material-symbols-outlined" style="font-size:20px">chevron_right</span></button>
+          <button id="nextDay" onclick="shiftDay(1)" class="icon-square"><span class="material-symbols-outlined" style="font-size:20px">chevron_right</span></button>
           <button onclick="goToday()" class="btn btn-outline">Today</button>
         </div>
         <p id="dateLabel" class="date-label"></p>
@@ -98,7 +98,7 @@
         <div class="table-wrap">
           <table class="data min">
             <thead>
-              <tr><th>Employee</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Work Hours</th></tr>
+              <tr><th>Employee</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Work Hours</th><th>Extra</th></tr>
             </thead>
             <tbody id="attTableBody"></tbody>
           </table>
@@ -121,13 +121,28 @@
 
     let attRows = [];
     let filtered = [];
-    let selectedDate = new Date().toISOString().slice(0, 10);
+    const TODAY = new Date().toISOString().slice(0, 10);
+    let companySince = null;                 // company registration date (backend se)
+    let selectedDate = TODAY;
+
+    // date ko allowed range [companySince, TODAY] me rakho
+    function clampDate(d) {
+        if (d > TODAY) d = TODAY;
+        if (companySince && d < companySince) d = companySince;
+        return d;
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
         initSidebar();
         initNotifBell();
-        document.getElementById('datePicker').value = selectedDate;
-        document.getElementById('datePicker').addEventListener('change', (e) => { selectedDate = e.target.value; loadAttendance(); });
+        const dp = document.getElementById('datePicker');
+        dp.value = selectedDate;
+        dp.max = TODAY;                       // future date select nahi ho sakti
+        dp.addEventListener('change', (e) => {
+            selectedDate = clampDate(e.target.value || TODAY);
+            dp.value = selectedDate;
+            loadAttendance();
+        });
         document.getElementById('searchInput').addEventListener('input', applySearch);
         try {
             const res = await API.get('me');
@@ -215,14 +230,35 @@
     function shiftDay(delta) {
         const d = new Date(selectedDate + 'T00:00:00');
         d.setDate(d.getDate() + delta);
-        selectedDate = d.toISOString().slice(0, 10);
+        const next = clampDate(d.toISOString().slice(0, 10));
+        if (next === selectedDate) return;   // bound pe hai, aage nahi jana
+        selectedDate = next;
         document.getElementById('datePicker').value = selectedDate;
         loadAttendance();
     }
     function goToday() {
-        selectedDate = new Date().toISOString().slice(0, 10);
+        selectedDate = TODAY;
         document.getElementById('datePicker').value = selectedDate;
         loadAttendance();
+    }
+    // range ke ends pe prev/next button disable
+    function updateDateNav() {
+        const prev = document.getElementById('prevDay'), next = document.getElementById('nextDay');
+        next.disabled = selectedDate >= TODAY;
+        prev.disabled = companySince ? selectedDate <= companySince : false;
+    }
+
+    // extra hours = worked - shift ka full_day_hours (koi assumption nahi, shift se)
+    function extraMins(r) {
+        if (!r.work_mins || r.full_day_hours == null) return 0;
+        return Math.max(0, Math.round(r.work_mins - parseFloat(r.full_day_hours) * 60));
+    }
+    function fmtExtra(r) {
+        const e = extraMins(r);
+        if (!e) return '<span style="color:var(--outline)">—</span>';
+        const h = Math.floor(e / 60), m = e % 60;
+        const txt = h > 0 ? `+${h}h ${m.toString().padStart(2, '0')}m` : `+${m}m`;
+        return `<span class="badge badge-green" title="Beyond ${r.full_day_hours}h shift">${txt}</span>`;
     }
 
     async function loadAttendance() {
@@ -234,9 +270,15 @@
         try {
             const res = await API.get('attendance', { date: selectedDate });
             attRows = (res.data && res.data.rows) ? res.data.rows : [];
+            // company registration date pehli baar mil jaye to picker ka min set kar do
+            if (res.data && res.data.company_since && !companySince) {
+                companySince = res.data.company_since;
+                document.getElementById('datePicker').min = companySince;
+            }
         } catch (err) { console.error('Attendance load failed:', err.message); attRows = []; }
         finally {
             loader.classList.add('hidden');
+            updateDateNav();
             renderSummary();
             applySearch();
         }
@@ -273,7 +315,8 @@
                 <td>${statusBadge(effStatus(r), r.is_late)}</td>
                 <td>${fmtTime(r.check_in)}</td>
                 <td>${fmtTime(r.check_out)}</td>
-                <td>${fmtHours(r.work_mins)}${reg}</td>`;
+                <td>${fmtHours(r.work_mins)}${reg}</td>
+                <td>${fmtExtra(r)}</td>`;
             body.appendChild(tr);
         });
     }
