@@ -25,30 +25,30 @@ const API = {
 
     // niche wale abhi banne hai (php file ready hote hi kaam karenge)
 
-    'punch_in':        'attendance.php?action=punch_in',
-    'punch_out':       'attendance.php?action=punch_out',
-    'att_today':       'attendance.php?action=today',
-    'att_mine':        'attendance.php?action=mine',
-    'attendance':      'attendance.php',                          // admin list
-    'regularize':      'attendance.php?action=regularize',
-    'regularizations': 'attendance.php?action=regularizations',   // admin
-    'regularize_review': 'attendance.php?action=review',          // admin
+    'punch_in':        'attendance/index.php?action=punch_in',
+    'punch_out':       'attendance/index.php?action=punch_out',
+    'att_today':       'attendance/index.php?action=today',
+    'att_mine':        'attendance/index.php?action=mine',
+    'attendance':      'attendance/index.php',                          // admin list
+    'regularize':      'attendance/index.php?action=regularize',
+    'regularizations': 'attendance/index.php?action=regularizations',   // admin
+    'regularize_review': 'attendance/index.php?action=review',          // admin
 
-    'leave_types':     'leaves.php?action=types',
-    'leave_balances':  'leaves.php?action=balances',
-    'leave_apply':     'leaves.php?action=apply',
-    'leaves_mine':     'leaves.php?action=mine',
-    'leaves':          'leaves.php',                              // admin list
-    'leave_cancel':    'leaves.php?action=cancel',
-    'leave_review':    'leaves.php?action=review',                // approve / reject
+    'leave_types':     'leaves/index.php?action=types',
+    'leave_balances':  'leaves/index.php?action=balances',
+    'leave_apply':     'leaves/index.php?action=apply',
+    'leaves_mine':     'leaves/index.php?action=mine',
+    'leaves':          'leaves/index.php',                              // admin list
+    'leave_cancel':    'leaves/index.php?action=cancel',
+    'leave_review':    'leaves/index.php?action=review',                // approve / reject
 
-    'my_payslips':     'payroll.php?action=my_payslips',
-    'payroll_runs':    'payroll.php?action=runs',                 // admin
-    'payroll_create':  'payroll.php?action=create_run',           // admin
-    'run_payslips':    'payroll.php?action=run_payslips',         // admin
+    'my_payslips':     'payroll/index.php?action=my_payslips',
+    'payroll_runs':    'payroll/index.php?action=runs',                 // admin
+    'payroll_create':  'payroll/index.php?action=create_run',           // admin
+    'run_payslips':    'payroll/index.php?action=run_payslips',         // admin
 
-    'notifications':   'notifications.php',
-    'notif_read':      'notifications.php?action=mark_read',
+    'notifications':   'notifications/index.php',
+    'notif_read':      'notifications/index.php?action=mark_read',
   },
 
 

@@ -8,7 +8,7 @@
 // attendance.php?action=regularizations (GET)  -> admin, pending requests
 // attendance.php?action=review     (POST) -> admin, request approve/reject
 
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 // din/time company ke timezone me chahiye, warna raat 12 baje ke aaspaas date galat aa jati hai
 $tzStmt = db()->prepare("SELECT c.timezone FROM companies c JOIN users u ON u.company_id = c.id WHERE u.id = ?");

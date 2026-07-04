@@ -23,22 +23,26 @@ workpulse/
 |   |-- uploads/            -> profile pics, docs, payslip pdf (git me nahi jata)
 |   |-- file_str.txt        -> ye file
 |
-|-- api/                    -> php backend, har module ki alag file
+|-- api/                    -> php backend, har module ka apna folder
 |   |-- bootstrap.php       -> config + db + helpers, har api file me sabse pehle include
-|   |-- health.php          -> server/db check                              [DONE]
+|   |-- health.php          -> server/db check                                  [DONE]
 |   |-- auth.php            -> ?action=login / signup / logout / me / change_password  [DONE]
 |   |-- employees/
-|   |   |-- index.php       -> list, ?action=create/update/remove           [DONE]
-|   |                          create pe login id + temp password system banata hai
-|   |-- attendance.php      -> ?action=punch_in / punch_out / today / mine  [TODO]
-|   |-- leaves.php          -> ?action=types / balances / apply / review    [TODO]
-|   |-- payroll.php         -> ?action=my_payslips / runs / create_run      [TODO]
-|   |-- notifications.php   -> list + mark_read                             [TODO]
+|   |   |-- index.php       -> list, ?action=create/update/remove               [DONE]
+|   |                          create pe login id + temp password milta hai
+|   |-- attendance/
+|   |   |-- index.php       -> punch_in/out, today, mine, regularize, review    [DONE]
+|   |-- leaves/
+|   |   |-- index.php       -> types, balances, apply, mine, cancel, review     [DONE]
+|   |-- payroll/
+|   |   |-- index.php       -> my_payslips, runs, create_run                    [DONE]
+|   |-- notifications/
+|   |   |-- index.php       -> list, mark_read                                  [DONE]
 |   |-- helpers/
 |   |   |-- Auth.php        -> session + permission check (require_auth)
+|   |   |-- LoginId.php     -> login id + temp password generator
 |   |   |-- Response.php    -> ok() / fail() json helpers
-|   |-- admin/
-|   |-- employees/
+|   |-- admin/              -> admin-specific api ke liye reserved
 |
 |-- config/
 |   |-- config.php          -> app constants, .env se values uthata hai

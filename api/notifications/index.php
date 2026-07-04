@@ -2,7 +2,7 @@
 // notifications.php                    (GET)  -> apni notifications + unread count
 // notifications.php?action=mark_read   (POST) -> ek ({id}) ya sab ({all:true}) read
 
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 if ($ACTION === 'mark_read' && $METHOD === 'POST') {
     $me = require_auth();

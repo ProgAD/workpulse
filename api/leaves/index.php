@@ -7,7 +7,7 @@
 // leaves.php?action=cancel    (POST) -> apni pending/future leave cancel
 // leaves.php?action=review    (POST) -> admin, approve / reject
 
-require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 // working days nikalta hai - weekend (sat/sun) aur company holidays chhod ke.
 // half day flags start/end din ka aadha ghata dete hai
