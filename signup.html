@@ -217,7 +217,7 @@
       try {
         await API.post('signup', fd);
         // signup ke baad seedha admin dashboard, kyunki banane wala admin hota hai
-        window.location.href = 'admin/dashboard.html';
+        window.location.href = 'admin/employees.html';
       } catch (err) {
         toast(err.message || 'Signup failed');
         btn.disabled = false;

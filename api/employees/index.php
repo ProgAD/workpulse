@@ -258,15 +258,24 @@ if ($ACTION === 'remove' && $METHOD === 'POST') {
 if ($METHOD === 'GET') {
     $me = require_auth('employee.view_all');
 
+    // today_status card ke status dot ke liye - aaj present / on_leave / absent
     $base = "SELECT u.id, u.emp_code, u.email, u.status, u.must_change_password, r.name AS role,
-                    p.first_name, p.last_name, p.phone, p.doj, p.dob, p.gender,
+                    p.photo_url, p.first_name, p.last_name, p.phone, p.doj, p.dob, p.gender,
                     p.current_address, p.emp_type, p.work_mode,
-                    d.name AS department, g.title AS designation
+                    d.name AS department, g.title AS designation,
+                    CASE
+                      WHEN a.status IN ('present','half_day') THEN 'present'
+                      WHEN EXISTS (SELECT 1 FROM leave_requests lr
+                                   WHERE lr.user_id = u.id AND lr.status = 'approved'
+                                     AND CURDATE() BETWEEN lr.from_date AND lr.to_date) THEN 'on_leave'
+                      ELSE 'absent'
+                    END AS today_status
              FROM users u
              JOIN roles r ON r.id = u.role_id
              LEFT JOIN employee_profiles p ON p.user_id = u.id
              LEFT JOIN departments d ON d.id = p.department_id
              LEFT JOIN designations g ON g.id = p.designation_id
+             LEFT JOIN attendance a ON a.user_id = u.id AND a.att_date = CURDATE()
              WHERE u.company_id = ? AND u.delete_flag = 0";
 
     if (!empty($_GET['id'])) {
