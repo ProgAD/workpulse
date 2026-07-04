@@ -5,3 +5,4 @@ assets/uploads/*
 *.log
 vendor/
 node_modules/
+.gstack/

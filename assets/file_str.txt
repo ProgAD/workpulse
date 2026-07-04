@@ -14,6 +14,7 @@ workpulse/
 |-- employee/
 |   |-- dashboard.html      -> live work timer, punch in/out, leave balance, notifications
 |   |-- attendance.html     -> apna month-wise attendance, working hours, extra hours
+|   |-- timeoff.html        -> leave balance cards, saal ka calendar, apply/cancel request
 |   |-- profile.html        -> resume (editable), personal, salary, documents, security
 |
 |-- assets/
